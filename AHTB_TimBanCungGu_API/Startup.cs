@@ -29,6 +29,7 @@ namespace AHTB_TimBanCungGu_API
         {
             services.AddDbContext<DBAHTBContext>(options =>
          options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
+            services.AddMemoryCache();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
