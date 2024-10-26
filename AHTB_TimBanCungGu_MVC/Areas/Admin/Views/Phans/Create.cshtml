@@ -1,0 +1,42 @@
+﻿@model AHTB_TimBanCungGu_API.Models.PhanVM
+
+@{
+    ViewData["Title"] = "Tạo Phần Mới";
+}
+
+<h2>Tạo Phần Mới</h2>
+
+<form asp-action="Create" class="bg-dark text-white p-4 rounded">
+    <div class="form-group">
+        <label asp-for="IDPhan" class="control-label">ID Phần</label>
+        <input asp-for="IDPhan" class="form-control" />
+        <span asp-validation-for="IDPhan" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="SoPhan" class="control-label">Số Phần</label>
+        <input asp-for="SoPhan" class="form-control" />
+        <span asp-validation-for="SoPhan" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="NgayCongChieu" class="control-label">Ngày Công Chiếu</label>
+        <input asp-for="NgayCongChieu" class="form-control" type="date" />
+        <span asp-validation-for="NgayCongChieu" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="SoLuongTap" class="control-label">Số Lượng Tập</label>
+        <input asp-for="SoLuongTap" class="form-control" />
+        <span asp-validation-for="SoLuongTap" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="PhimID" class="control-label">Phim</label>
+        <select asp-for="PhimID" class="form-control" asp-items="ViewBag.PhimID"></select>
+        <span asp-validation-for="PhimID" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Tạo" class="btn btn-danger" /> <!-- Nút Tạo màu đỏ -->
+    </div>
+</form>
+
+<div>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a> <!-- Nút quay lại màu xám -->
+</div>

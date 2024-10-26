@@ -1,0 +1,74 @@
+﻿@model IEnumerable<AHTB_TimBanCungGu_API.Models.PhanVM>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1 class="mb-4">Danh Sách Các Phần</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-danger mb-3">Tạo Mới</a>
+</p>
+
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.IDPhan)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SoPhan)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NgayCongChieu)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SoLuongTap)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PhimID)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IDPhan)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SoPhan)
+                </td>
+                <td>
+                    @item.NgayCongChieu.ToString("dd/MM/yyyy")
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SoLuongTap)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PhimID)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.IDPhan" class="btn btn-dark btn-sm">
+                        <i class="bi bi-pencil"></i> Sửa
+                    </a>
+                    <a asp-action="Details" asp-route-id="@item.IDPhan" class="btn btn-dark btn-sm">
+                        <i class="bi bi-info-circle"></i> Chi tiết
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.IDPhan" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa phần này?');">
+                        <i class="bi bi-trash"></i> Xóa
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>

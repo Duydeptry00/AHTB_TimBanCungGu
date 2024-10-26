@@ -1,0 +1,51 @@
+﻿@model AHTB_TimBanCungGu_API.Models.PhanVM
+
+@{
+    ViewData["Title"] = "Xóa Phần";
+}
+
+<h2>Xóa Phần</h2>
+
+<h3>Bạn có chắc chắn muốn xóa phần này không?</h3>
+<div>
+    <h4>Thông Tin Phần</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            ID Phần
+        </dt>
+        <dd class="col-sm-10">
+            @Model.IDPhan
+        </dd>
+        <dt class="col-sm-2">
+            Số Phần
+        </dt>
+        <dd class="col-sm-10">
+            @Model.SoPhan
+        </dd>
+        <dt class="col-sm-2">
+            Ngày Công Chiếu
+        </dt>
+        <dd class="col-sm-10">
+            @Model.NgayCongChieu.ToString("dd/MM/yyyy") <!-- Định dạng ngày -->
+        </dd>
+        <dt class="col-sm-2">
+            Số Lượng Tập
+        </dt>
+        <dd class="col-sm-10">
+            @Model.SoLuongTap
+        </dd>
+        <dt class="col-sm-2">
+            ID Phim
+        </dt>
+        <dd class="col-sm-10">
+            @Model.PhimID
+        </dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="IDPhan" />
+        <button type="submit" class="btn btn-danger">Xóa</button> <!-- Nút xóa màu đỏ -->
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a> <!-- Nút hủy màu xám -->
+    </form>
+</div>

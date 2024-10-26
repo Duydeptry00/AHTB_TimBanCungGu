@@ -1,0 +1,37 @@
+﻿@model AHTB_TimBanCungGu_API.Models.PhanVM
+
+@{
+    ViewData["Title"] = "Chi Tiết Phần";
+}
+
+<h1>Chi Tiết Phần</h1>
+
+<div class="bg-dark text-white p-4 rounded">
+    <h4>Thông Tin Phần</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.SoPhan)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.SoPhan)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NgayCongChieu)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NgayCongChieu)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.SoLuongTap)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.SoLuongTap)
+        </dd>
+    </dl>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.IDPhan" class="btn btn-danger">Sửa</a> <!-- Nút Sửa màu đỏ -->
+    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a> <!-- Nút Quay lại màu xám -->
+</div>
