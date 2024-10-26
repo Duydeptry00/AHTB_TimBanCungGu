@@ -1,0 +1,173 @@
+﻿@{
+    ViewBag.Title = "Thống Kê Doanh Thu";
+}
+
+<h1 style="text-align: center; color: #fff;">Thống Kê Doanh Thu</h1>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <label for="revenueSelector" style="color: #fff; font-size: 18px;">Chọn Kiểu Doanh Thu:</label>
+    <select id="revenueSelector" onchange="updateChart()"
+            style="padding: 5px 10px; border-radius: 5px; border: 1px solid #fff;
+                   background-color: rgba(255, 255, 255, 0.3); color: #000;
+                   font-size: 14px; margin-left: 10px;">
+        <option value="monthly">Doanh Thu Theo Tháng</option>
+        <option value="yearly">Doanh Thu Theo Năm</option>
+    </select>
+
+    <label id="yearLabel" for="yearSelector" style="color: #fff; font-size: 18px; margin-left: 20px;">Chọn Năm:</label>
+    <select id="yearSelector" onchange="updateChart()"
+            style="padding: 5px 10px; border-radius: 5px; border: 1px solid #fff;
+                   background-color: rgba(255, 255, 255, 0.3); color: #000;
+                   font-size: 14px; margin-left: 10px;">
+        <option value="2023">2023</option>
+        <option value="2024">2024</option>
+    </select>
+</div>
+
+<canvas id="revenueChart" width="600" height="400"></canvas>
+
+<!-- Phần hiển thị tổng doanh thu -->
+<div id="totalRevenue" style="background-color: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px; margin-top: 20px;">
+    <h2 style="text-align: center; color: #fff;">Tổng Doanh Thu</h2>
+    <p style="font-size: 20px; text-align: center; color: #fff;" id="revenueText"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+
+    // Dữ liệu cứng cho doanh thu theo tháng cho mỗi năm
+    const labels = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+        "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+
+    // Doanh thu cho từng năm
+    const revenues = {
+        "2023": [12000, 15000, 18000, 20000, 25000, 30000, 28000, 32000, 35000, 37000, 40000, 42000],
+        "2024": [103000, 16000, 19000, 21000, 26000, 31000, 29000, 33000, 36000, 38000, 41000, 43000],
+    };
+
+    // Tính tổng doanh thu
+    function calculateTotalRevenue(data) {
+        return data.reduce((total, amount) => total + amount, 0);
+    }
+
+    const totalRevenue2023 = calculateTotalRevenue(revenues["2023"]);
+    const totalRevenue2024 = calculateTotalRevenue(revenues["2024"]);
+
+    document.getElementById('revenueText').innerHTML = `
+                    <strong>Tổng Doanh Thu Theo Năm 2023:</strong> ${totalRevenue2023.toLocaleString()} VND
+                `;
+
+    const revenueChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Doanh Thu Theo Tháng',
+                data: revenues["2023"], // Mặc định hiển thị doanh thu tháng của năm 2023
+                backgroundColor: 'rgba(255, 0, 0, 0.5)', // Đỏ nhạt cho doanh thu theo tháng
+                borderColor: 'rgba(255, 0, 0, 1)', // Đỏ cho đường viền
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Doanh Thu (VND)',
+                        font: {
+                            size: 16 // Kích thước chữ cho tiêu đề trục Y
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            size: 14, // Kích thước chữ cho các nhãn giá trị trục Y
+                            color: '#fff' // Đổi màu chữ thành trắng
+                        }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Tháng',
+                        font: {
+                            size: 16 // Kích thước chữ cho tiêu đề trục X
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            size: 14, // Kích thước chữ cho các nhãn giá trị trục X
+                            color: '#fff' // Đổi màu chữ thành trắng
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#fff' // Đổi màu chữ cho legend thành trắng
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Doanh Thu Theo Tháng',
+                    font: {
+                        size: 18, // Kích thước chữ cho tiêu đề biểu đồ
+                        color: '#fff' // Đổi màu chữ thành trắng
+                    }
+                }
+            }
+        }
+    });
+
+    function updateChart() {
+        const selectedValue = document.getElementById('revenueSelector').value;
+        const selectedYear = document.getElementById('yearSelector').value;
+
+        // Kiểm tra và ẩn/hiện dropdown năm
+        if (selectedValue === "monthly") {
+            document.getElementById('yearLabel').style.display = "inline"; // Hiện label chọn năm
+            document.getElementById('yearSelector').style.display = "inline"; // Hiện dropdown chọn năm
+        } else {
+            document.getElementById('yearLabel').style.display = "none"; // Ẩn label chọn năm
+            document.getElementById('yearSelector').style.display = "none"; // Ẩn dropdown chọn năm
+        }
+
+        if (selectedValue === "monthly") {
+            revenueChart.data.labels = labels; // Gán nhãn cho tháng
+            revenueChart.data.datasets[0].data = revenues[selectedYear]; // Dữ liệu doanh thu theo tháng của năm đã chọn
+            revenueChart.data.datasets[0].label = 'Doanh Thu Theo Tháng'; // Cập nhật label
+            revenueChart.data.datasets[0].backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Màu nền đỏ nhạt
+            revenueChart.data.datasets[0].borderColor = 'rgba(255, 0, 0, 1)'; // Đường viền đỏ
+            revenueChart.options.plugins.title.text = 'Doanh Thu Theo Tháng';
+            document.getElementById('revenueText').innerHTML = `
+                            <strong>Tổng Doanh Thu Theo Năm ${selectedYear}:</strong> ${calculateTotalRevenue(revenues[selectedYear]).toLocaleString()} VND
+                        `;
+        } else {
+            revenueChart.data.labels = ["2023", "2024"]; // Gán nhãn cho năm
+            revenueChart.data.datasets[0].data = [totalRevenue2023, totalRevenue2024]; // Dữ liệu doanh thu theo năm
+            revenueChart.data.datasets[0].label = 'Doanh Thu Theo Năm'; // Cập nhật label
+            revenueChart.data.datasets[0].backgroundColor = 'rgba(0, 255, 0, 0.5)'; // Màu nền xanh nhạt cho doanh thu theo năm
+            revenueChart.data.datasets[0].borderColor = 'rgba(0, 255, 0, 1)'; // Đường viền xanh
+            revenueChart.options.plugins.title.text = 'Doanh Thu Theo Năm';
+            document.getElementById('revenueText').innerHTML = `
+                            <strong>Tổng Doanh Thu Theo Năm:</strong> ${totalRevenue2023.toLocaleString()} VND (2023), ${totalRevenue2024.toLocaleString()} VND (2024)
+                        `;
+            revenueChart.options.scales.y.ticks.font.size = 18; // Tăng kích thước chữ cho trục Y khi chọn theo năm
+        }
+
+        revenueChart.update(); // Cập nhật chart để hiển thị dữ liệu mới
+    }
+
+    // Khởi động với trạng thái ban đầu
+    updateChart();
+
+    // Thay đổi màu nền thành màu đen
+    document.body.style.backgroundColor = '#000';
+    document.body.style.color = '#fff'; // Đổi màu chữ thành trắng cho dễ đọc
+</script>
