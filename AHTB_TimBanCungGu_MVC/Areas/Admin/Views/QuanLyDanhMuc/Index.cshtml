@@ -1,0 +1,168 @@
+﻿@model List<AHTB_TimBanCungGu_API.Models.Phim>
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHTB Cinema Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="~/css/quanlydanhmuc.css" rel="stylesheet" />
+    <script src="~/js/quanlydanhmuc.js"></script>
+</head>
+<br />
+        <!-- Main content -->
+        <div class="content bg-dark flex-grow-1 d-flex flex-column">
+            
+
+            <!-- Search bar -->
+            <div class="d-flex mb-3 justify-content-between align-items-center">
+    <div class="col-md-9 d-flex justify-content-center">
+        <form asp-action="Index" method="get" id="searchForm" class="w-100">
+            <div class="input-group">
+                <input type="text" id="searchInput" name="searchString" class="form-control" placeholder="Tìm kiếm" value="@ViewData["CurrentFilter"]" required>
+                <span class="input-group-text" id="searchButton" style="cursor: pointer;" onclick="document.getElementById('searchForm').submit();">
+                    <i class="bi bi-search" style="color: black;"></i>
+                </span>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-3 d-flex justify-content-end">
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addNewMovieModal">
+            <i class="bi bi-plus-lg"></i> Thêm mới
+        </a>
+    </div>
+</div>
+
+            <!-- Movie table -->
+            <div class="table-container flex-grow-1 overflow-auto">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="padding-right: 10px;">Tên Phim</th>
+                            <th class="text-center">Danh mục</th>
+                            <th colspan="2" class="text-center">Chỉnh sửa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-center">@item.TenPhim</td>
+                                <td class="text-center">@item.MoTa</td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center">
+                                        <a class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editMovieModal_@item.IDPhim">
+                                            <i class="bi bi-pencil"></i> Sửa
+                                        </a>
+
+                                        
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Movie Modal -->
+    <div class="modal fade" id="addNewMovieModal" tabindex="-1" aria-labelledby="addNewMovieModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-white text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewMovieModalLabel">Thêm Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="movieTitle" class="form-label">Tên Phim</label>
+                            <input type="text" class="form-control" name="TenPhim" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="actorName" class="form-label">Danh mục</label>
+                            <input type="text" class="form-control" name="MoTa" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-primary">Lưu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @foreach (var item in Model)
+    {
+        <a class="" data-bs-toggle="modal" data-bs-target="#editMovieModal_@item.IDPhim">
+        </a>
+
+        <!-- Edit Movie Modal -->
+        <div class="modal fade" id="editMovieModal_@item.IDPhim" tabindex="-1" aria-labelledby="editMovieModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content bg-white text-dark">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editMovieModalLabel">Chỉnh Sửa </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="IDPhim" value="@item.IDPhim">
+                            <div class="mb-3">
+                                <label for="editMovieTitle" class="form-label">Tên Phim</label>
+                                <input type="text" class="form-control" name="TenPhim" value="@item.TenPhim" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editActorName" class="form-label">Danh mục</label>
+                                <input type="text" class="form-control" name="MoTa" value="@item.MoTa" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-primary">Cập Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+
+   
+    <style>
+  @*   edit *@
+        .modal-content {
+            background-color: white; /* White background */
+            color: black; /* Black text color */
+        }
+
+        .modal-header, .modal-footer {
+            border-color: #dee2e6; /* Light border color */
+        }
+     @*    Create *@
+        .modal-content {
+            background-color: white; /* White background */
+            color: black; /* Black text color */
+        }
+
+        .modal-header, .modal-footer {
+            border-color: #dee2e6; /* Light border color */
+        }
+       
+
+
+</style>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+</html>
