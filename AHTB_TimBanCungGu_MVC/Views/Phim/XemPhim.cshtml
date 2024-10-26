@@ -1,0 +1,194 @@
+﻿
+@{
+    ViewData["Title"] = "Xem Phim";
+    var phan = ViewBag.Phan as AHTB_TimBanCungGu_API.Models.Phan;
+    var phimDeCu = ViewBag.PhimDeCu as List<AHTB_TimBanCungGu_API.Models.Phim>;
+}
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        /* Các thay đổi CSS tùy chỉnh */
+        .film-player {
+            width: 100%;
+            height: 500px;
+            background-size: cover;
+            background-position: center;
+            border-radius: .375rem; /* Góc bo tròn */
+        }
+
+        .film-item {
+            max-width: 150px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .film-item img {
+                border-radius: .375rem; /* Góc bo tròn */
+            }
+
+            .film-item:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            }
+
+        h2 {
+            color: #000; /* Đổi màu tiêu đề thành màu đen */
+        }
+
+        .bg-image {
+            background: url('/images/chieu.png') center center no-repeat;
+        }
+
+        .episode-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            max-width: calc(10 * (100px + 10px) - 10px); /* Điều chỉnh chiều rộng cho 10 nút mỗi hàng */
+        }
+
+            .episode-buttons button {
+                background-color: #ff4500;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                color: #fff;
+                border-radius: 5px;
+                font-size: 16px;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+                width: 100px; /* Đặt chiều rộng cố định cho các nút */
+                flex: 0 0 auto; /* Không co giãn nút */
+            }
+
+                .episode-buttons button:hover {
+                    background-color: #e03e00;
+                    transform: scale(1.05); /* Tạo hiệu ứng phóng to khi hover */
+                }
+
+        .comments {
+            margin-top: 40px;
+        }
+
+            .comments h2 {
+                font-size: 24px;
+                margin-bottom: 20px;
+                color: #ff4500;
+            }
+
+        .comment-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #292929;
+            border: 1px solid #444;
+            margin-bottom: 10px;
+        }
+
+            .comment-item img {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                margin-right: 10px;
+            }
+
+            .comment-item p {
+                color: #ccc;
+                margin: 0;
+                line-height: 1.4;
+            }
+
+                .comment-item p strong {
+                    display: block;
+                    color: #1e90ff;
+                    margin-bottom: 5px;
+                }
+        /* Thẻ phim */
+        .film-card {
+            border: none; /* Xóa viền của thẻ card */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .film-card img {
+                border-radius: .375rem; /* Góc bo tròn cho hình ảnh */
+            }
+
+            /* Hiệu ứng hover cho thẻ phim */
+            .film-card:hover {
+                transform: scale(1.05); /* Phóng to thẻ khi hover */
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Hiệu ứng bóng đổ */
+            }
+
+            .film-card .card-body {
+                background-color: #f8f9fa; /* Màu nền cho phần thông tin phim */
+                padding: 1rem; /* Khoảng cách nội dung trong thẻ */
+            }
+
+            .film-card .card-title {
+                font-size: 1rem; /* Kích thước chữ tiêu đề */
+                color: #333; /* Màu chữ tiêu đề */
+                margin-top: .5rem; /* Khoảng cách trên tiêu đề */
+            }
+
+    </style>
+</head>
+<body>
+    <div class="container my-4">
+        <section class="mb-4">
+            <h1>@phan.Phim.TenPhim (Phần @phan.SoPhan)</h1>
+            <div class="film-player bg-image">
+                <iframe id="filmPlayer" src="https://vidsrc.me/embed/tv?imdb=@phan.Phim.SourcePhim&season=@phan.SoPhan&episode=1" style="width: 100%; height: 100%;" frameborder="0" referrerpolicy="origin" allowfullscreen></iframe>
+            </div>
+            <div class="episode-buttons">
+                @for (int i = 1; i <= phan.SoLuongTap; i++)
+                {
+                    <button onclick="doiTap(@i)">Tập @i</button>
+                }
+            </div>
+            <div class="mb-4">
+                <h2>Mô tả</h2>
+                <p>@phan.Phim.MoTa</p>
+            </div>
+        </section>
+
+        <script>
+            function doiTap(soTap) {
+                const sourcePhim = "@phan.Phim.SourcePhim";
+                const soPhan = @phan.SoPhan; 
+                const iframe = document.getElementById('filmPlayer');
+                iframe.src = `https://vidsrc.me/embed/tv?imdb=${sourcePhim}&season=${soPhan}&episode=${soTap}`;
+            }
+        </script>
+
+
+
+        <section class="mb-4">
+            <h2>Phim đề cử</h2>
+            <div class="row">
+                @foreach (var phim in phimDeCu)
+                {
+                    <div class="col-6 col-md-4 col-lg-3 mb-4">
+                        <div class="card film-card">
+                            <img src="/images/@phim.HinhAnh" class="card-img-top" alt="@phim.TenPhim">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">@phim.TenPhim</h5>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+        </section>
+
+     
+    </div>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

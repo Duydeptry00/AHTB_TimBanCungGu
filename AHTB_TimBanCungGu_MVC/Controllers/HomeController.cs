@@ -1,5 +1,7 @@
-﻿using AHTB_TimBanCungGu_MVC.Models;
+﻿using AHTB_TimBanCungGu_API.Data;
+using AHTB_TimBanCungGu_MVC.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,18 +13,25 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly DBAHTBContext _context;
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(DBAHTBContext context, ILogger<HomeController> logger)
         {
+            _context = context;
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
-        }
+            var phimList = await _context.Phim
+                .Include(p => p.TheLoai)  // Bao gồm thông tin của bảng TheLoai
+                .OrderByDescending(p => p.NgayCapNhat) // Sắp xếp phim theo ngày cập nhật mới nhất
+                .Take(6) // Lấy 6 phim mới nhất
+                .ToListAsync(); // Trả về danh sách
 
+            return View(phimList);
+        }
         public IActionResult Privacy()
         {
             return View();
