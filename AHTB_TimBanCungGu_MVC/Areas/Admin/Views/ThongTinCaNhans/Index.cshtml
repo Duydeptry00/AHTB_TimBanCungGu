@@ -1,0 +1,194 @@
+﻿@model IEnumerable<AHTB_TimBanCungGu_API.Models.ThongTinCaNhan>
+
+@{
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
+}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHTB Cinema Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/style.css">
+    <style>
+        .text-pink {
+            color: #ff69b4; /* Màu hồng */
+        }
+
+        .btn {
+            border: none;
+            font-size: 1.2rem;
+        }
+
+        .btn-danger {
+            background-color: #dc3545; /* Màu đỏ */
+        }
+
+        .btn-success {
+            background-color: #28a745; /* Màu xanh lá cây */
+        }
+
+            .btn-danger:hover, .btn-success:hover {
+                opacity: 0.8;
+            }
+
+    </style>
+</head>
+
+<body>
+    <div class="d-flex flex-column min-vh-100">
+        <!-- Search bar - Căn giữa và phía trên bảng -->
+        <div class="d-flex justify-content-center align-items-center my-3">
+            <div class="col-md-6">
+                <form method="get" asp-action="Search" class="search-form">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="searchString" placeholder="Tìm kiếm..." value="@ViewData["CurrentFilter"]" />
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- User info table với icon giới tính và premium -->
+        <div class="table-container flex-grow-1 overflow-auto px-5">
+            <table class="table table-dark table-hover table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Họ Tên</th>
+                        <th style="min-width: 100px;">Giới Tính</th>
+                        <th>Ngày Sinh</th>
+                        <th>SĐT</th>
+                        <th>Premium</th>
+                        <th>Ngày Tạo</th>
+                        <th>Trạng Thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.User.UserName</td>
+                            <td>@item.HoTen</td>
+                            <td>
+                                @if (item.GioiTinh == "Nam")
+                                {
+                                    <i class="bi bi-gender-male text-primary"></i>
+                                }
+                                else if (item.GioiTinh == "Nữ")
+                                {
+                                    <i class="bi bi-gender-female text-pink"></i>
+                                }
+                            </td>
+                            <td>@item.NgaySinh.ToString("dd/MM/yyyy")</td>
+                            <td>@item.SoDienThoai</td>
+                            <td>
+                                @if (item.IsPremium)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                }
+                            </td>
+                            <td>@item.NgayTao.ToString("dd/MM/yyyy")</td>
+                            <td id="status-@item.IDProfile">
+                                @if (item.TrangThai == "Hoạt động")
+                                {
+                                    <span class="text-success"><strong>Hoạt động</strong></span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger"><strong>Không hoạt động</strong></span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn toggle-status" data-id="@item.IDProfile" data-status="@item.TrangThai">
+                                    @if (item.TrangThai == "Hoạt động")
+                                    {
+                                        <i class="bi bi-lock text-danger" title="Khóa"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-unlock text-success" title="Mở khóa"></i>
+                                    }
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS và jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.toggle-status').click(function () {
+                var userId = $(this).data('id');
+                var currentStatus = $(this).data('status');
+                var action = currentStatus === "Hoạt động" ? "khóa" : "mở khóa";
+                var newStatus = currentStatus === "Hoạt động" ? "Không hoạt động" : "Hoạt động";
+
+                Swal.fire({
+                    title: 'Xác nhận',
+                    text: `Bạn có chắc chắn muốn ${action} tài khoản này không?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: currentStatus === "Hoạt động" ? '#dc3545' : '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Xác nhận',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '@Url.Action("ToggleStatus", "ThongTinCaNhans")',
+                            type: 'POST',
+                            data: { id: userId },
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire(
+                                        'Thành công!',
+                                        `Tài khoản đã được ${action}.`,
+                                        'success'
+                                    ).then(() => {
+                                        location.reload(); // Tải lại trang để cập nhật trạng thái
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        'Lỗi!',
+                                        response.message,
+                                        'error'
+                                    );
+                                }
+                            },
+                            error: function () {
+                                Swal.fire(
+                                    'Có lỗi xảy ra!',
+                                    'Xin vui lòng thử lại.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>

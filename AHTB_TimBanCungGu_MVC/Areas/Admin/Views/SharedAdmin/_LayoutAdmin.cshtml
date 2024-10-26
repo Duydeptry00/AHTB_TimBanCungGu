@@ -95,15 +95,12 @@
                 z-index: -1; /* Đặt viền phía sau chữ */
             }
 
-            .navbar-brand:hover::before {
-                border-color: #f39c12; /* Màu viền khi hover */
-            }
         /* Main Content */
         #content-wrapper {
             color: #F31313;
             min-height: 100vh;
             margin-left: 62px;
-/*             margin-top: 70px; /* Đảm bảo nội dung không bị navbar che */ */
+            margin-top: 70px; /* Đảm bảo nội dung không bị navbar che */
             transition: margin-left 0.3s ease, width 0.3s ease;
             width: calc(100% - 70px); /* Chiều rộng của nội dung theo chiều rộng sidebar */
         }
@@ -132,7 +129,7 @@
 
         /* Show the text and expand the button on hover */
         #logout-btn:hover {
-            width: 94px; /* Adjust this value based on the width needed for text */
+            width: 124px; /* Adjust this value based on the width needed for text */
         }
 
             #logout-btn:hover .logout-text {
@@ -152,7 +149,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Anh Hùng Tranh Bá</a>
+            <a class="navbar-brand" style="color:red"="#">Anh Hùng Tranh Bá</a>
             <button class="navbar-toggler" type="button">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -161,7 +158,7 @@
                     <li class="nav-item">
                         <a class="btn btn-danger" href="@Url.Action("Logout", "Account")" id="logout-btn">
                             <i class="fas fa-sign-out-alt"></i>
-                            <span class="logout-text">Logout</span>
+                            <span class="logout-text">Đăng xuất</span>
                         </a>
                     </li>
                 </ul>
@@ -182,15 +179,15 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="QuanLyNguoiDungs" asp-action="Index">
-                            <i class="fas fa-user-friends"></i>
-                            <span>Quản lý người dùng</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="ThongTinCaNhans" asp-action="Index">
                             <i class="fas fa-info-circle"></i>
                             <span>Thông tin người dùng</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="Admin" asp-controller="DoanhThus" asp-action="Index">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Doanh thu</span>
                         </a>
                     </li>
                 </ul>
@@ -209,7 +206,7 @@
         const contentWrapper = document.getElementById('content-wrapper');
 
         sidebar.addEventListener('mouseenter', function () {
-            contentWrapper.style.marginLeft = '270px'; // Điều chỉnh lề khi sidebar mở rộng
+            contentWrapper.style.marginLeft = '250px'; // Điều chỉnh lề khi sidebar mở rộng
             contentWrapper.style.width = 'calc(100% - 250px)'; // Giảm chiều rộng nội dung
         });
 
@@ -220,35 +217,8 @@
     </script>
 
     <!-- Bootstrap 5 JS, Popper.js, and FontAwesome -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+@*     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-8pz1uopgHzZG7HEr5jJ8vhJahhGJ8smxN2k4y+5eO9NE9+p7dP4J+1p0I5" crossorigin="anonymous">
-    </script>
-    @*     <script>
-    // Chặn phím F12 (Developer Tools)
-    document.addEventListener('keydown', function (event) {
-    if (event.key === "F12" || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
-    event.preventDefault();
-    }
-    });
-
-    // Chặn chuột phải
-    document.addEventListener('contextmenu', function (event) {
-    event.preventDefault();
-    });
-
-    // Chặn Ctrl+Shift+I (Mở Developer Tools)
-    document.addEventListener('keydown', function (event) {
-    if (event.ctrlKey && event.shiftKey && event.key === 'I') {
-    event.preventDefault();
-    }
-    });
-
-    // Chặn Ctrl+U (Xem mã nguồn trang)
-    document.addEventListener('keydown', function (event) {
-    if (event.ctrlKey && event.key === 'u') {
-    event.preventDefault();
-    }
-    });
     </script> *@
 
 </body>
