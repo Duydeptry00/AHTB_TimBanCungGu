@@ -1,4 +1,4 @@
-using AHTB_TimBanCungGu_API.Data;
+﻿using AHTB_TimBanCungGu_API.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -26,15 +26,15 @@ namespace AHTB_TimBanCungGu_MVC
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDistributedMemoryCache();
-            // Th�m d?ch v? session
+            // Thêm d?ch v? session
             services.AddSession(options =>
             {
                 // Thi?t l?p th?i gian t?n t?i c?a session
-                options.IdleTimeout = TimeSpan.FromMinutes(30); // Th?i gian session s? h?t h?n sau 30 ph�t kh�ng ho?t ??ng
-                options.Cookie.HttpOnly = true; // Ch? truy c?p ???c session qua HTTP, b?o m?t h?n b?ng c�ch ng?n JavaScript truy c?p cookie
-                options.Cookie.IsEssential = true; // Cookie n�y l� c?n thi?t v� kh�ng b? ?nh h??ng b?i c�c t�y ch?n v? quy?n ri�ng t?
+                options.IdleTimeout = TimeSpan.FromMinutes(30); // Th?i gian session s? h?t h?n sau 30 phút không ho?t ??ng
+                options.Cookie.HttpOnly = true; // Ch? truy c?p ???c session qua HTTP, b?o m?t h?n b?ng cách ng?n JavaScript truy c?p cookie
+                options.Cookie.IsEssential = true; // Cookie này là c?n thi?t và không b? ?nh h??ng b?i các tùy ch?n v? quy?n riêng t?
             });
-            services.AddHttpClient(); // ??ng k� HttpClient
+            services.AddHttpClient(); // ??ng ký HttpClient
             services.AddControllersWithViews();
             services.AddDbContext<DBAHTBContext>(options =>
         options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
@@ -67,6 +67,13 @@ namespace AHTB_TimBanCungGu_MVC
 
             app.UseEndpoints(endpoints =>
             {
+
+                // Route cho Area, cho phép truy cập bằng cách sử dụng tham số area
+                endpoints.MapControllerRoute(
+                    name: "areas",
+                    pattern: "{area:exists}/{controller}/{action}/{id?}"); // Sử dụng pattern cho Area
+
+                // Route mặc định
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
