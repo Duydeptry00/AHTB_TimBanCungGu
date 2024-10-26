@@ -1,0 +1,93 @@
+﻿
+.navbar-icons {
+    display: flex;
+    align-items: center;
+}
+
+    .navbar-icons i {
+        font-size: 38px;
+        color: white;
+    }
+
+.bell-icon {
+    color: orange;
+}
+    
+.person-icon {
+    color: white;
+}
+
+.search-bar {
+    margin: 20px 0;
+    display: flex;
+    justify-content: 700px; /* Canh phải */
+    width: 33.33%; /* Chiếm 1/3 chiều rộng */
+    position: absolute; /* Tùy chọn: nếu bạn cần định vị cụ thể */
+    right: 0; /* Tùy chọn: điều chỉnh theo bố cục của bạn */
+}
+
+    /* Input của thanh tìm kiếm */
+    .search-bar input {
+        width: 100%; /* Chiếm toàn bộ chiều rộng của container */
+        max-width: 450px; /* Tùy chọn: Giới hạn chiều rộng nếu cần */
+        padding: 10px;
+        border-radius: 5px;
+        border: none;
+        background-color: #ffffff;
+        color: rgb(0, 0, 0);
+    }
+
+.movie-detail {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+}
+
+    .movie-detail img {
+        width: 200px;
+        border-radius: 10px;
+        margin-right: 20px;
+    }
+
+.movie-info {
+    max-width: 600px;
+}
+
+.btn-watch {
+    background-color: #FF4500;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.recommended-section {
+    padding: 20px;
+}
+
+    .recommended-section h2 {
+        margin-bottom: 20px;
+    }
+
+.recommended-movies {
+    display: flex;
+    justify-content: space-around;
+}
+
+    .recommended-movies img {
+        width: 150px;
+        border-radius: 10px;
+    }
+
+    .recommended-movies p {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+.rating-stars i {
+    color: #FFD700; /* Màu vàng cho ngôi sao */
+    font-size: 1.2rem; /* Điều chỉnh kích thước ngôi sao */
+}
+

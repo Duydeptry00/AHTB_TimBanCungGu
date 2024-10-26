@@ -1,0 +1,104 @@
+﻿@model AHTB_TimBanCungGu_API.Models.Phim
+
+@{
+    ViewData["Title"] = "Chi Tiết Phim";
+}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/styles.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<style>
+    /* Thẻ phim */
+    .film-card {
+        border: none; /* Xóa viền của thẻ card */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .film-card img {
+            border-radius: .375rem; /* Góc bo tròn cho hình ảnh */
+        }
+
+        /* Hiệu ứng hover cho thẻ phim */
+        .film-card:hover {
+            transform: scale(1.05); /* Phóng to thẻ khi hover */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Hiệu ứng bóng đổ */
+        }
+            
+        .film-card .card-body {
+            background-color: #f8f9fa; /* Màu nền cho phần thông tin phim */
+            padding: 1rem; /* Khoảng cách nội dung trong thẻ */
+        }
+
+        .film-card .card-title {
+            font-size: 1rem; /* Kích thước chữ tiêu đề */
+            color: #333; /* Màu chữ tiêu đề */
+            margin-top: .5rem; /* Khoảng cách trên tiêu đề */
+        }
+
+</style>
+<body>
+    <div class="container">
+        <div class="col-sm-6 search-bar">
+            <input class="form-control" type="search" placeholder="Tìm kiếm" aria-label="Search">
+        </div>
+
+        <div class="com-sm-6 movie-detail">
+            <img src="/images/@Model.HinhAnh" alt="Movie Poster" class="img-fluid">
+            <div class="movie-info">
+                <h2>@Model.TenPhim</h2>
+                <p>
+                    @if (ViewBag.DanhSachPhan != null)
+                    {
+                        foreach (var phan in ViewBag.DanhSachPhan)
+                        {
+                            <h4>Phần @phan.SoPhan (Số tập: @phan.SoLuongTap)</h4>
+                          
+                        }
+                    }
+                    Diễn Viên: @Model.DienVien<br>
+                    Ngày phát hành: @Model.NgayPhatHanh.Year<br>
+                    Mô tả: @Model.MoTa<br />
+                    Dạng Phim: <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
+                    Đánh giá: <b>@Model.DanhGia/10</b>
+                </p>
+                @foreach (var phan in ViewBag.DanhSachPhan)
+                {
+
+                    <button class="btn-watch">
+                        <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan })" style="text-decoration: none; color: white;">Phần @phan.SoPhan</a>
+                    </button>
+                }
+                <button class="btn-watch">Yêu Thích</button>
+            </div>
+        </div>
+
+        <div class="recommended-section">
+            <h2>Phim cùng thể loại</h2>
+            <div class="row">
+                @foreach (var phim in ViewBag.PhimDeCu)
+                {
+                    <div class="col-6 col-md-4 col-lg-3 mb-4">
+                        <div class="card film-card">
+                            <img src="/images/@phim.HinhAnh" class="card-img-top" alt="@phim.TenPhim">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">@phim.TenPhim</h5>
+                                <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="btn btn-secondary">Chi Tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
+</body>
+
+

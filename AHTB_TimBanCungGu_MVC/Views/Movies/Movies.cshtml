@@ -1,0 +1,190 @@
+﻿@model IEnumerable<dynamic>
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Phim</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #121212, #212529);
+            color: #f8f9fa;
+        }
+
+        .card-hover {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease-in-out;
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+
+            .card-hover img {
+                width: 100%;
+                height: 350px;
+                object-fit: cover;
+                transition: filter 0.3s ease-in-out;
+            }
+
+            .card-hover:hover img {
+                filter: brightness(80%);
+            }
+
+            .card-hover:hover {
+                transform: scale(1.05);
+            }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .btn-xem-ngay {
+            position: absolute;
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .card-hover:hover .btn-xem-ngay {
+            opacity: 1;
+        }
+
+        .card-hover .btn-xem-ngay i {
+            margin-right: 8px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            color: #f8f9fa;
+        }
+
+        .pagination {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <input type="text" id="search-input" class="form-control" placeholder="Tìm kiếm phim..." value="@ViewBag.Search">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-secondary" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-funnel-fill"></i> Lọc
+                </button>
+                <ul class="dropdown-menu" id="filter-options">
+                    <li><a class="dropdown-item @(@ViewBag.Genre == "Tất cả" ? "active" : "")" href="#" onclick="filterMovies('Tất cả')">Tất cả</a></li>
+                    <li><a class="dropdown-item @(@ViewBag.Genre == "Hành động" ? "active" : "")" href="#" onclick="filterMovies('Hành động')">Hành động</a></li>
+                    <li><a class="dropdown-item @(@ViewBag.Genre == "Lãng mạn" ? "active" : "")" href="#" onclick="filterMovies('Lãng mạn')">Lãng mạn</a></li>
+                    <li><a class="dropdown-item @(@ViewBag.Genre == "Drama" ? "active" : "")" href="#" onclick="filterMovies('Drama')">Drama</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row" id="movie-container">
+            @if (ViewBag.NoResults == true)
+            {
+                <div class="col-12 no-results">
+                    <p>Không tìm thấy phim nào.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var movie in Model)
+                {
+                    <div class="col-md-3 mb-4">
+                        <div class="card-hover">
+                            <img src="/images/@movie.HinhAnh" alt="@movie.TenPhim">
+                            <div class="card-body">
+                                <h5 class="card-title">@movie.TenPhim</h5>
+                            </div>
+                            <button class="btn-xem-ngay"><i class="bi bi-play-fill"></i> Xem Ngay</button>
+                        </div>
+                    </div>
+                }
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-center" id="pagination-container">
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="#" data-page="@i">@i</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+
+        </div>
+
+
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            function fetchMovies(page = 1, genre = 'Tất cả', search = '') {
+                $.ajax({
+                    url: '@Url.Action("Movies", "Movies")',
+                    type: 'GET',
+                    data: {
+                        page: page,
+                        genre: genre,
+                        search: search
+                    },
+                    success: function (data) {
+                        // Cập nhật danh sách phim
+                        $('#movie-container').html($(data).find('#movie-container').html());
+                        // Cập nhật phân trang
+                        $('#pagination-container').html($(data).find('#pagination-container').html());
+                    }
+                });
+            }
+
+            // Xử lý sự kiện click để phân trang
+            $(document).on('click', '.page-link', function (e) {
+                e.preventDefault();
+                const page = $(this).data('page');
+                fetchMovies(page, $('#filter-options .dropdown-item.active').text(), $('#search-input').val());
+            });
+
+            // Xử lý sự kiện thay đổi khi tìm kiếm phim
+            $('#search-input').on('input', function () {
+                fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
+            });
+
+            // Xử lý sự kiện chọn lọc phim theo thể loại
+            $('#filter-options').on('click', '.dropdown-item', function () {
+                const genre = $(this).text();
+                $('#filter-options .dropdown-item').removeClass('active');
+                $(this).addClass('active');
+                fetchMovies(1, genre, $('#search-input').val());
+            });
+
+            // Mặc định hiển thị tất cả các phim khi trang được tải
+            fetchMovies();
+        });
+    </script>
+</body>
+</html>
