@@ -1,0 +1,123 @@
+﻿/* General page background */
+body, html {
+    background-color: #000; /* Black background for the entire page */
+    color: #ffffff; /* Default text color */
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #513b3b; /* Black background for the sidebar */
+    border-right: 2px solid #333; /* Right border for separation */
+    height: 100vh; /* Ensure it takes full viewport height */
+}
+
+.content {
+    background-color: #000; /* Black background for content area */
+    color: #ffffff; /* White text color */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background-color: #000; /* Black background for the header */
+    border-bottom: 2px solid #333; /* Border separating header from content */
+}
+
+.button-row {
+    margin-bottom: 10px; /* Space between buttons */
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+    color: #fff;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border: none;
+    color: #fff;
+    float: right;
+}
+
+.table-dark {
+    background-color: #343a40;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #495057;
+}
+
+/* Image styles */
+.img-thumbnail {
+    width: 50px;
+    height: auto;
+}
+
+/* Table container */
+.table-container {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* Header adjustment */
+.header .d-flex {
+    flex-grow: 1;
+    align-items: center;
+}
+
+.form-control {
+    max-width: 400px; /* Optional: Limit the width of the search bar */
+}
+
+.btn-success {
+    height: 38px; /* Match the height of the search bar */
+}
+/* Thêm mới button */
+.btn-success {
+    margin-left: auto;
+    background-color: #28a745; /* Green background */
+    color: #ffffff; /* White text */
+    border: none;
+    padding: 8px 16px; /* Padding for the button */
+    font-size: 16px; /* Font size */
+    border-radius: 4px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Optional: add shadow for a 3D effect */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+    /* Thêm mới button hover effect */
+    .btn-success:hover {
+        background-color: #218838; /* Darker green on hover */
+    }
+
+/* Tìm kiếm (Search bar) */
+.form-control {
+    max-width: 400px; /* Limit the width of the search bar */
+    border-radius: 4px; /* Rounded corners */
+    border: 1px solid #ced4da; /* Border color */
+    padding: 8px 12px; /* Padding inside the search bar */
+    background-color: #ffffff; /* White background */
+    color: #495057; /* Dark text color */
+    font-size: 16px; /* Font size */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Optional: add shadow for a 3D effect */
+}
+
+/* Ensure the "Thêm mới" button and search bar are aligned */
+.header .d-flex {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: space-between; /* Space between "Thêm mới" button and search bar */
+}

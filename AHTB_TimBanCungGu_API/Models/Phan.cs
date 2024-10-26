@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System;
 
 namespace AHTB_TimBanCungGu_API.Models
 {
@@ -9,7 +10,7 @@ namespace AHTB_TimBanCungGu_API.Models
         [Key]
         public string IDPhan { get; set; }
         public int SoPhan { get; set; }
-        public string NgayCongChieu { get; set; }
+        public DateTime NgayCongChieu { get; set; }
         public int SoLuongTap { get; set; }
         [ForeignKey("Phim")]
         public string PhimID { get; set; }

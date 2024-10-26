@@ -1,0 +1,35 @@
+﻿.header {
+    background-color: #000; /* Black background for the header */
+    border-bottom: 2px solid #333; /* Border separating header from content */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px; /* Add some padding */
+}
+
+    .header .form-control {
+        max-width: 400px;
+        border-radius: 4px;
+        border: 1px solid #ced4da;
+        padding: 8px 12px;
+        background-color: #ffffff;
+        color: #495057;
+        font-size: 16px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .header .btn-success {
+        /* Đẩy nút "Thêm mới" sang phải */
+        background-color: #28a745;
+        color: #ffffff;
+        border: none;
+        padding: 8px 16px;
+        font-size: 16px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+    }
+
+        .header .btn-success:hover {
+            background-color: #218838;
+        }
