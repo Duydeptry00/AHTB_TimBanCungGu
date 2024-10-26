@@ -22,6 +22,14 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         {
             return View();
         }
+        public IActionResult GioiThieu()
+        {
+            return View();
+        }
+        public IActionResult Test()
+        {
+            return View();
+        }
 
         public IActionResult Privacy()
         {
