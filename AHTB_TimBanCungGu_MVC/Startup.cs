@@ -1,4 +1,5 @@
 ﻿using AHTB_TimBanCungGu_API.Data;
+using AHTB_TimBanCungGu_MVC.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ namespace AHTB_TimBanCungGu_MVC
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IVnPayService, VnPayService>();
             services.AddDistributedMemoryCache();
             // Thêm d?ch v? session
             services.AddSession(options =>

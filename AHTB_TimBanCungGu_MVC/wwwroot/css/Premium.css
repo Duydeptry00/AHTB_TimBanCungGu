@@ -1,5 +1,4 @@
-﻿
-body {
+﻿body {
     background-color: #000;
     color: #fff;
     margin: 0;
@@ -12,42 +11,23 @@ body {
     background-position: center;
     color: white;
     text-align: center;
-    padding: 50px 20px;
     position: relative;
     overflow: hidden;
 }
 
     .hero-section h1 {
         font-size: 3rem;
-        color: #ff4757;
+        color: white; /* Màu đỏ */
         margin: 0;
         animation: fadeIn 2s ease-in-out;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Thêm hiệu ứng bóng chữ */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     .hero-section p {
         font-size: 1.2rem;
         margin-top: 20px;
         color: #ddd;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); /* Thêm hiệu ứng bóng chữ */
-    }
-
-.marquee {
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    font-size: 1.2rem;
-    color: #ff4757;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* Thêm hiệu ứng bóng chữ */
-}
-
-    .marquee p {
-        display: inline-block;
-        padding-left: 100%;
-        animation: marquee 15s linear infinite;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     }
 
 .card-container {
@@ -76,7 +56,7 @@ body {
     .card h3 {
         font-size: 1.8rem;
         margin-bottom: 15px;
-        color: #ff4757;
+        color: white; /* Màu đỏ */
         animation: textHighlight 1.5s ease-in-out;
     }
 
@@ -87,7 +67,7 @@ body {
     }
 
     .card .btn {
-        background-color: #ff4757;
+        background-color: #c0392b; /* Màu đỏ */
         color: white;
         padding: 15px 25px;
         border: none;
@@ -100,46 +80,12 @@ body {
     }
 
         .card .btn:hover {
-            background-color: #ff6b81;
+            background-color: #ff6b81; /* Màu sáng hơn khi hover */
             transform: scale(1.05);
         }
 
         .card .btn i {
             margin-right: 8px;
-        }
-
-.comparison {
-    display: flex;
-    margin-top: 20px;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-    .comparison .column {
-        width: 50%;
-        padding: 10px;
-        border-radius: 5px;
-        color: #fff;
-    }
-
-        .comparison .column.free {
-            background-color: #444;
-        }
-
-        .comparison .column.premium {
-            background-color: #555;
-        }
-
-        .comparison .column h4 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: #ff4757;
-        }
-
-        .comparison .column p {
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            color: #ddd;
         }
 
 .footer-section {
@@ -156,33 +102,26 @@ body {
     .footer-section h2 {
         font-size: 2rem;
         margin-bottom: 20px;
-        color: #ff4757;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Thêm hiệu ứng bóng chữ */
+        color: white; /* Màu đỏ */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     .footer-section p {
         font-size: 1.2rem;
         color: #ddd;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); /* Thêm hiệu ứng bóng chữ */
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
     }
+.blink {
+    animation: blink 1s infinite;
+}
 
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
+@keyframes blink {
+    0%, 100% {
         opacity: 1;
     }
-}
 
-@keyframes textHighlight {
-    from {
-        color: #fff;
-    }
-
-    to {
-        color: #ff4757;
+    50% {
+        opacity: 0;
     }
 }
+

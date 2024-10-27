@@ -1,0 +1,35 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Thành Công</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body {
+            background: url('../Image/Background/backgrounddangnhap.jpg') no-repeat center center fixed;
+            background-size: cover; /* Đảm bảo ảnh nền bao phủ toàn bộ màn hình */
+            color: white; /* Màu chữ */
+            text-align: center; /* Canh giữa chữ */
+            padding: 20px; /* Khoảng cách cho chữ */
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                showConfirmButton: true,
+                confirmButtonText: 'Đồng ý',
+                timer: 3000 // Tự động đóng sau 3 giây
+            }).then(() => {
+                window.location.href = '@Url.Action("Premium", "ThanhToan")'; // Chuyển hướng về trang Premium
+            });
+        </script>
+</body>
+</html>
