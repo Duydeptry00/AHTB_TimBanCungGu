@@ -1,4 +1,5 @@
-﻿using AHTB_TimBanCungGu_MVC.Models; 
+﻿using AHTB_TimBanCungGu_API.Models; 
+using AHTB_TimBanCungGu_API.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using AHTB_TimBanCungGu_MVC.Helpers;
 using AHTB_TimBanCungGu_MVC.Services;
@@ -88,6 +89,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 _context.HoaDon.Add(hoaDon); // Đảm bảo đây là DbSet từ DBAHTBContext cho MVC
                 _context.SaveChanges();
+                return RedirectToAction("PaymentSuccess");
             }
             catch (Exception ex)
             {
@@ -95,7 +97,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("PaymentFail");
             }
 
-            return RedirectToAction("PaymentSuccess");
         }
-        }
+    }
 }

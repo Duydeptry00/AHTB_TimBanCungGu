@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AHTB_TimBanCungGu_MVC.Models
+namespace AHTB_TimBanCungGu_API.ViewModels
 {
     public class VnPaymentResponseModel
     {
