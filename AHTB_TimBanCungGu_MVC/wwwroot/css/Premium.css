@@ -32,9 +32,10 @@
 
 .card-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    margin: 40px 20px;
+    grid-template-columns: repeat(3, 1fr); /* 3 thẻ phân bố đều nhau */
+    gap: 20px; /* Khoảng cách giữa các thẻ */
+    margin: 40px 0; /* Giảm khoảng trống phía trên và dưới */
+    padding: 0 20px; /* Tạo khoảng cách nhỏ hai bên để không đụng mép màn hình */
 }
 
 .card {
@@ -46,6 +47,7 @@
     transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
     color: #fff;
 }
+
 
     .card:hover {
         transform: scale(1.05);
@@ -90,7 +92,6 @@
 
 .footer-section {
     text-align: center;
-    padding: 50px 20px;
     background-image: url('backgrounddangnhap.jpg');
     background-size: cover;
     background-position: center;

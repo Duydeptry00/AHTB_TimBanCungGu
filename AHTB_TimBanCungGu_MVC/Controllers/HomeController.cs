@@ -1,5 +1,6 @@
 ﻿using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_MVC.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string username)
         {
             var phimList = await _context.Phim
                 .Include(p => p.TheLoai)  // Bao gồm thông tin của bảng TheLoai

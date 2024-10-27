@@ -38,6 +38,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    HttpContext.Session.SetString("TempUserName", userName);
                     ViewBag.ShowSuccessModal = true;
                     return View();
                     //return RedirectToAction("Index", "Home");

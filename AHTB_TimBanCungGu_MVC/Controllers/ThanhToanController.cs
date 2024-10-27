@@ -6,6 +6,8 @@ using AHTB_TimBanCungGu_MVC.Services;
 using System;
 using Microsoft.Extensions.Logging;
 using AHTB_TimBanCungGu_API.Data;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -29,8 +31,15 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         }
 
         [HttpPost]
-        public IActionResult Premium(int GiaGoi, string payment)
+        public IActionResult Premium(int GiaGoi, int SoThang, string payment)
         {
+            // Lưu số tiền và số tháng vào session trước khi xử lý thanh toán
+            var amountBytes = System.Text.Encoding.UTF8.GetBytes(GiaGoi.ToString());
+            HttpContext.Session.Set("Amount", amountBytes);
+
+            var soThangBytes = System.Text.Encoding.UTF8.GetBytes(SoThang.ToString());
+            HttpContext.Session.Set("SoThang", soThangBytes);
+
             if (payment == "VNPay")
             {
                 var vnPayModel = new VnPaymentRequestModel
@@ -44,6 +53,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
 
         public IActionResult PaymentSuccess()
         {
@@ -65,7 +75,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("PaymentFail");
             }
 
-            // Lấy số tiền từ phiên
+            // Lấy số tiền từ session
             if (!HttpContext.Session.TryGetValue("Amount", out var amountBytes) ||
                 !double.TryParse(System.Text.Encoding.UTF8.GetString(amountBytes), out var amount))
             {
@@ -73,11 +83,22 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("PaymentFail");
             }
 
-            var hoaDon = new HoaDon // Đảm bảo đây là mô hình từ AHTB_TimBanCungGu_MVC.Models
+            // Lấy số tháng từ session
+            if (!HttpContext.Session.TryGetValue("SoThang", out var soThangBytes) ||
+                !int.TryParse(System.Text.Encoding.UTF8.GetString(soThangBytes), out var soThang))
             {
-                NguoiMua = User.Identity.Name,
-                GoiPremium = "Tên gói Premium",
-                NgayHetHan = DateTime.Now.AddMonths(1),
+                TempData["Message"] = "Không tìm thấy thông tin số tháng.";
+                return RedirectToAction("PaymentFail");
+            }
+            var user = _context.Users.FirstOrDefault(p => p.UserName == HttpContext.Session.GetString("TempUserName"));
+            string userID = user.UsID;
+
+            // Tạo mới hóa đơn với thông tin gói Premium và thời gian hết hạn dựa trên số tháng
+            var hoaDon = new HoaDon
+            {
+                NguoiMua = userID,
+                GoiPremium = $"Gói Premium {soThang} tháng",
+                NgayHetHan = DateTime.Now.AddMonths(soThang), // Tính ngày hết hạn
                 TongTien = amount,
                 PhuongThucThanhToan = "VNPay",
                 TrangThai = "Đã thanh toán",
@@ -87,8 +108,12 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             // Lưu hóa đơn vào database...
             try
             {
-                _context.HoaDon.Add(hoaDon); // Đảm bảo đây là DbSet từ DBAHTBContext cho MVC
+                _context.HoaDon.Add(hoaDon);
                 _context.SaveChanges();
+                var ttcn = _context.ThongTinCN.FirstOrDefault(p => p.UsID == userID);
+
+                ttcn.IsPremium = true;
+              _context.SaveChangesAsync();
                 return RedirectToAction("PaymentSuccess");
             }
             catch (Exception ex)
@@ -96,7 +121,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 _logger.LogError($"Lỗi khi lưu hóa đơn: {ex.Message}");
                 return RedirectToAction("PaymentFail");
             }
-
         }
+
     }
 }
