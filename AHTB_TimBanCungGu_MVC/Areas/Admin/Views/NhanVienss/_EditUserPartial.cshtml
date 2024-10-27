@@ -1,0 +1,33 @@
+﻿@model AHTB_TimBanCungGu_API.ViewModels.NhanVienVM
+
+<div class="modal-header">
+    <h5 class="modal-title" id="editModalLabel">Chỉnh Sửa Người Dùng</h5>
+    <button type="button" class="btn-close btn-danger" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <form asp-action="Edit" method="post" id="editForm">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="IdNhanVien" />
+        
+        <div class="form-group mb-3">
+            <label asp-for="UserName" class="form-label">Tên Tài Khoản</label>
+            <input asp-for="UserName" class="form-control" />
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="TrangThai" class="form-label">Trạng Thái</label>
+            <select asp-for="TrangThai" class="form-control">
+                <option value="Hoạt Động">Hoạt Động</option>
+                <option value="Ngừng Hoạt Động">Ngừng Hoạt Động</option>
+                <option value="Đình Chỉ">Đình Chỉ</option>
+            </select>
+            <span asp-validation-for="TrangThai" class="text-danger"></span>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đóng</button>
+            <input type="submit" value="Lưu" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
