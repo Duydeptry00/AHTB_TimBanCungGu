@@ -1,0 +1,162 @@
+﻿@model IEnumerable<AHTB_TimBanCungGu_API.ViewModels.NhanVienVM>
+
+<h1>Quản Lý Nhân Viên</h1>
+<p class="text-end mb-3">
+    <button class="btn btn-success" onclick="loadCreateUser()">
+        <i class="fas fa-plus"></i> Thêm mới
+    </button>
+</p>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<table class="table text-light">
+    <thead>
+        <tr>
+            <th><i class="fas fa-user"></i> Tên Tài Khoản</th>
+            <th><i class="fas fa-envelope"></i> Email</th>
+
+            <th><i class="fas fa-user-cog"></i> Quyền</th>
+            <th><i class="fas fa-info-circle"></i> Trạng Thái</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.UserName</td>
+                <td>@item.Email</td>
+                <td>@item.UserName</td>
+                <td>
+                    @if (item.TrangThai == "Hoạt Động")
+                    {
+                        <span class="badge bg-success">@item.TrangThai</span>
+                    }
+                    else if (item.TrangThai == "Đình Chỉ")
+                    {
+                        <span class="badge bg-warning">@item.TrangThai</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">@item.TrangThai</span>
+                    }
+                </td>
+                <td>
+                    <div class="d-flex">
+                        <button class="btn btn-primary me-2" onclick="loadEditUser('@item.IdNhanVien')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <a asp-action="AssignRoles" asp-route-id="@item.IdNhanVien" class="btn btn-secondary me-2">
+                            <i class="fas fa-user-cog"></i>
+                        </a>
+                        <form asp-action="DeleteConfirmed" asp-route-id="@item.IdNhanVien" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa không?');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" id="editModalContent">
+            <!-- Nội dung sẽ được tải vào đây -->
+        </div>
+    </div>
+</div>
+
+<!-- Thêm thư viện jQuery và Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function loadEditUser(userId) {
+        if (!userId) {
+            alert('User ID không hợp lệ. Vui lòng chọn một người dùng để chỉnh sửa.');
+            return; // Ngừng thực hiện hàm nếu userId rỗng
+        }
+        $.ajax({
+            url: '@Url.Action("Edit", "NhanVienss")/' + userId,
+            type: 'GET',
+            success: function (data) {
+                $('#editModalContent').html(data); // Tải nội dung partial view vào modal
+                const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                editModal.show(); // Hiện modal
+            },
+            error: function () {
+                alert('Lỗi khi tải form chỉnh sửa.');
+            }
+        });
+    }
+
+    function loadCreateUser() {
+        $.ajax({
+            url: '@Url.Action("Create", "NhanVienss")', // Đảm bảo đường dẫn đến hành động Create
+            type: 'GET',
+            success: function (data) {
+                $('#editModalContent').html(data); // Tải nội dung partial view vào modal
+                const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                editModal.show(); // Hiện modal
+            },
+            error: function () {
+                alert('Lỗi khi tải form thêm mới.');
+            }
+        });
+    }
+    function submitCreateEditForm() {
+        const form = $('#createEditForm');
+        const url = form.attr('action');
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: form.serialize(),
+            success: function () {
+                alert('Thao tác thành công!');
+                location.reload();
+            },
+            error: function (xhr) {
+                alert(`Có lỗi xảy ra: ${xhr.responseText}`);
+            }
+        });
+    }
+    function deleteUser(userId) {
+        if (!userId) {
+            alert('User ID không hợp lệ. Vui lòng chọn một người dùng để xóa.');
+            return;
+        }
+        if (confirm('Bạn có chắc chắn muốn xóa không?')) {
+            $.ajax({
+                url: '@Url.Action("DeleteConfirmed", "NhanVienss")/' + userId,
+                type: 'POST',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() // Thêm token CSRF vào header
+                },
+                success: function () {
+                    location.reload(); // Làm mới trang nếu thành công
+                },
+                error: function (xhr) {
+                    alert(`Có lỗi xảy ra khi xóa nhân viên: ${xhr.responseText}`);
+                }
+            });
+        }
+    }
+
+
+</script>
