@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using AHTB_TimBanCungGu_MVC.Helpers;
-using AHTB_TimBanCungGu_MVC.Models;
+using AHTB_TimBanCungGu_API.ViewModels;
 
 namespace AHTB_TimBanCungGu_MVC.Services
 {
