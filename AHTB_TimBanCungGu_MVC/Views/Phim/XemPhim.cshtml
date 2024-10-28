@@ -51,23 +51,21 @@
             gap: 10px;
             margin-bottom: 20px;
             max-width: calc(10 * (100px + 10px) - 10px); /* Điều chỉnh chiều rộng cho 10 nút mỗi hàng */
-        }
+        
 
             .episode-buttons button {
-                background-color: #ff4500;
+                background-color: #383d41;
                 border: none;
-                padding: 10px 20px;
                 cursor: pointer;
                 color: #fff;
-                border-radius: 5px;
-                font-size: 16px;
+                font-size: 15px;
                 transition: background-color 0.3s ease, transform 0.3s ease;
-                width: 100px; /* Đặt chiều rộng cố định cho các nút */
+                width: 60px; /* Đặt chiều rộng cố định cho các nút */
                 flex: 0 0 auto; /* Không co giãn nút */
             }
 
                 .episode-buttons button:hover {
-                    background-color: #e03e00;
+                    background-color: #383d41;
                     transform: scale(1.05); /* Tạo hiệu ứng phóng to khi hover */
                 }
 
@@ -78,7 +76,7 @@
             .comments h2 {
                 font-size: 24px;
                 margin-bottom: 20px;
-                color: #ff4500;
+                color: #383d41;
             }
 
         .comment-item {
@@ -143,12 +141,12 @@
         <section class="mb-4">
             <h1>@phan.Phim.TenPhim (Phần @phan.SoPhan)</h1>
             <div class="film-player bg-image">
-                <iframe id="filmPlayer" src="https://vidsrc.me/embed/tv?imdb=@phan.Phim.SourcePhim&season=@phan.SoPhan&episode=1" style="width: 100%; height: 100%;" frameborder="0" referrerpolicy="origin" allowfullscreen></iframe>
+                <iframe id="filmPlayer" src="https://vidsrc.me/embed/tv?imdb=@phan.Phim.SourcePhim&season=@phan.SoPhan&episode=0" style="width: 100%; height: 100%;" frameborder="0" referrerpolicy="origin" allowfullscreen></iframe>
             </div>
             <div class="episode-buttons">
                 @for (int i = 1; i <= phan.SoLuongTap; i++)
                 {
-                    <button onclick="doiTap(@i)">Tập @i</button>
+                    <button onclick="doiTap(@i)"> @i</button>
                 }
             </div>
             <div class="mb-4">

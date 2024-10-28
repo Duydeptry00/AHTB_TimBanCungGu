@@ -163,8 +163,8 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<string>("IDPhan")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("NgayCongChieu")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("NgayCongChieu")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PhimID")
                         .HasColumnType("nvarchar(450)");

@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<dynamic>
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -45,7 +46,7 @@
             position: absolute;
             transition: opacity 0.3s ease-in-out;
             opacity: 0;
-            pointer-events: none;
+            pointer-events: none; /* Ngăn chặn click */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -65,11 +66,13 @@
 
         .card-hover:hover .btn-xem-ngay {
             opacity: 1;
+            pointer-events: auto; /* Cho phép click khi hover */
         }
 
         .card-hover .btn-xem-ngay i {
             margin-right: 8px;
         }
+
 
         .card-title {
             font-size: 16px;
@@ -112,11 +115,15 @@
                 {
                     <div class="col-md-3 mb-4">
                         <div class="card-hover">
-                            <img src="/images/@movie.HinhAnh" alt="@movie.TenPhim">
+                            <img src="/images/@movie.HinhAnh" alt="@movie.TenPhim" class="card-img-top">
                             <div class="card-body">
                                 <h5 class="card-title">@movie.TenPhim</h5>
+                                <button class="btn-xem-ngay">
+                                    <a asp-controller="Phim" asp-action="ChiTietPhim" asp-route-id="@movie.IDPhim" style="text-decoration: none; color: white;">
+                                        <i class="bi bi-play-fill"></i> Xem ngay
+                                    </a>
+                                </button>
                             </div>
-                            <button class="btn-xem-ngay"><i class="bi bi-play-fill"></i> Xem Ngay</button>
                         </div>
                     </div>
                 }
@@ -162,29 +169,31 @@
                 });
             }
 
-            // Xử lý sự kiện click để phân trang
+            // Sự kiện click để phân trang
             $(document).on('click', '.page-link', function (e) {
                 e.preventDefault();
                 const page = $(this).data('page');
                 fetchMovies(page, $('#filter-options .dropdown-item.active').text(), $('#search-input').val());
             });
 
-            // Xử lý sự kiện thay đổi khi tìm kiếm phim
+            // Sự kiện thay đổi tìm kiếm phim
             $('#search-input').on('input', function () {
                 fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
             });
 
-            // Xử lý sự kiện chọn lọc phim theo thể loại
-            $('#filter-options').on('click', '.dropdown-item', function () {
+            // Sự kiện chọn lọc phim theo thể loại
+            $('#filter-options').on('click', '.dropdown-item', function (e) {
+                e.preventDefault();
                 const genre = $(this).text();
                 $('#filter-options .dropdown-item').removeClass('active');
                 $(this).addClass('active');
                 fetchMovies(1, genre, $('#search-input').val());
             });
 
-            // Mặc định hiển thị tất cả các phim khi trang được tải
+            // Hiển thị tất cả các phim khi trang được tải
             fetchMovies();
         });
+
     </script>
 </body>
 </html>
