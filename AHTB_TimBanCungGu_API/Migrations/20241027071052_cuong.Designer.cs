@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AHTB_TimBanCungGu_API.Migrations
 {
     [DbContext(typeof(DBAHTBContext))]
-    [Migration("20241025074852_cuongdz")]
-    partial class cuongdz
+    [Migration("20241027071052_cuong")]
+    partial class cuong
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -165,8 +165,8 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<string>("IDPhan")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("NgayCongChieu")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("NgayCongChieu")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PhimID")
                         .HasColumnType("nvarchar(450)");

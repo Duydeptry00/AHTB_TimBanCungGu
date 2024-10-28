@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AHTB_TimBanCungGu_API.Migrations
 {
-    public partial class cuongdz : Migration
+    public partial class cuong : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -284,7 +284,7 @@ namespace AHTB_TimBanCungGu_API.Migrations
                 {
                     IDPhan = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     SoPhan = table.Column<int>(type: "int", nullable: false),
-                    NgayCongChieu = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NgayCongChieu = table.Column<DateTime>(type: "datetime2", nullable: false),
                     SoLuongTap = table.Column<int>(type: "int", nullable: false),
                     PhimID = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },

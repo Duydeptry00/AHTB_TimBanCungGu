@@ -71,7 +71,7 @@
                 {
 
                     <button class="btn-watch">
-                        <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan })" style="text-decoration: none; color: white;">Phần @phan.SoPhan</a>
+                        <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan , soluongTap = phan.SoLuongTap})" style="text-decoration: none; color: white;">Phần @phan.SoPhan</a>
                     </button>
                 }
                 <button class="btn-watch">Yêu Thích</button>

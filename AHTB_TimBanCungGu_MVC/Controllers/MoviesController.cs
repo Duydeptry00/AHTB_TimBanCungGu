@@ -8,6 +8,7 @@ using System;
 using AHTB_TimBanCungGu_API.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -19,7 +20,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         {
             _context = context;
         }
-        public IActionResult Movies(int page = 1, string genre = "Tất cả", string search = "")
+        public  IActionResult Movies(int page = 1, string genre = "Tất cả", string search = "")
         {
             const int itemsPerPage = 8;
 
@@ -40,18 +41,20 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 .Skip((page - 1) * itemsPerPage)
                 .Take(itemsPerPage)
                 .ToList();
-
             ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)itemsPerPage);
+            var chitietphim =  _context.Phim.Include(p => p.Phan).ToList();
+            
             ViewBag.CurrentPage = page;
             ViewBag.Genre = genre;
             ViewBag.Search = search;
+            ViewBag.chitietPhim = chitietphim;
 
             if (!movies.Any())
             {
                 ViewBag.NoResults = true;
             }
             else
-            {
+            {   
                 ViewBag.NoResults = false;
             }
 
