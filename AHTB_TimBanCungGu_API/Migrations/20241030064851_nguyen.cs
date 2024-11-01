@@ -2,7 +2,7 @@
 
 namespace AHTB_TimBanCungGu_API.Migrations
 {
-    public partial class cuong : Migration
+    public partial class nguyen : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

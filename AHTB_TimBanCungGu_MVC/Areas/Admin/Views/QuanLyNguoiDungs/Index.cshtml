@@ -1,0 +1,51 @@
+﻿@model IEnumerable<AHTB_TimBanCungGu_API.Models.QuanLyNguoiDung>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Thao tác</th>
+            <th>Thời gian khóa</th>
+            <th>Thời gian mở</th>
+            <th>Lý do khóa</th>
+            <th>Admin</th>
+            <th>User</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ThaoTac)
+                </td>
+                <td>
+                    @if (item.ThaoTac == "Khóa tài khoản")
+                    {
+                        @Html.DisplayFor(modelItem => item.MocThoiGian)
+                    }
+                    else
+                    {
+                        <span></span> 
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LichSuMoKhoa)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LichSuLyDoKhoa)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AdminUser.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NguoiDungUser.UserName)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

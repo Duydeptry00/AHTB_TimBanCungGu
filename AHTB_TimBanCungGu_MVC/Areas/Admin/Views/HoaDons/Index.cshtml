@@ -1,0 +1,63 @@
+﻿@model IEnumerable<AHTB_TimBanCungGu_API.Models.HoaDon>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
+}
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+               Username
+            </th>
+            <th>
+                Gói
+            </th>
+            <th>
+                Ngày hết hạn
+            </th>
+            <th>
+                Tổng tiền
+            </th>
+            <th>
+                Phương thức thanh toán
+            </th>
+            <th>
+               Trạng thái
+            </th>
+            <th>
+                Ngày thanh toán
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.User.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.GoiPremium)
+            </td>
+            <td>
+                    @item.NgayHetHan.ToString("MM/dd/yyyy")
+            </td>
+            <td>
+                    @String.Format("{0:N0}", item.TongTien) VNĐ
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PhuongThucThanhToan)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TrangThai)
+            </td>
+            <td>
+                    @item.NgayThanhToan.ToString("MM/dd/yyyy")
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

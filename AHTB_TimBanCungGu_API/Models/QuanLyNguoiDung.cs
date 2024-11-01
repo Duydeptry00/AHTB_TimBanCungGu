@@ -17,6 +17,8 @@ namespace AHTB_TimBanCungGu_API.Models
 
         public string ThaoTac { get; set; }
         public DateTime MocThoiGian { get; set; }
+        public DateTime LichSuMoKhoa { get; set; }
+        public string LichSuLyDoKhoa { get; set; }
 
         [InverseProperty("QuanLyNguoiDungAdmin")]
         public virtual User AdminUser { get; set; }
