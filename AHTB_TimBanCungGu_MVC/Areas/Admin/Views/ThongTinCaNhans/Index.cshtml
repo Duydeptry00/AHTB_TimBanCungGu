@@ -145,50 +145,131 @@
                 var action = currentStatus === "Hoạt động" ? "khóa" : "mở khóa";
                 var newStatus = currentStatus === "Hoạt động" ? "Không hoạt động" : "Hoạt động";
 
-                Swal.fire({
-                    title: 'Xác nhận',
-                    text: `Bạn có chắc chắn muốn ${action} tài khoản này không?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: currentStatus === "Hoạt động" ? '#dc3545' : '#28a745',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Xác nhận',
-                    cancelButtonText: 'Hủy'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: '@Url.Action("ToggleStatus", "ThongTinCaNhans")',
-                            type: 'POST',
-                            data: { id: userId },
-                            success: function (response) {
-                                if (response.success) {
+                // Nếu trạng thái là "Hoạt động", hiện popup để chọn thời gian khóa
+                if (currentStatus === "Hoạt động") {
+                    Swal.fire({
+                        title: 'Khóa tài khoản trong bao lâu?',
+                        html:
+                            '<div style="display: flex; align-items: center; margin: 5px 0;">' +
+                            '<label for="days" style="width: 60px;">Ngày</label>' +
+                            '<input id="days" type="number" class="swal2-input" placeholder="0" style="width: 300px;">' +
+                            '</div>' +
+                            '<div style="display: flex; align-items: center; margin: 5px 0;">' +
+                            '<label for="months" style="width: 60px;">Tháng</label>' +
+                            '<input id="months" type="number" class="swal2-input" placeholder="0" style="width: 300px;">' +
+                            '</div>' +
+                            '<div style="display: flex; align-items: center; margin: 5px 0;">' +
+                            '<label for="years" style="width: 60px;">Năm</label>' +
+                            '<input id="years" type="number" class="swal2-input" placeholder="0" style="width: 300px;">' +
+                            '</div>' +
+                            '<div style="display: flex; align-items: center; margin: 5px 0;">' +
+                            '<label for="lyDoKhoa" style="width: 60px;">Lý do</label>' +
+                            '<select id="lyDoKhoa" class="swal2-input" style="width: 300px; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;margin-left: 40px;">' +
+                            '<option value="">Chọn lý do</option>' +
+                            '<option value="Quảng cáo những trang web bất hợp pháp">Quảng cáo những trang web bất hợp pháp</option>' +
+                            '<option value="Đăng tải nội dung phản cảm">Đăng tải nội dung phản cảm</option>' +
+                            '<option value="Ngôn ngữ không phù hợp">Ngôn ngữ không phù hợp</option>' +
+                            '</select>' +
+                            '</div>',
+                        focusConfirm: false,
+                        showCancelButton: true,
+                        confirmButtonText: 'Xác nhận',
+                        cancelButtonText: 'Hủy',
+                        preConfirm: () => {
+                            const days = document.getElementById('days').value || 0;
+                            const months = document.getElementById('months').value || 0;
+                            const years = document.getElementById('years').value || 0;
+                            const lyDoKhoa = document.getElementById('lyDoKhoa').value || '';
+                            return { days: days, months: months, years: years, lyDoKhoa: lyDoKhoa };
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const duration = result.value;
+
+                            // Gửi dữ liệu qua AJAX
+                            $.ajax({
+                                url: '@Url.Action("ToggleStatus", "ThongTinCaNhans")',
+                                type: 'POST',
+                                data: {
+                                    id: userId,
+                                    days: duration.days,
+                                    months: duration.months,
+                                    years: duration.years,
+                                    lyDoKhoa: duration.lyDoKhoa
+                                },
+                                success: function (response) {
+                                    if (response.success) {
+                                        Swal.fire(
+                                            'Thành công!',
+                                            `Tài khoản đã được ${action} trong ${duration.days} ngày, ${duration.months} tháng, ${duration.years} năm.`,
+                                            'success'
+                                        ).then(() => {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire(
+                                            'Lỗi!',
+                                            response.message,
+                                            'error'
+                                        );
+                                    }
+                                },
+                                error: function () {
                                     Swal.fire(
-                                        'Thành công!',
-                                        `Tài khoản đã được ${action}.`,
-                                        'success'
-                                    ).then(() => {
-                                        location.reload(); // Tải lại trang để cập nhật trạng thái
-                                    });
-                                } else {
-                                    Swal.fire(
-                                        'Lỗi!',
-                                        response.message,
+                                        'Có lỗi xảy ra!',
+                                        'Xin vui lòng thử lại.',
                                         'error'
                                     );
                                 }
-                            },
-                            error: function () {
-                                Swal.fire(
-                                    'Có lỗi xảy ra!',
-                                    'Xin vui lòng thử lại.',
-                                    'error'
-                                );
-                            }
-                        });
-                    }
-                });
+                            });
+                        }
+                    });
+                } else {
+                    // Nếu mở khóa, hiện popup xác nhận trước khi mở tài khoản
+                    Swal.fire({
+                        title: 'Bạn có chắc chắn muốn mở tài khoản này?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Có',
+                        cancelButtonText: 'Không'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Gửi yêu cầu AJAX để mở tài khoản
+                            $.ajax({
+                                url: '@Url.Action("ToggleStatus", "ThongTinCaNhans")',
+                                type: 'POST',
+                                data: { id: userId },
+                                success: function (response) {
+                                    if (response.success) {
+                                        Swal.fire(
+                                            'Thành công!',
+                                            `Tài khoản đã được ${action}.`,
+                                            'success'
+                                        ).then(() => {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire(
+                                            'Lỗi!',
+                                            response.message,
+                                            'error'
+                                        );
+                                    }
+                                },
+                                error: function () {
+                                    Swal.fire(
+                                        'Có lỗi xảy ra!',
+                                        'Xin vui lòng thử lại.',
+                                        'error'
+                                    );
+                                }
+                            });
+                        }
+                    });
+                }
             });
         });
     </script>
+
 
 </body>

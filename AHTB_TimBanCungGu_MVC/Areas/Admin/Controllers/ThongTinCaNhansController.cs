@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -24,139 +25,40 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             var dBAHTBContext = _context.ThongTinCN.Include(t => t.User);
-            return View(await dBAHTBContext.ToListAsync());
-        }
 
-        // GET: Admin/ThongTinCaNhans/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            // Lấy danh sách tất cả thông tin cá nhân
+            var thongTinCaNhanList = await dBAHTBContext.ToListAsync();
+
+            // Lấy danh sách người dùng có ngày mở khóa đã đến hoặc đã qua
+            var usersToUpdate = thongTinCaNhanList
+                .Select(t => t.User)
+                .Where(u => u.NgayMoKhoa != null && u.NgayMoKhoa <= DateTime.Now)
+                .ToList();
+
+            // Cập nhật trạng thái cho từng người dùng và thông tin cá nhân
+            foreach (var user in usersToUpdate)
             {
-                return NotFound();
-            }
+                user.TrangThai = "Hoạt động"; // Đặt trạng thái thành "Hoạt động"
+                user.NgayMoKhoa = DateTime.Now; // Cập nhật ngày mở khóa thành ngày hiện tại
 
-            var thongTinCaNhan = await _context.ThongTinCN
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(m => m.IDProfile == id);
-            if (thongTinCaNhan == null)
-            {
-                return NotFound();
-            }
+                // Cập nhật trạng thái của người dùng
+                _context.Users.Update(user);
 
-            return View(thongTinCaNhan);
-        }
-
-        // GET: Admin/ThongTinCaNhans/Create
-        public IActionResult Create()
-        {
-            ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID");
-            return View();
-        }
-
-        // POST: Admin/ThongTinCaNhans/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IDProfile,UsID,HoTen,GioiTinh,NgaySinh,SoDienThoai,IsPremium,MoTa,NgayTao,TrangThai")] ThongTinCaNhan thongTinCaNhan)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(thongTinCaNhan);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID", thongTinCaNhan.UsID);
-            return View(thongTinCaNhan);
-        }
-
-        // GET: Admin/ThongTinCaNhans/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var thongTinCaNhan = await _context.ThongTinCN.FindAsync(id);
-            if (thongTinCaNhan == null)
-            {
-                return NotFound();
-            }
-            ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID", thongTinCaNhan.UsID);
-            return View(thongTinCaNhan);
-        }
-
-        // POST: Admin/ThongTinCaNhans/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IDProfile,UsID,HoTen,GioiTinh,NgaySinh,SoDienThoai,IsPremium,MoTa,NgayTao,TrangThai")] ThongTinCaNhan thongTinCaNhan)
-        {
-            if (id != thongTinCaNhan.IDProfile)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                // Cập nhật trạng thái tương ứng trong bảng ThongTinCN
+                var thongTinCN = thongTinCaNhanList.FirstOrDefault(t => t.UsID == user.UsID);
+                if (thongTinCN != null)
                 {
-                    _context.Update(thongTinCaNhan);
-                    await _context.SaveChangesAsync();
+                    thongTinCN.TrangThai = "Hoạt động"; // Đặt lại trạng thái thành "Hoạt động"
+                    _context.ThongTinCN.Update(thongTinCN);
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ThongTinCaNhanExists(thongTinCaNhan.IDProfile))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID", thongTinCaNhan.UsID);
-            return View(thongTinCaNhan);
-        }
-
-        // GET: Admin/ThongTinCaNhans/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
             }
 
-            var thongTinCaNhan = await _context.ThongTinCN
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(m => m.IDProfile == id);
-            if (thongTinCaNhan == null)
-            {
-                return NotFound();
-            }
+            await _context.SaveChangesAsync(); // Lưu các thay đổi vào cơ sở dữ liệu
 
-            return View(thongTinCaNhan);
+            return View(thongTinCaNhanList);
         }
 
-        // POST: Admin/ThongTinCaNhans/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var thongTinCaNhan = await _context.ThongTinCN.FindAsync(id);
-            _context.ThongTinCN.Remove(thongTinCaNhan);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        private bool ThongTinCaNhanExists(int id)
-        {
-            return _context.ThongTinCN.Any(e => e.IDProfile == id);
-        }
         [HttpGet]
         public async Task<IActionResult> Search(string searchString)
         {
@@ -179,40 +81,93 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             return View("Index", await profileInfos.ToListAsync());
         }
         [HttpPost]
-        public async Task<IActionResult> ToggleStatus(int id)
+        public async Task<IActionResult> ToggleStatus(int id, int days = 0, int months = 0, int years = 0, string lyDoKhoa = "")
         {
-            // Ghi log ID nhận được để kiểm tra
             Console.WriteLine($"ID nhận được: {id}");
 
-            // Tìm bản ghi trong bảng ThongTinCN
             var thongTinCN = await _context.ThongTinCN.FindAsync(id);
             if (thongTinCN == null)
             {
-                // Ghi log khi không tìm thấy bản ghi
-                Console.WriteLine("Người dùng trong ThongTinCN không tồn tại.");
-                return Json(new { success = false, message = "Người dùng không tồn tại trong ThongTinCN." });
+                return Json(new { success = false, message = "Người dùng không tồn tại." });
             }
 
-            // Tìm bản ghi tương ứng trong bảng User
             var user = await _context.Users.FindAsync(thongTinCN.UsID);
             if (user == null)
             {
-                // Ghi log khi không tìm thấy bản ghi
-                Console.WriteLine("Người dùng trong bảng User không tồn tại.");
                 return Json(new { success = false, message = "Người dùng không tồn tại trong bảng User." });
             }
 
-            // Đảo ngược trạng thái khóa/mở
             var newStatus = thongTinCN.TrangThai == "Hoạt động" ? "Không hoạt động" : "Hoạt động";
             thongTinCN.TrangThai = newStatus;
-            user.TrangThai = newStatus;
 
-            // Cập nhật cả hai bảng
+            // Thêm logic lưu lịch sử mở khóa và lý do khóa
+            if (newStatus == "Không hoạt động")
+            {
+                var mocThoiGian = DateTime.Now.AddDays(days).AddMonths(months).AddYears(years);
+                user.NgayMoKhoa = mocThoiGian;
+                user.LyDoKhoa = lyDoKhoa; // Lưu lý do khóa
+
+                var quanLyNguoiDung = new QuanLyNguoiDung
+                {
+                    AdminID = HttpContext.Session.GetString("AdminId"),
+                    NguoiDungID = thongTinCN.UsID,
+                    ThaoTac = "Khóa tài khoản",
+                    MocThoiGian = DateTime.Now,
+                    LichSuMoKhoa = mocThoiGian, // Lưu lịch sử mở khóa
+                    LichSuLyDoKhoa = lyDoKhoa // Lưu lý do khóa
+                };
+
+                _context.QuanLyNguoiDung.Add(quanLyNguoiDung);
+            }
+            else
+            {
+                user.NgayMoKhoa = DateTime.Now;
+                user.LyDoKhoa = null;
+
+                var quanLyNguoiDung = new QuanLyNguoiDung
+                {
+                    AdminID = HttpContext.Session.GetString("AdminId"),
+                    NguoiDungID = thongTinCN.UsID,
+                    ThaoTac = "Mở tài khoản",
+                    LichSuMoKhoa = DateTime.Now, // Lưu lịch sử mở khóa
+                    LichSuLyDoKhoa = null // Không cần lý do mở khóa
+                };
+
+                _context.QuanLyNguoiDung.Add(quanLyNguoiDung);
+            }
+
             _context.ThongTinCN.Update(thongTinCN);
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, status = newStatus });
         }
+
+
+        public IActionResult TestLogin()
+        {
+            // Tạo thông tin người dùng tạm thời cho admin
+            var userId = "1"; // ID của admin trong cơ sở dữ liệu
+            var userName = "admin"; // Tên người dùng
+            var password = "123"; // Mật khẩu
+
+            // Kiểm tra xem người dùng có tồn tại trong cơ sở dữ liệu không
+            var user = _context.Users.FirstOrDefault(u => u.UsID == userId && u.UserName == userName && u.Password == password);
+            if (user != null)
+            {
+                // Lưu thông tin người dùng vào session (hoặc cookie) để giả lập việc đăng nhập
+                HttpContext.Session.SetString("UserId", user.UsID);
+                HttpContext.Session.SetString("UserName", user.UserName);
+
+                // Lưu ID admin vào session
+                HttpContext.Session.SetString("AdminId", user.UsID); // Sử dụng user.UsID của admin
+
+                // Chuyển hướng đến trang quản trị
+                return RedirectToAction("Index", "ThongTinCaNhans", new { area = "Admin" });
+            }
+
+            return Content("Đăng nhập không thành công. Vui lòng kiểm tra thông tin tài khoản.");
+        }
+
     }
 }

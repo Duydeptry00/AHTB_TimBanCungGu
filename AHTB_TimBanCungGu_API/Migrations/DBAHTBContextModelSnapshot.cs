@@ -270,6 +270,12 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<string>("AdminID")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("LichSuLyDoKhoa")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LichSuMoKhoa")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("MocThoiGian")
                         .HasColumnType("datetime2");
 
@@ -396,6 +402,12 @@ namespace AHTB_TimBanCungGu_API.Migrations
                 {
                     b.Property<string>("UsID")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LyDoKhoa")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("NgayMoKhoa")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Password")
                         .HasColumnType("nvarchar(max)");
