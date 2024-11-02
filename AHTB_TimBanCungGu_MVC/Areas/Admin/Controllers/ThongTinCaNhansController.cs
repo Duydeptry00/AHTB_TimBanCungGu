@@ -8,6 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
 using Microsoft.AspNetCore.Http;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
+
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -15,10 +21,17 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
     public class ThongTinCaNhansController : Controller
     {
         private readonly DBAHTBContext _context;
+        private readonly IMongoCollection<BsonDocument> _notifications;
+        private static List<WebSocket> _webSockets = new List<WebSocket>();
+
 
         public ThongTinCaNhansController(DBAHTBContext context)
         {
             _context = context;
+            var connectionString = "mongodb://localhost:27017"; // URI của MongoDB
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase("AHTBdb"); // Tên database của bạn
+            _notifications = database.GetCollection<BsonDocument>("AHTBCollection"); // Tên collection của bạn
         }
 
         // GET: Admin/ThongTinCaNhans
@@ -83,8 +96,6 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> ToggleStatus(int id, int days = 0, int months = 0, int years = 0, string lyDoKhoa = "")
         {
-            Console.WriteLine($"ID nhận được: {id}");
-
             var thongTinCN = await _context.ThongTinCN.FindAsync(id);
             if (thongTinCN == null)
             {
@@ -100,21 +111,36 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             var newStatus = thongTinCN.TrangThai == "Hoạt động" ? "Không hoạt động" : "Hoạt động";
             thongTinCN.TrangThai = newStatus;
 
-            // Thêm logic lưu lịch sử mở khóa và lý do khóa
             if (newStatus == "Không hoạt động")
             {
                 var mocThoiGian = DateTime.Now.AddDays(days).AddMonths(months).AddYears(years);
                 user.NgayMoKhoa = mocThoiGian;
-                user.LyDoKhoa = lyDoKhoa; // Lưu lý do khóa
+                user.LyDoKhoa = lyDoKhoa;
 
+                // Gửi thông báo tới tất cả WebSocket
+                var notificationMessage = $"Tài khoản {user.UserName} đã bị khóa. Ngày mở khóa: {mocThoiGian:dd/MM/yyyy}. Lý do: {lyDoKhoa}";
+                await SendNotificationToWebSockets(notificationMessage);
+
+                // Lưu thông báo vào MongoDB
+                var notification = new BsonDocument
+                {
+                    { "UserId", user.UsID },
+                    { "Message", notificationMessage },
+                    { "Timestamp", DateTime.Now },
+                    { "LyDoKhoa", lyDoKhoa }, // Thêm lý do khóa vào document
+                    { "NgayMoKhoa", mocThoiGian } // Thêm ngày mở khóa vào document
+                };
+                await _notifications.InsertOneAsync(notification);
+
+                // Tạo một đối tượng quan lý người dùng
                 var quanLyNguoiDung = new QuanLyNguoiDung
                 {
                     AdminID = HttpContext.Session.GetString("AdminId"),
                     NguoiDungID = thongTinCN.UsID,
                     ThaoTac = "Khóa tài khoản",
                     MocThoiGian = DateTime.Now,
-                    LichSuMoKhoa = mocThoiGian, // Lưu lịch sử mở khóa
-                    LichSuLyDoKhoa = lyDoKhoa // Lưu lý do khóa
+                    LichSuMoKhoa = mocThoiGian,
+                    LichSuLyDoKhoa = lyDoKhoa
                 };
 
                 _context.QuanLyNguoiDung.Add(quanLyNguoiDung);
@@ -129,8 +155,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     AdminID = HttpContext.Session.GetString("AdminId"),
                     NguoiDungID = thongTinCN.UsID,
                     ThaoTac = "Mở tài khoản",
-                    LichSuMoKhoa = DateTime.Now, // Lưu lịch sử mở khóa
-                    LichSuLyDoKhoa = null // Không cần lý do mở khóa
+                    LichSuMoKhoa = DateTime.Now,
+                    LichSuLyDoKhoa = null
                 };
 
                 _context.QuanLyNguoiDung.Add(quanLyNguoiDung);
@@ -140,9 +166,9 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
+            // Trả về thông báo thành công chỉ khi đã cập nhật
             return Json(new { success = true, status = newStatus });
         }
-
 
         public IActionResult TestLogin()
         {
@@ -168,6 +194,34 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             return Content("Đăng nhập không thành công. Vui lòng kiểm tra thông tin tài khoản.");
         }
+        [HttpGet]
+        public async Task<IActionResult> ConnectWebSocket()
+        {
+            if (HttpContext.WebSockets.IsWebSocketRequest)
+            {
+                WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                _webSockets.Add(webSocket);
 
+                var buffer = new byte[1024 * 4];
+                while (webSocket.State == WebSocketState.Open)
+                {
+                    await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                }
+
+                _webSockets.Remove(webSocket);
+            }
+            return BadRequest();
+        }
+
+        private async Task SendNotificationToWebSockets(string message)
+        {
+            var buffer = Encoding.UTF8.GetBytes(message);
+            var segment = new ArraySegment<byte>(buffer);
+
+            var tasks = _webSockets.Where(ws => ws.State == WebSocketState.Open).Select(ws =>
+                ws.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None));
+
+            await Task.WhenAll(tasks);
+        }
     }
 }

@@ -26,6 +26,7 @@ namespace AHTB_TimBanCungGu_MVC
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddSingleton<IVnPayService, VnPayService>();
             services.AddDistributedMemoryCache();
             // Thêm d?ch v? session
@@ -50,6 +51,8 @@ namespace AHTB_TimBanCungGu_MVC
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseWebSockets();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
