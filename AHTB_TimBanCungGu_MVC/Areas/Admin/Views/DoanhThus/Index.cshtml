@@ -2,25 +2,38 @@
     ViewBag.Title = "Thống Kê Doanh Thu";
 }
 
-<h1 style="text-align: center; color: #fff;">Thống Kê Doanh Thu</h1>
+
+@{
+    ViewBag.Title = "Thống Kê Doanh Thu";
+}
+
+<h1 style="text-align: center; color: #fff; font-size: 36px; font-family: 'Roboto', sans-serif;">
+    Thống Kê Doanh Thu
+</h1>
 
 <div style="text-align: center; margin-bottom: 20px;">
-    <label for="revenueSelector" style="color: #fff; font-size: 18px;">Chọn Kiểu Doanh Thu:</label>
+    <label for="revenueSelector" style="color: #fff; font-size: 20px; font-family: 'Roboto', sans-serif;">
+        Chọn Kiểu Doanh Thu:
+    </label>
     <select id="revenueSelector" onchange="updateChart()"
-            style="padding: 5px 10px; border-radius: 5px; border: 1px solid #fff;
+            style="padding: 8px 12px; border-radius: 5px; border: 1px solid #fff;
                    background-color: rgba(255, 255, 255, 0.3); color: #000;
-                   font-size: 14px; margin-left: 10px;">
+                   font-size: 16px; margin-left: 10px; font-family: 'Roboto', sans-serif;">
         <option value="monthly">Doanh Thu Theo Tháng</option>
         <option value="yearly">Doanh Thu Theo Năm</option>
     </select>
 
-    <label id="yearLabel" for="yearSelector" style="color: #fff; font-size: 18px; margin-left: 20px;">Chọn Năm:</label>
+    <label id="yearLabel" for="yearSelector" style="color: #fff; font-size: 20px; font-family: 'Roboto', sans-serif; margin-left: 20px;">
+        Chọn Năm:
+    </label>
     <select id="yearSelector" onchange="updateChart()"
-            style="padding: 5px 10px; border-radius: 5px; border: 1px solid #fff;
+            style="padding: 8px 12px; border-radius: 5px; border: 1px solid #fff;
                    background-color: rgba(255, 255, 255, 0.3); color: #000;
-                   font-size: 14px; margin-left: 10px;">
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
+                   font-size: 16px; margin-left: 10px; font-family: 'Roboto', sans-serif;">
+        @foreach (var year in ViewBag.Years)
+        {
+            <option value="@year">@year</option>
+        }
     </select>
 </div>
 
@@ -28,45 +41,63 @@
 
 <!-- Phần hiển thị tổng doanh thu -->
 <div id="totalRevenue" style="background-color: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px; margin-top: 20px;">
-    <h2 style="text-align: center; color: #fff;">Tổng Doanh Thu</h2>
-    <p style="font-size: 20px; text-align: center; color: #fff;" id="revenueText"></p>
+    <h2 style="text-align: center; color: #fff; font-size: 30px; font-family: 'Roboto', sans-serif;">
+        Tổng Doanh Thu
+    </h2>
+    <p style="font-size: 22px; text-align: center; color: #fff; font-family: 'Roboto', sans-serif; display: block;" id="revenueText"></p>
 </div>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Dữ liệu doanh thu theo tháng và năm từ ViewBag
+    const monthlyTotals = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.MonthlyTotals));
+    const yearlyTotals = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.YearlyTotals));
+
     const ctx = document.getElementById('revenueChart').getContext('2d');
 
-    // Dữ liệu cứng cho doanh thu theo tháng cho mỗi năm
+    // Gán nhãn cho tháng
     const labels = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
         "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
 
-    // Doanh thu cho từng năm
-    const revenues = {
-        "2023": [12000, 15000, 18000, 20000, 25000, 30000, 28000, 32000, 35000, 37000, 40000, 42000],
-        "2024": [103000, 16000, 19000, 21000, 26000, 31000, 29000, 33000, 36000, 38000, 41000, 43000],
-    };
 
-    // Tính tổng doanh thu
+    const revenues = {};
+
+    // Xử lý dữ liệu doanh thu hàng tháng
+    monthlyTotals.forEach(item => {
+        if (!revenues[item.Year]) {
+            revenues[item.Year] = Array(12).fill(0);
+        }
+        revenues[item.Year][item.Month - 1] = item.TotalTongTien;
+    });
+
+    const yearlyRevenue = yearlyTotals.map(item => ({
+        year: item.Year,
+        total: item.TotalTongTien
+    }));
+
     function calculateTotalRevenue(data) {
         return data.reduce((total, amount) => total + amount, 0);
     }
 
-    const totalRevenue2023 = calculateTotalRevenue(revenues["2023"]);
-    const totalRevenue2024 = calculateTotalRevenue(revenues["2024"]);
-
-    document.getElementById('revenueText').innerHTML = `
-                    <strong>Tổng Doanh Thu Theo Năm 2023:</strong> ${totalRevenue2023.toLocaleString()} VND
-                `;
-
+    // Lấy năm hiện tại và năm gần nhất có doanh thu
+    const currentYear = new Date().getFullYear(); // Lấy năm hiện tại
+    const availableYears = Object.keys(revenues).map(Number); // Lấy danh sách các năm có dữ liệu
+    const closestYear = availableYears.filter(year => year <= currentYear).pop() || availableYears[0]; // Lấy năm gần nhất
+    console.log(availableYears)
+    // Đặt dữ liệu biểu đồ dựa trên năm gần nhất
+    const revenueData = revenues[closestYear] || Array(12).fill(0);
+   
     const revenueChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Doanh Thu Theo Tháng',
-                data: revenues["2023"], // Mặc định hiển thị doanh thu tháng của năm 2023
-                backgroundColor: 'rgba(255, 0, 0, 0.5)', // Đỏ nhạt cho doanh thu theo tháng
-                borderColor: 'rgba(255, 0, 0, 1)', // Đỏ cho đường viền
+                data: revenueData,
+                backgroundColor: 'rgb(76, 187, 76)',  // Màu xanh lá
+                borderColor: 'rgb(34, 139, 34)',      // Viền xanh lá đậm hơn
                 borderWidth: 1
             }]
         },
@@ -78,96 +109,65 @@
                     title: {
                         display: true,
                         text: 'Doanh Thu (VND)',
-                        font: {
-                            size: 16 // Kích thước chữ cho tiêu đề trục Y
-                        }
+                        font: { size: 18, family: 'Roboto', weight: 'bold' }
                     },
-                    ticks: {
-                        font: {
-                            size: 14, // Kích thước chữ cho các nhãn giá trị trục Y
-                            color: '#fff' // Đổi màu chữ thành trắng
-                        }
-                    }
+                    ticks: { font: { size: 16, color: '#fff' } }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: 'Tháng',
-                        font: {
-                            size: 16 // Kích thước chữ cho tiêu đề trục X
-                        }
+                        font: { size: 18, family: 'Roboto', weight: 'bold' }
                     },
-                    ticks: {
-                        font: {
-                            size: 14, // Kích thước chữ cho các nhãn giá trị trục X
-                            color: '#fff' // Đổi màu chữ thành trắng
-                        }
-                    }
+                    ticks: { font: { size: 16, color: '#fff' } }
                 }
             },
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                    labels: {
-                        color: '#fff' // Đổi màu chữ cho legend thành trắng
-                    }
-                },
                 title: {
-                    display: true,
-                    text: 'Doanh Thu Theo Tháng',
-                    font: {
-                        size: 18, // Kích thước chữ cho tiêu đề biểu đồ
-                        color: '#fff' // Đổi màu chữ thành trắng
+                    font: { size: 30, family: 'Roboto', weight: 'bold', color: '#fff' }
+                },
+                legend: {
+                    labels: {
+                        font: { size: 20, family: 'Roboto', color: '#fff' }
                     }
                 }
             }
         }
     });
 
+
+
     function updateChart() {
         const selectedValue = document.getElementById('revenueSelector').value;
         const selectedYear = document.getElementById('yearSelector').value;
 
-        // Kiểm tra và ẩn/hiện dropdown năm
         if (selectedValue === "monthly") {
-            document.getElementById('yearLabel').style.display = "inline"; // Hiện label chọn năm
-            document.getElementById('yearSelector').style.display = "inline"; // Hiện dropdown chọn năm
-        } else {
-            document.getElementById('yearLabel').style.display = "none"; // Ẩn label chọn năm
-            document.getElementById('yearSelector').style.display = "none"; // Ẩn dropdown chọn năm
-        }
+            document.getElementById('yearLabel').style.display = "inline";
+            document.getElementById('yearSelector').style.display = "inline";
 
-        if (selectedValue === "monthly") {
-            revenueChart.data.labels = labels; // Gán nhãn cho tháng
-            revenueChart.data.datasets[0].data = revenues[selectedYear]; // Dữ liệu doanh thu theo tháng của năm đã chọn
-            revenueChart.data.datasets[0].label = 'Doanh Thu Theo Tháng'; // Cập nhật label
-            revenueChart.data.datasets[0].backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Màu nền đỏ nhạt
-            revenueChart.data.datasets[0].borderColor = 'rgba(255, 0, 0, 1)'; // Đường viền đỏ
+            revenueChart.data.labels = labels;
+            revenueChart.data.datasets[0].data = revenues[selectedYear] || Array(12).fill(0);
+            revenueChart.data.datasets[0].label = 'Doanh Thu Theo Tháng';
             revenueChart.options.plugins.title.text = 'Doanh Thu Theo Tháng';
+
             document.getElementById('revenueText').innerHTML = `
-                            <strong>Tổng Doanh Thu Theo Năm ${selectedYear}:</strong> ${calculateTotalRevenue(revenues[selectedYear]).toLocaleString()} VND
-                        `;
+                    <strong>Tổng Doanh Thu Theo Năm ${selectedYear}:</strong> ${calculateTotalRevenue(revenues[selectedYear]).toLocaleString()} VND
+                `;
         } else {
-            revenueChart.data.labels = ["2023", "2024"]; // Gán nhãn cho năm
-            revenueChart.data.datasets[0].data = [totalRevenue2023, totalRevenue2024]; // Dữ liệu doanh thu theo năm
-            revenueChart.data.datasets[0].label = 'Doanh Thu Theo Năm'; // Cập nhật label
-            revenueChart.data.datasets[0].backgroundColor = 'rgba(0, 255, 0, 0.5)'; // Màu nền xanh nhạt cho doanh thu theo năm
-            revenueChart.data.datasets[0].borderColor = 'rgba(0, 255, 0, 1)'; // Đường viền xanh
+            document.getElementById('yearLabel').style.display = "none";
+            document.getElementById('yearSelector').style.display = "none";
+
+            revenueChart.data.labels = yearlyRevenue.map(y => y.year);
+            revenueChart.data.datasets[0].data = yearlyRevenue.map(y => y.total);
+            revenueChart.data.datasets[0].label = 'Doanh Thu Theo Năm';
             revenueChart.options.plugins.title.text = 'Doanh Thu Theo Năm';
-            document.getElementById('revenueText').innerHTML = `
-                            <strong>Tổng Doanh Thu Theo Năm:</strong> ${totalRevenue2023.toLocaleString()} VND (2023), ${totalRevenue2024.toLocaleString()} VND (2024)
-                        `;
-            revenueChart.options.scales.y.ticks.font.size = 18; // Tăng kích thước chữ cho trục Y khi chọn theo năm
+
+            document.getElementById('revenueText').innerHTML = yearlyRevenue.map(y =>
+                `<strong>Tổng Doanh Thu Năm ${y.year}:</strong> ${y.total.toLocaleString()} VND`).join(', ');
         }
 
-        revenueChart.update(); // Cập nhật chart để hiển thị dữ liệu mới
+        revenueChart.update();
     }
 
-    // Khởi động với trạng thái ban đầu
+    // Gọi hàm cập nhật biểu đồ
     updateChart();
-
-    // Thay đổi màu nền thành màu đen
-    document.body.style.backgroundColor = '#000';
-    document.body.style.color = '#fff'; // Đổi màu chữ thành trắng cho dễ đọc
 </script>

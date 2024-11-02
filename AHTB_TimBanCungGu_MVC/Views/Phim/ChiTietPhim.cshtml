@@ -10,46 +10,111 @@
     <title>@ViewData["Title"]</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/styles.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
+
 <style>
-    /* Thẻ phim */
-    .film-card {
-        border: none; /* Xóa viền của thẻ card */
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #333;
+        color: white;
     }
 
-        .film-card img {
-            border-radius: .375rem; /* Góc bo tròn cho hình ảnh */
+    .container {
+        padding-top: 2rem;
+    }
+
+    .search-bar {
+        margin-bottom: 20px;
+    }
+
+    .movie-detail {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        margin-bottom: 10px;
+    }
+
+    .movie-info h2 {
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .movie-info p {
+        font-size: 1rem;
+        color: #666;
+    }
+
+    .btn-watch {
+        margin-top: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-watch:hover {
+            background-color: #0056b3;
         }
 
-        /* Hiệu ứng hover cho thẻ phim */
+    .recommended-section h2 {
+        font-size: 1.5rem;
+        color: #444;
+        margin-bottom: 15px;
+    }
+
+    .film-card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        background-color: #ffffff;
+    }
+
         .film-card:hover {
-            transform: scale(1.05); /* Phóng to thẻ khi hover */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Hiệu ứng bóng đổ */
+            transform: scale(1.05);
         }
-            
+
+        .film-card img {
+            border-radius: 8px 8px 0 0;
+        }
+
         .film-card .card-body {
-            background-color: #f8f9fa; /* Màu nền cho phần thông tin phim */
-            padding: 1rem; /* Khoảng cách nội dung trong thẻ */
+            padding: 0.8rem;
         }
 
         .film-card .card-title {
-            font-size: 1rem; /* Kích thước chữ tiêu đề */
-            color: #333; /* Màu chữ tiêu đề */
-            margin-top: .5rem; /* Khoảng cách trên tiêu đề */
+            font-size: 1rem;
+            color: #333;
         }
 
+    .btn-secondary {
+        background-color: #17a2b8;
+        border: none;
+        font-size: 0.85rem;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-secondary:hover {
+            background-color: #138496;
+        }
 </style>
+
 <body>
     <div class="container">
         <div class="col-sm-6 search-bar">
-            <input class="form-control" type="search" placeholder="Tìm kiếm" aria-label="Search">
+            <form method="get" action="@Url.Action("ChiTietPhim", "Phim")">
+                <input type="hidden" name="id" value="@Model.IDPhim" />
+                <input class="form-control" type="search" name="searchTerm" placeholder="Tìm kiếm" aria-label="Search" value="@Context.Request.Query["searchTerm"]">
+            </form>
         </div>
 
+
         <div class="com-sm-6 movie-detail">
-            <img src="/images/@Model.HinhAnh" alt="Movie Poster" class="img-fluid">
+            <img src="/images/@Model.HinhAnh" alt="Movie Poster" class="img-fluid" style="border-radius: 8px;">
             <div class="movie-info">
                 <h2>@Model.TenPhim</h2>
                 <p>
@@ -58,18 +123,16 @@
                         foreach (var phan in ViewBag.DanhSachPhan)
                         {
                             <h4>Phần @phan.SoPhan (Số tập: @phan.SoLuongTap)</h4>
-                          
                         }
                     }
                     Diễn Viên: @Model.DienVien<br>
                     Ngày phát hành: @Model.NgayPhatHanh.Year<br>
                     Mô tả: @Model.MoTa<br />
                     Dạng Phim: <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
-                    Đánh giá: <b>@Model.DanhGia/10</b>
+                    Đánh giá: <b>@Model.DanhGia / 10</b>
                 </p>
                 @foreach (var phan in ViewBag.DanhSachPhan)
                 {
-
                     <button class="btn-watch">
                         <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan , soluongTap = phan.SoLuongTap})" style="text-decoration: none; color: white;">Phần @phan.SoPhan</a>
                     </button>
@@ -79,7 +142,7 @@
         </div>
 
         <div class="recommended-section">
-            <h2>Phim cùng thể loại</h2>
+            <h2 style="color:white">Phim cùng thể loại</h2>
             <div class="row">
                 @foreach (var phim in ViewBag.PhimDeCu)
                 {
@@ -98,7 +161,4 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
 </body>
-
-
