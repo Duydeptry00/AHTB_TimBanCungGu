@@ -46,6 +46,7 @@ namespace AHTB_TimBanCungGu_API
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AHTB_TimBanCungGu_API v1"));
             }
+            app.UseWebSockets();
 
             app.UseRouting();
 
