@@ -1,0 +1,38 @@
+﻿@model AHTB_TimBanCungGu_API.ViewModels.RoleVM
+
+<div class="modal-header">
+    <h5 class="modal-title" id="roleModalLabel">Cập Nhật Quyền</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <form asp-action="Edit" asp-route-id="@Model.IDRole" method="post" id="editRoleForm">
+        <div class="mb-3">
+            <label asp-for="Module" class="form-label">Module</label>
+            <input asp-for="Module" class="form-control" />
+            <span asp-validation-for="Module" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Quyền</label>
+            <div class="form-check">
+                <input asp-for="Add" class="form-check-input" type="checkbox" />
+                <label asp-for="Add" class="form-check-label">Thêm</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="Update" class="form-check-input" type="checkbox" />
+                <label asp-for="Update" class="form-check-label">Cập Nhật</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="Delete" class="form-check-input" type="checkbox" />
+                <label asp-for="Delete" class="form-check-label">Xóa</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="ReviewDetails" class="form-check-input" type="checkbox" />
+                <label asp-for="ReviewDetails" class="form-check-label">Xem Chi Tiết</label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+        </div>
+    </form>
+</div>

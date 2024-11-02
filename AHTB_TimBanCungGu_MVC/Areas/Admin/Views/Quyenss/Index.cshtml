@@ -1,0 +1,122 @@
+﻿@model IEnumerable<AHTB_TimBanCungGu_API.ViewModels.RoleVM>
+
+<h1>Quản Lý Quyền</h1>
+<p class="text-end mb-3">
+    <button class="btn btn-success" id="createRoleBtn">
+        <i class="fas fa-plus"></i> Thêm Mới
+    </button>
+</p>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<table class="table text-light">
+    <thead>
+        <tr>
+            <th><i class="fas fa-user-cog"></i> Module</th>
+            <th><i class="fas fa-plus"></i> Thêm</th>
+            <th><i class="fas fa-edit"></i> Cập Nhật</th>
+            <th><i class="fas fa-trash-alt"></i> Xóa</th>
+            <th><i class="fas fa-info-circle"></i> Xem Chi Tiết</th>
+            <th><i class="fas fa-user"></i> User Đang Quản Lý</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Module</td>
+                <td>
+                    <span class="@(item.Add == "true" ? "bg-success text-light" : "bg-danger text-light")"
+                          style="border-radius: 5px; padding: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;"
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="top"
+                          title="@(item.Add == "true" ? "Có quyền thêm" : "Không có quyền thêm")">
+                        <i class="@(item.Add == "true" ? "fas fa-check" : "fas fa-times")"></i>
+                    </span>
+                </td>
+                <td>
+                    <span class="@(item.Update == "true" ? "bg-success text-light" : "bg-danger text-light")"
+                          style="border-radius: 5px; padding: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;"
+                          title="@(item.Update == "true" ? "Có quyền cập nhật" : "Không có quyền cập nhật")">
+                        <i class="@(item.Update == "true" ? "fas fa-check" : "fas fa-times")"></i>
+                    </span>
+                </td>
+                <td>
+                    <span class="@(item.Delete == "true" ? "bg-success text-light" : "bg-danger text-light")"
+                          style="border-radius: 5px; padding: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;"
+                          title="@(item.Delete == "true" ? "Có quyền xóa" : "Không có quyền xóa")">
+                        <i class="@(item.Delete == "true" ? "fas fa-check" : "fas fa-times")"></i>
+                    </span>
+                </td>
+                <td>
+                    <span class="@(item.ReviewDetails == "true" ? "bg-success text-light" : "bg-danger text-light")"
+                          style="border-radius: 5px; padding: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;"
+                          title="@(item.ReviewDetails == "true" ? "Có quyền xem chi tiết" : "Không có quyền xem chi tiết")">
+                        <i class="@(item.ReviewDetails == "true" ? "fas fa-check" : "fas fa-times")"></i>
+                    </span>
+                </td>
+                <td>
+                    <div class="d-flex">
+                        <button class="btn btn-primary me-2 editRoleBtn" data-id="@item.IDRole">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                      @*   <a asp-action="Details" asp-route-id="@item.IDRole" class="btn btn-secondary me-2">
+                            <i class="fas fa-info-circle"></i>
+                        </a> *@
+                        <form asp-action="Delete" asp-route-id="@item.IDRole" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa không?');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="roleModal" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="roleModalContent">
+            <!-- Nội dung sẽ được tải vào đây -->
+        </div>
+    </div>
+</div>
+
+<!-- Thêm thư viện jQuery và Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Tải form thêm mới vào modal
+        $('#createRoleBtn').click(function () {
+            $('#roleModal').modal('show');
+            $('#roleModalContent').load('/Admin/Quyenss/Create');
+        });
+
+        // Phân công sự kiện cho các nút chỉnh sửa được tạo động
+        $(document).on('click', '.editRoleBtn', function () {
+            const id = $(this).data('id');
+            $('#roleModal').modal('show');
+            $('#roleModalContent').load(`/Admin/Quyenss/Edit/${id}`);
+        });
+    });
+</script>
