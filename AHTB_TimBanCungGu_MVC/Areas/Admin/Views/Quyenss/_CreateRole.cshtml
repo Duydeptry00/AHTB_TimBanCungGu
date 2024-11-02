@@ -1,0 +1,125 @@
+﻿@model AHTB_TimBanCungGu_API.ViewModels.RoleListVM
+
+<div class="modal-header">
+    <h5 class="modal-title" id="roleModalLabel">Thêm Mới Quyền</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <form asp-action="Create" method="post" id="createRoleForm">
+        <div class="mb-3">
+            <label class="form-label">Danh Sách Quyền</label>
+            <div id="rolesContainer">
+                @for (int i = 0; i < Model.Roles.Count; i++)
+                {
+                    <div class="role-entry mb-3">
+                        <input asp-for="Roles[i].Module" class="form-control" placeholder="Tên Module" />
+                        <span asp-validation-for="Roles[i].Module" class="text-danger"></span>
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-danger"
+                                        data-bind="Roles[i].Add">
+                                </button>Thêm
+                                <input type="hidden" asp-for="Roles[i].Add" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-danger"
+                                        data-bind="Roles[i].Update">
+                                </button>Cập Nhật
+                                <input type="hidden" asp-for="Roles[i].Update" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-danger"
+                                        data-bind="Roles[i].Delete">
+                                </button>Xóa
+                                <input type="hidden" asp-for="Roles[i].Delete" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-danger"
+                                        data-bind="Roles[i].ReviewDetails">
+                                </button>Xem Chi Tiết
+                                <input type="hidden" asp-for="Roles[i].ReviewDetails" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <button type="button" class="btn btn-secondary" id="addRoleButton">Thêm Quyền</button>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Add role functionality
+    document.getElementById('addRoleButton').addEventListener('click', function () {
+        const rolesContainer = document.getElementById('rolesContainer');
+        const newIndex = rolesContainer.children.length;
+
+        const newRoleEntry = `
+                <div class="role-entry mb-3">
+                    <input name="Roles[${newIndex}].Module" class="form-control" placeholder="Tên Module" />
+                    <span class="text-danger" data-valmsg-for="Roles[${newIndex}].Module"></span>
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="permission-toggle btn btn-danger"
+                                        data-bind="Roles[${newIndex}].Add"></button>Thêm
+                            <input type="hidden" name="Roles[${newIndex}].Add" value="false" />
+                        </div>
+                        <div class="col">
+                            <button type="button" class="permission-toggle btn btn-danger"
+                                        data-bind="Roles[${newIndex}].Update"></button>Cập Nhật
+                            <input type="hidden" name="Roles[${newIndex}].Update" value="false" />
+                        </div>
+                        <div class="col">
+                            <button type="button" class="permission-toggle btn btn-danger"
+                                        data-bind="Roles[${newIndex}].Delete"></button>Xóa
+                            <input type="hidden" name="Roles[${newIndex}].Delete" value="false" />
+                        </div>
+                        <div class="col">
+                            <button type="button" class="permission-toggle btn btn-danger"
+                                        data-bind="Roles[${newIndex}].ReviewDetails"></button>Xem Chi Tiết
+                            <input type="hidden" name="Roles[${newIndex}].ReviewDetails" value="false" />
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        rolesContainer.insertAdjacentHTML('beforeend', newRoleEntry);
+        addToggleFunctionality();
+    });
+
+    // Toggle functionality
+    function addToggleFunctionality() {
+        document.querySelectorAll('.permission-toggle').forEach(button => {
+            button.onclick = function () {
+                if (this.classList.contains('btn-success')) {
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-danger');
+                    this.nextElementSibling.value = 'false';
+                } else {
+                    this.classList.remove('btn-danger');
+                    this.classList.add('btn-success');
+                    this.nextElementSibling.value = 'true';
+                }
+            };
+        });
+    }
+
+    // Apply toggle functionality to initial buttons
+    addToggleFunctionality();
+</script>
+
+<style>
+    .btn-danger {
+        background-color: red;
+        color: white;
+    }
+
+    .btn-success {
+        background-color: green;
+        color: white;
+    }
+</style>
