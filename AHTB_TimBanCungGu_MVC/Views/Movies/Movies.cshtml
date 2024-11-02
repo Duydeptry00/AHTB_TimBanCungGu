@@ -1,7 +1,4 @@
-﻿@model IEnumerable<dynamic>
-
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -73,7 +70,6 @@
             margin-right: 8px;
         }
 
-
         .card-title {
             font-size: 16px;
             color: #f8f9fa;
@@ -88,8 +84,72 @@
     <div class="container my-5">
         <div class="row mb-4">
             <div class="col-md-6">
-                <input type="text" id="search-input" class="form-control" placeholder="Tìm kiếm phim..." value="@ViewBag.Search">
+                <form id="searchForm" action="/Movies/Movies" method="get" onsubmit="return false;">
+                    <div class="movies" style="display: flex">
+                        <input style="margin-right:10px" type="text" id="searchBox" class="form-control" name="query" placeholder="Tìm kiếm phim..." value="@ViewBag.Search">
+                        <button style="border-radius:5px" type="button" onclick="startRecognition()">🎤</button>
+                    </div>
+                </form>
             </div>
+            <script>
+                function startRecognition() {
+                    if (!('webkitSpeechRecognition' in window)) {
+                        alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.");
+                        return;
+                    }
+                    var recognition = new webkitSpeechRecognition();
+                    recognition.lang = 'vi-VN'; // Đặt ngôn ngữ tiếng Việt
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+
+                    recognition.onstart = function () {
+                        console.log("Bắt đầu nhận giọng nói...");
+                    };
+
+                    recognition.onerror = function (event) {
+                        console.log("Có lỗi xảy ra: ", event.error);
+                    };
+
+                    recognition.onresult = function (event) {
+                        var result = event.results[0][0].transcript;
+                        console.log("Kết quả nhận diện giọng nói:", result); // In kết quả nhận diện
+                        document.getElementById('searchBox').value = result; // Cập nhật ô input
+                        fetchMovies(1, $('#filter-options .dropdown-item.active').text(), result); // Gửi yêu cầu tìm kiếm
+                     
+                    };
+
+                    recognition.start();
+                }
+
+                // Hàm AJAX để lấy phim
+                function fetchMovies(page = 1, genre = 'Tất cả', search = '') {
+                    $.ajax({
+                        url: '@Url.Action("Movies", "Movies")',
+                        type: 'GET',
+                        data: {
+                            page: page,
+                            genre: genre,
+                            search: search
+                        },
+                        success: function (data) {
+                            $('#movie-container').html($(data).find('#movie-container').html());
+                            $('#pagination-container').html($(data).find('#pagination-container').html());
+                        }
+                    });
+                }
+
+                // Sự kiện input cho ô tìm kiếm
+                $('#searchBox').on('input', function () {
+                    fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
+                });
+
+                // Thay đổi thể loại khi chọn từ dropdown
+                $('.dropdown-item').on('click', function () {
+                    $('.dropdown-item').removeClass('active');
+                    $(this).addClass('active');
+                    fetchMovies(1, $(this).text(), $('#searchBox').val());
+                });
+            </script>
             <div class="col-md-2">
                 <button class="btn btn-secondary" type="button" data-bs-toggle="dropdown">
                     <i class="bi bi-funnel-fill"></i> Lọc
@@ -129,7 +189,7 @@
                 }
                 @if (ViewBag.TotalPages > 1)
                 {
-                    <nav aria-label="Page navigation example">
+                    <nav aria-label="Phân trang ví dụ">
                         <ul class="pagination justify-content-center" id="pagination-container">
                             @for (int i = 1; i <= ViewBag.TotalPages; i++)
                             {
@@ -141,16 +201,13 @@
                     </nav>
                 }
             }
-
         </div>
-
-
-
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
+            // Lấy phim dựa trên thể loại đã chọn và từ khóa tìm kiếm
             function fetchMovies(page = 1, genre = 'Tất cả', search = '') {
                 $.ajax({
                     url: '@Url.Action("Movies", "Movies")',
@@ -161,39 +218,31 @@
                         search: search
                     },
                     success: function (data) {
-                        // Cập nhật danh sách phim
                         $('#movie-container').html($(data).find('#movie-container').html());
-                        // Cập nhật phân trang
                         $('#pagination-container').html($(data).find('#pagination-container').html());
                     }
                 });
             }
 
-            // Sự kiện click để phân trang
+            // Sự kiện click phân trang
             $(document).on('click', '.page-link', function (e) {
                 e.preventDefault();
-                const page = $(this).data('page');
-                fetchMovies(page, $('#filter-options .dropdown-item.active').text(), $('#search-input').val());
+                var page = $(this).data('page');
+                fetchMovies(page, $('#filter-options .dropdown-item.active').text(), $('#searchBox').val());
             });
 
             // Sự kiện thay đổi tìm kiếm phim
-            $('#search-input').on('input', function () {
+            $('#searchBox').on('input', function () {
                 fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
             });
 
-            // Sự kiện chọn lọc phim theo thể loại
-            $('#filter-options').on('click', '.dropdown-item', function (e) {
-                e.preventDefault();
-                const genre = $(this).text();
-                $('#filter-options .dropdown-item').removeClass('active');
+            // Sự kiện thay đổi thể loại khi chọn từ dropdown
+            $('.dropdown-item').on('click', function () {
+                $('.dropdown-item').removeClass('active');
                 $(this).addClass('active');
-                fetchMovies(1, genre, $('#search-input').val());
+                fetchMovies(1, $(this).text(), $('#searchBox').val());
             });
-
-            // Hiển thị tất cả các phim khi trang được tải
-            fetchMovies();
         });
-
     </script>
 </body>
 </html>

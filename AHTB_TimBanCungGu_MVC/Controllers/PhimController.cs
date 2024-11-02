@@ -45,15 +45,12 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 
             return View(phan);
         }
-
-
-
-        public IActionResult ChiTietPhim(string id)
+        public IActionResult ChiTietPhim(string id, string searchTerm = null)
         {
             // Lấy thông tin chi tiết của phim dựa theo IDPhim
             var movie = _context.Phim
-                .Include(p => p.Phan)     // Lấy thông tin phần của phim
-                .Include(p => p.TheLoai)  // Lấy thông tin thể loại phim
+                .Include(p => p.Phan)      // Bao gồm các phần của phim
+                .Include(p => p.TheLoai)   // Bao gồm thể loại
                 .FirstOrDefault(p => p.IDPhim == id);
 
             if (movie == null)
@@ -65,23 +62,28 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
             var tenTheLoai = movie.TheLoai.TenTheLoai;
 
             // Lấy danh sách các phần của bộ phim
-            var danhSachPhan = movie.Phan.ToList(); // Danh sách các phần của bộ phim
+            var danhSachPhan = movie.Phan.ToList();
 
-            // Lấy danh sách phim đề cử cùng thể loại
+            // Lấy danh sách phim đề cử cùng thể loại và loại trừ phim hiện tại
             var phimDeCu = _context.Phim
                 .Include(p => p.TheLoai)
                 .Include(p => p.Phan)
-                .Where(p => p.TheLoai.TenTheLoai == tenTheLoai &&
-                            p.IDPhim != movie.IDPhim) // Phim cùng thể loại và khác ID
+                .Where(p => p.TheLoai.TenTheLoai == tenTheLoai && p.IDPhim != movie.IDPhim)
                 .ToList();
 
+            // Lọc theo từ khóa tìm kiếm nếu từ khóa được cung cấp
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                phimDeCu = phimDeCu
+                    .Where(p => p.TenPhim.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
             // Truyền danh sách phim đề cử và danh sách các phần qua ViewBag
             ViewBag.PhimDeCu = phimDeCu;
             ViewBag.DanhSachPhan = danhSachPhan;
 
             return View(movie); // Truyền phim hiện tại sang view
         }
-
 
 
         // GET: Phim
