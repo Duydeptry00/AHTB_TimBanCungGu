@@ -2,51 +2,37 @@
 @model IEnumerable<AHTB_TimBanCungGu_API.Models.Phim>
 
 <div class="slider">
-    <!-- list Items -->
     <div class="list">
         @foreach (var phim in Model)
         {
             <div class="item @(Model.First() == phim ? "active" : "")">
-                <img src="/images/@phim.HinhAnh"> <!-- Đường dẫn ảnh từ cơ sở dữ liệu -->
+                <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim"> <!-- Image source from database -->
                 <div class="content">
-                    <h1>@phim.TenPhim</h1> <!-- Tên phim -->
+                    <h1>@phim.TenPhim</h1> <!-- Movie title -->
                     <div class="rating">
-                        <span>@phim.DanhGia/10</span> <!-- Hiển thị số điểm trên 10 -->
+                        <span>@phim.DanhGia/10</span> <!-- Rating display -->
                     </div>
-                    <!-- Hiển thị tên thể loại -->
                     <p>@phim.DienVien</p>
-                    <p>@phim.TheLoai.TenTheLoai</p> <!-- Tên thể loại từ bảng TheLoai -->
+                    <p>@phim.TheLoai.TenTheLoai</p> <!-- Genre name -->
                     <div class="icon-container">
-                        <!-- Add Icon Button -->
                         <button class="btn btn-primary btn-icon btn-icon-add" title="Thêm Phim">
                             <i class="bi bi-plus"></i>
                         </button>
-
-                        <!-- Start Playing Icon Button -->
                         <button class="btn btn-success btn-icon btn-icon-start" title="Bắt đầu chạy phim">
                             <i class="bi bi-play"></i>
                         </button>
                     </div>
-                    <h4 style="margin-top: 5px;">@phim.MoTa</h4> <!-- Mô tả phim -->
+                    <h4 style="margin-top: 5px;">@phim.MoTa</h4> <!-- Movie description -->
                 </div>
             </div>
         }
     </div>
 </div>
-
-<div class="arrows">
-    <button id="prev"><</button>
-    <button id="next">></button>
-</div>
-
 <div class="thumbnail">
     @foreach (var phim in Model)
     {
         <div class="item @(Model.First() == phim ? "active" : "")">
-            <img src="/images/@phim.HinhAnh" style="margin: 2px"> <!-- Ảnh nhỏ của phim -->
+            <img src="/images/@phim.HinhAnh" style="margin: 2px" alt="@phim.TenPhim"> <!-- Thumbnail image -->
         </div>
     }
 </div>
-
-<script src="/js/app.js"></script>
-
