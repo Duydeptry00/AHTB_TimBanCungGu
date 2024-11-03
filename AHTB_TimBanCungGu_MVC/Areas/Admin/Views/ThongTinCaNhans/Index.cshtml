@@ -143,24 +143,22 @@
                 var userId = $(this).data('id');
                 var currentStatus = $(this).data('status');
                 var action = currentStatus === "Hoạt động" ? "khóa" : "mở khóa";
-                var newStatus = currentStatus === "Hoạt động" ? "Không hoạt động" : "Hoạt động";
 
-                // Nếu trạng thái là "Hoạt động", hiện popup để chọn thời gian khóa
                 if (currentStatus === "Hoạt động") {
                     Swal.fire({
                         title: 'Khóa tài khoản trong bao lâu?',
                         html:
                             '<div style="display: flex; align-items: center; margin: 5px 0;">' +
                             '<label for="days" style="width: 60px;">Ngày</label>' +
-                            '<input id="days" type="number" class="swal2-input" placeholder="0" style="width: 300px;">' +
+                            '<input id="days" type="number" class="swal2-input" placeholder="0" style="width: 300px;" min="0">' +
                             '</div>' +
                             '<div style="display: flex; align-items: center; margin: 5px 0;">' +
                             '<label for="months" style="width: 60px;">Tháng</label>' +
-                            '<input id="months" type="number" class="swal2-input" placeholder="0" style="width: 300px;">' +
+                            '<input id="months" type="number" class="swal2-input" placeholder="0" style="width: 300px;" min="0">' +
                             '</div>' +
                             '<div style="display: flex; align-items: center; margin: 5px 0;">' +
                             '<label for="years" style="width: 60px;">Năm</label>' +
-                            '<input id="years" type="number" class="swal2-input" placeholder="0" style="width: 300px;">' +
+                            '<input id="years" type="number" class="swal2-input" placeholder="0" style="width: 300px;" min="0" disabled>' + // Disabled initially
                             '</div>' +
                             '<div style="display: flex; align-items: center; margin: 5px 0;">' +
                             '<label for="lyDoKhoa" style="width: 60px;">Lý do</label>' +
@@ -176,10 +174,52 @@
                         confirmButtonText: 'Xác nhận',
                         cancelButtonText: 'Hủy',
                         preConfirm: () => {
-                            const days = document.getElementById('days').value || 0;
-                            const months = document.getElementById('months').value || 0;
-                            const years = document.getElementById('years').value || 0;
+                            const daysInput = document.getElementById('days');
+                            const monthsInput = document.getElementById('months');
+                            const yearsInput = document.getElementById('years');
+                            const days = daysInput.value || 0;
+                            const months = monthsInput.value || 0;
+                            const years = yearsInput.value || 0;
                             const lyDoKhoa = document.getElementById('lyDoKhoa').value || '';
+
+                            let isValid = true;
+
+                            // Kiểm tra bổ sung để đảm bảo không có giá trị âm
+                            if (days < 0) {
+                                isValid = false;
+                                daysInput.style.border = '1px solid red'; // Đổi màu border
+                            } else {
+                                daysInput.style.border = ''; // Khôi phục màu border
+                            }
+
+                            if (months < 0) {
+                                isValid = false;
+                                monthsInput.style.border = '1px solid red'; // Đổi màu border
+                            } else {
+                                monthsInput.style.border = ''; // Khôi phục màu border
+                            }
+
+                            if (years < 0) {
+                                isValid = false;
+                                yearsInput.style.border = '1px solid red'; // Đổi màu border
+                            } else {
+                                yearsInput.style.border = ''; // Khôi phục màu border
+                            }
+
+                            // Kiểm tra lý do không được bỏ trống
+                            if (!lyDoKhoa) {
+                                isValid = false;
+                                const lyDoKhoaInput = document.getElementById('lyDoKhoa');
+                                lyDoKhoaInput.style.border = '1px solid red'; // Đổi màu border cho input lý do
+                                Swal.showValidationMessage('Vui lòng chọn lý do');
+                            } else {
+                                document.getElementById('lyDoKhoa').style.border = ''; // Khôi phục màu border nếu có giá trị hợp lệ
+                            }
+
+                            if (!isValid) {
+                                return false;
+                            }
+
                             return { days: days, months: months, years: years, lyDoKhoa: lyDoKhoa };
                         }
                     }).then((result) => {
@@ -224,8 +264,32 @@
                             });
                         }
                     });
+
+                    // Thiết lập sự kiện để kiểm tra lại input khi có sự thay đổi
+                    $(document).on('input', '#days, #months', function () {
+                        if (this.value >= 0) {
+                            this.style.border = ''; // Khôi phục màu border khi giá trị hợp lệ
+                        }
+                    });
+
+                    // Thiết lập sự kiện cho lý do khi có sự thay đổi
+                    $(document).on('change', '#lyDoKhoa', function () {
+                        const yearsInput = document.getElementById('years');
+                        if (this.value) {
+                            this.style.border = ''; // Khôi phục màu border khi lý do được chọn
+                            Swal.hideValidationMessage(); // Ẩn thông báo lỗi nếu có giá trị hợp lệ
+
+                            // Nếu lý do là "Quảng cáo những trang web bất hợp pháp", tự điền giá trị 100 vào input năm và disable nó
+                            if (this.value === "Quảng cáo những trang web bất hợp pháp") {
+                                yearsInput.value = 100; // Tự động điền giá trị 100 vào input năm
+                                yearsInput.disabled = true; // Khóa input năm
+                            } else {
+                                yearsInput.value = ''; // Xóa giá trị nếu không phải lý do đó
+                                yearsInput.disabled = false; // Mở khóa input năm để người dùng có thể nhập
+                            }
+                        }
+                    });
                 } else {
-                    // Nếu mở khóa, hiện popup xác nhận trước khi mở tài khoản
                     Swal.fire({
                         title: 'Bạn có chắc chắn muốn mở tài khoản này?',
                         icon: 'warning',
@@ -234,7 +298,6 @@
                         cancelButtonText: 'Không'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Gửi yêu cầu AJAX để mở tài khoản
                             $.ajax({
                                 url: '@Url.Action("ToggleStatus", "ThongTinCaNhans")',
                                 type: 'POST',
@@ -270,6 +333,4 @@
             });
         });
     </script>
-
-
 </body>
