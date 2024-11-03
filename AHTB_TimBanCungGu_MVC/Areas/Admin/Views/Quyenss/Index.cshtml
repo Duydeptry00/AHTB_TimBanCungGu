@@ -71,6 +71,11 @@
                     </span>
                 </td>
                 <td>
+                    <span style="@(item.User == "Chưa có nhân viên nào nhận quyền" ? "background-color: #f8d7da; color: #721c24; border-radius: 5px; padding: 5px;" : "background-color: #d4edda; color: #155724; border-radius: 5px; padding: 5px;")">
+                        @item.User
+                    </span>
+                </td>
+                <td>
                     <div class="d-flex">
                         <button class="btn btn-primary me-2 editRoleBtn" data-id="@item.IDRole">
                             <i class="fas fa-edit"></i>
