@@ -22,7 +22,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
     {
         private readonly DBAHTBContext _context;
         private readonly IMongoCollection<BsonDocument> _notifications;
-        private static List<WebSocket> _webSockets = new List<WebSocket>();
+        private static Dictionary<string, WebSocket> _userWebSockets = new Dictionary<string, WebSocket>();
 
 
         public ThongTinCaNhansController(DBAHTBContext context)
@@ -111,15 +111,21 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             var newStatus = thongTinCN.TrangThai == "Hoạt động" ? "Không hoạt động" : "Hoạt động";
             thongTinCN.TrangThai = newStatus;
 
+            string notificationMessage = ""; 
+
             if (newStatus == "Không hoạt động")
             {
                 var mocThoiGian = DateTime.Now.AddDays(days).AddMonths(months).AddYears(years);
                 user.NgayMoKhoa = mocThoiGian;
                 user.LyDoKhoa = lyDoKhoa;
 
-                // Gửi thông báo tới tất cả WebSocket
-                var notificationMessage = $"Tài khoản {user.UserName} đã bị khóa. Ngày mở khóa: {mocThoiGian:dd/MM/yyyy}. Lý do: {lyDoKhoa}";
-                await SendNotificationToWebSockets(notificationMessage);
+                // Tạo thông báo
+                notificationMessage = $"Tài khoản {user.UserName} đã bị khóa. Ngày mở khóa: {mocThoiGian:dd/MM/yyyy}. Lý do: {lyDoKhoa}";
+
+                if (_userWebSockets.ContainsKey(user.UserName))
+                {
+                    await SendNotificationToWebSocket(user.UserName, notificationMessage);
+                }
 
                 // Lưu thông báo vào MongoDB
                 var notification = new BsonDocument
@@ -132,7 +138,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 };
                 await _notifications.InsertOneAsync(notification);
 
-                // Tạo một đối tượng quan lý người dùng
+                // Tạo một đối tượng quản lý người dùng
                 var quanLyNguoiDung = new QuanLyNguoiDung
                 {
                     AdminID = HttpContext.Session.GetString("AdminId"),
@@ -200,7 +206,19 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
                 WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                _webSockets.Add(webSocket);
+                var userName = HttpContext.Session.GetString("TempUserName"); // Lấy TempUserName từ session
+
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    // Sử dụng TempUserName làm key để lưu kết nối WebSocket
+                    _userWebSockets[userName] = webSocket;
+                }
+                else
+                {
+                    // Trả về lỗi nếu TempUserName không có trong session
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "TempUserName không có trong session", CancellationToken.None);
+                    return BadRequest("TempUserName không có trong session.");
+                }
 
                 var buffer = new byte[1024 * 4];
                 while (webSocket.State == WebSocketState.Open)
@@ -208,20 +226,36 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                 }
 
-                _webSockets.Remove(webSocket);
+                // Xóa kết nối khi người dùng ngắt kết nối
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    _userWebSockets.Remove(userName);
+                }
             }
             return BadRequest();
         }
 
-        private async Task SendNotificationToWebSockets(string message)
+        private async Task SendNotificationToWebSocket(string userName, string message)
         {
-            var buffer = Encoding.UTF8.GetBytes(message);
-            var segment = new ArraySegment<byte>(buffer);
+            if (_userWebSockets.TryGetValue(userName, out var webSocket) && webSocket.State == WebSocketState.Open)
+            {
+                var buffer = Encoding.UTF8.GetBytes(message);
+                var segment = new ArraySegment<byte>(buffer);
 
-            var tasks = _webSockets.Where(ws => ws.State == WebSocketState.Open).Select(ws =>
-                ws.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None));
-
-            await Task.WhenAll(tasks);
+                try
+                {
+                    await webSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
+                    Console.WriteLine($"Sent message to user {userName}: {message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending message to user {userName}: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"WebSocket is not open for user {userName}");
+            }
         }
     }
 }
