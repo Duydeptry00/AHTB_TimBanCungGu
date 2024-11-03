@@ -1,0 +1,52 @@
+﻿@model IEnumerable<AHTB_TimBanCungGu_API.Models.BaoCaoNguoiDung>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
+}
+
+<h1>Quản lý báo cáo</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Người báo cáo
+            </th>
+            <th>
+               Người bị báo cáo
+            </th>
+            <th>
+                Lý do báo cáo
+            </th>
+            <th>
+                Ngày báo cáo
+            </th>
+            <th>
+                Trạng thái
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                    @Html.DisplayFor(modelItem => item.NguoiBaoCaoUser.UserName)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.DoiTuongBaoCaoUser.UserName)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.LyDoBaoCao)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.NgayBaoCao)
+            </td>
+            <td>
+                    @Html.DisplayFor(modelItem => item.TrangThai)
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
