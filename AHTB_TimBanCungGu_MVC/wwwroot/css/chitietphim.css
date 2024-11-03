@@ -1,4 +1,128 @@
-﻿@media (max-width: 768px) {
-    .movie-detail {
-        text-align: center;
+﻿body {
+    font-family: Poppins, Arial, sans-serif;
+    margin: 0;
+    background-color: #010101;
+    color: #eee;
+}
+.navbar {
+    background-color: black;
+    padding: 10px 20px;
+}
+
+.navbar-brand {
+    color: rgb(255, 0, 0);
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.navbar-nav {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+    .navbar-nav .nav-link {
+        color: white;
+        margin: 0 20px;
+        font-size: 23px;
+        font-weight: 500;
+        transition: color 0.3s;
     }
+
+        .nav-link.active,
+        .navbar-nav .nav-link:hover {
+            color: #FF4500;
+        }
+
+.navbar-icons i {
+    font-size: 38px;
+    color: white;
+    transition: color 0.3s;
+}
+.text-dark {
+    color: white !important;
+}
+
+.container {
+    padding-top: 2rem;
+}
+
+.search-bar {
+    margin-bottom: 20px;
+}
+
+.movie-detail {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    margin-bottom: 10px;
+}
+
+.movie-info h2 {
+    font-size: 1.8rem;
+    color: white;
+}
+
+.movie-info p {
+    font-size: 1rem;
+    color: #666;
+}
+
+.btn-watch {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+    .btn-watch:hover {
+        background-color: #0056b3;
+    }
+
+.recommended-section h2 {
+    font-size: 1.5rem;
+    color: #444;
+    margin-bottom: 15px;
+}
+
+.film-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    background-color: #ffffff;
+}
+
+    .film-card:hover {
+        transform: scale(1.05);
+    }
+
+    .film-card img {
+        border-radius: 8px 8px 0 0;
+    }
+
+    .film-card .card-body {
+        padding: 0.8rem;
+    }
+
+    .film-card .card-title {
+        font-size: 1rem;
+        color: #333;
+    }
+
+.btn-secondary {
+    background-color: #17a2b8;
+    border: none;
+    font-size: 0.85rem;
+    transition: background-color 0.3s ease;
+}
+
+    .btn-secondary:hover {
+        background-color: #138496;
+    }
+

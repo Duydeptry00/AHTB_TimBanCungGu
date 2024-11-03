@@ -11,7 +11,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+
     <style>
+        body {
+            font-family: Poppins, Arial, sans-serif;
+            margin: 0;
+            background-color: #010101;
+            color: #eee;
+        }
+
+        .navbar {
+            background-color: black;
+            padding: 10px 20px;
+        }
+
+        .navbar-brand {
+            color: rgb(255, 0, 0);
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .navbar-nav {
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+            .navbar-nav .nav-link {
+                color: white;
+                margin: 0 20px;
+                font-size: 23px;
+                font-weight: 500;
+                transition: color 0.3s;
+            }
+
+                .nav-link.active,
+                .navbar-nav .nav-link:hover {
+                    color: #FF4500;
+                }
+
+        .navbar-icons i {
+            font-size: 38px;
+            color: white;
+            transition: color 0.3s;
+        }
+        .text-dark {
+            color: white !important;
+        }
         /* CSS tùy chỉnh */
         .film-player {
             width: 100%;
