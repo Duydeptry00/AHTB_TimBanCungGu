@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Details";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
 
 <h1>Details</h1>
@@ -69,6 +70,12 @@
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.HinhAnh)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DangPhim)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DangPhim)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.NgayCapNhat)

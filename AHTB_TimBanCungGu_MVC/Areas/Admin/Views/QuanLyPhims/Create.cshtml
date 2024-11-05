@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Create";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
 
 <h1>Create</h1>
@@ -63,9 +64,17 @@
             </div>
             <div class="form-group">
                 <label asp-for="HinhAnh" class="control-label"></label>
-                <input asp-for="HinhAnh" class="form-control" />
+                <input asp-for="HinhAnh" class="form-control" type="file" name="ImageFile" onchange="previewImage(event)" />
+                <img id="imagePreview" src="#" alt="Image preview" style="display:none; max-width: 100%; margin-top: 10px;" />
                 <span asp-validation-for="HinhAnh" class="text-danger"></span>
             </div>
+
+            <div class="form-group">
+                <label asp-for="DangPhim" class="control-label"></label>
+                <select asp-for="DangPhim" class="form-control" asp-items="ViewBag.DangPhimOptions"></select>
+                <span asp-validation-for="DangPhim" class="text-danger"></span>
+            </div>
+
             <div class="form-group">
                 <label asp-for="NgayCapNhat" class="control-label"></label>
                 <input asp-for="NgayCapNhat" class="form-control" />
@@ -91,3 +100,20 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
+<script>
+    function previewImage(event) {
+        const imagePreview = document.getElementById('imagePreview');
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function () {
+            imagePreview.src = reader.result;
+            imagePreview.style.display = 'block';
+        }
+        if (file) {
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.src = '#';
+            imagePreview.style.display = 'none';
+        }
+    }
+</script>

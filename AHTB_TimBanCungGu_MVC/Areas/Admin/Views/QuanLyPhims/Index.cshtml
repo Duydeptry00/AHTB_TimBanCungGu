@@ -1,245 +1,116 @@
-﻿
- @model List<AHTB_TimBanCungGu_API.Models.Phim>
+﻿@model IEnumerable<AHTB_TimBanCungGu_API.Models.Phim>
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHTB Cinema Management</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="~/css/quanlyphim.css" rel="stylesheet" />
-</head>
-<br />
-
-    <!-- Main Content -->
-    <main id="content-wrapper" class="col-md-9 col-lg-10 px-md-4">
-        <div class="d-flex mb-3">
-                <div class="col-md-3">
-                    <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addNewMovieModal">
-                        <i class="bi bi-plus-lg"></i> Thêm mới
-                    </a>
-                </div>
-                <div class="col-md-9" style="padding-right: 20px;">
-                    <form asp-action="Index" method="get" id="searchForm">
-                        <div class="input-group">
-                            <input type="text" id="searchInput" name="searchString" class="form-control" placeholder="Tìm kiếm" value="@ViewData["CurrentFilter"]" required>
-                            <span class="input-group-text" id="searchButton" style="cursor: pointer;" onclick="document.getElementById('searchForm').submit();">
-                                <i class="bi bi-search" style="color: black;"></i>
-                            </span>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-        <!-- Movie Table -->
-        <div class="table-responsive">
-            <table class="table table-hover table-dark">
-                <thead>
-                    <tr>
-                        <th class="text-start">Tên Phim</th>
-                        <th>Tên diễn viên</th>
-                        <th>Nguồn Phim</th>
-                        <th>Dạng phim</th>
-                        <th>Hình</th>
-                        <th colspan="2" class="text-center">Chỉnh sửa</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>@item.TenPhim</td>
-                            <td>@item.DienVien</td>
-                            <td>@item.SourcePhim</td>
-                            <td>@item.TheLoai?.TenTheLoai</td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.HinhAnh))
-                                {
-                                    <img src="~/uploads/@item.HinhAnh" alt="@item.TenPhim" class="img-thumbnail" style="height: 70px; width: 60px;" />
-                                }
-                                else
-                                {
-                                    <span>No Image</span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                <a class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editMovieModal_@item.IDPhim">
-                                    <i class="bi bi-pencil"></i> Sửa
-                                </a>
-                                <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" onclick="document.getElementById('deleteMovieId').value='@item.IDPhim';">
-                                    <i class="bi bi-trash"></i> Xóa
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </main>
-</div>
-
-
-    <!-- Add New Movie Modal -->
-    <div class="modal fade" id="addNewMovieModal" tabindex="-1" aria-labelledby="addNewMovieModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content bg-white text-dark">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addNewMovieModalLabel">Thêm Mới Phim</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form asp-action="Create" method="post" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="movieTitle" class="form-label">Tên Phim</label>
-                            <input type="text" class="form-control" name="TenPhim" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="actorName" class="form-label">Tên Diễn Viên</label>
-                            <input type="text" class="form-control" name="DienVien" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="sourceMovie" class="form-label">Nguồn Phim</label>
-                            <input type="text" class="form-control" name="SourcePhim" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="category" class="form-label">Dạng Phim</label>
-                            <select class="form-select" name="TheLoaiPhim" required>
-                                <option value="" disabled selected>Chọn Dạng Phim</option>
-                                @foreach (var category in ViewBag.Categories)
-                                {
-                                    <option value="@category.IdTheLoai">@category.TenTheLoai</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="hinhAnhFile" class="form-label">Hình Ảnh (Upload)</label>
-                            <input type="file" class="form-control" id="hinhAnhFile" name="hinhAnhFile" accept="image/*">
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                            <button type="submit" class="btn btn-primary">Lưu</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div></div>
-
-
- @foreach (var item in Model)
-{
-    <a class="" data-bs-toggle="modal" data-bs-target="#editMovieModal_@item.IDPhim">
-        
-    </a>
-
-        <!-- Edit Movie Modal -->
-        <div class="modal fade" id="editMovieModal_@item.IDPhim" tabindex="-1" aria-labelledby="editMovieModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content bg-white text-dark">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editMovieModalLabel">Chỉnh Sửa Phim</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="IDPhim" value="@item.IDPhim">
-                            <div class="mb-3">
-                                <label for="editMovieTitle" class="form-label">Tên Phim</label>
-                                <input type="text" class="form-control" name="TenPhim" value="@item.TenPhim" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editActorName" class="form-label">Tên Diễn Viên</label>
-                                <input type="text" class="form-control" name="DienVien" value="@item.DienVien" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editSourceMovie" class="form-label">Nguồn Phim</label>
-                                <input type="text" class="form-control" name="SourcePhim" value="@item.SourcePhim" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editCategory" class="form-label">Dạng Phim</label>
-                                <select class="form-select" name="TheLoaiPhim" required>
-                                    <option value="" disabled>Select Category</option>
-                                    @foreach (var category in ViewBag.Categories)
-                                    {
-                                        <option value="@category.IdTheLoai">@category.TenTheLoai</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                <button type="submit" class="btn btn-primary">Cập Nhật</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Delete Confirmation Modal -->
-        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content bg-white text-dark border-0">
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title" id="deleteConfirmationModalLabel">Xác Nhận Xóa</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Bạn có chắc chắn muốn xóa phim này?</p>
-                    </div>
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <form id="deleteForm" method="post" asp-action="Delete">
-                            <input type="hidden" name="id" id="deleteMovieId">
-                            <button type="submit" class="btn btn-danger">Xóa</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- search  Confirmation Modal -->
-
-        
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
-<style>
-  @*   edit *@
-        .modal-content {
-            background-color: white; /* White background */
-            color: black; /* Black text color */
-        }
 
-        .modal-header, .modal-footer {
-            border-color: #dee2e6; /* Light border color */
-        }
-     @*    Create *@
-        .modal-content {
-            background-color: white; /* White background */
-            color: black; /* Black text color */
-        }
+<h1>Index</h1>
 
-        .modal-header, .modal-footer {
-            border-color: #dee2e6; /* Light border color */
-        }
-       @*  Delete *@
-        .modal-content {
-            background-color: white; /* White background */
-            color: black; /* Black text color */
-        }
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.TenPhim)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MoTa)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DienVien)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TheLoai)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NgayPhatHanh)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DanhGia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TrailerURL)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NoiDungPremium)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SourcePhim)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.HinhAnh)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DangPhim)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NgayCapNhat)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TrangThai)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.TenPhim)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MoTa)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DienVien)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TheLoai.IdTheLoai)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NgayPhatHanh)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DanhGia)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TrailerURL)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NoiDungPremium)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SourcePhim)
+            </td>
+            <td>
+                    <img src="~/Uploads/@item.HinhAnh" alt="Movie Image" style="width: 150px; height: auto;" />
 
-        .modal-header, .modal-footer {
-            border-color: #dee2e6; /* Light border color */
-        }
 
-
-</style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</html>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DangPhim)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NgayCapNhat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.User.UsID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TrangThai)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IDPhim">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IDPhim">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IDPhim">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

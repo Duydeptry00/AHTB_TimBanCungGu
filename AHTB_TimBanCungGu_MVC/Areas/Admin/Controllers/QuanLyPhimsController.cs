@@ -1,13 +1,14 @@
-﻿using AHTB_TimBanCungGu_API.Data;
-using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
+using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -20,29 +21,15 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         {
             _context = context;
         }
-        // GET: Phims
-        public async Task<IActionResult> Index(string searchString)
+
+        // GET: Admin/QuanLyPhims
+        public async Task<IActionResult> Index()
         {
-            ViewData["CurrentFilter"] = searchString;
-
-            var phimList = from p in _context.Phim.Include(p => p.TheLoai)
-                           select p;
-
-            if (!String.IsNullOrEmpty(searchString))
-            {
-                phimList = phimList.Where(p =>
-                    p.TenPhim.Contains(searchString) ||
-                    p.DienVien.Contains(searchString) ||
-                    p.TheLoai.TenTheLoai.Contains(searchString));
-            }
-
-            // Populate ViewBag.Categories
-            ViewBag.Categories = await _context.TheLoai.ToListAsync();
-
-            return View(await phimList.ToListAsync());
+            var dBAHTBContext = _context.Phim.Include(p => p.TheLoai).Include(p => p.User);
+            return View(await dBAHTBContext.ToListAsync());
         }
 
-        // GET: Phims/Details/5
+        // GET: Admin/QuanLyPhims/Details/5
         public async Task<IActionResult> Details(string id)
         {
             if (id == null)
@@ -62,67 +49,83 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             return View(phim);
         }
 
-        // GET: Phims/Create
+        // GET: Admin/QuanLyPhims/Create
         public IActionResult Create()
         {
-            ViewBag.TheLoai = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai");
-            ViewBag.IDAdmin = new SelectList(_context.Users, "UsID", "UsID");
-
-            var movies = _context.Phim.Include(m => m.TheLoai).ToList();
-            return View(movies);
+            ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai");
+            ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID");
+            ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
+            return View();
         }
 
-        // POST: Phims/Create
+        // POST: Admin/QuanLyPhims/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Phim phim, IFormFile hinhAnhFile)
+        public async Task<IActionResult> Create([Bind("IDPhim,TenPhim,MoTa,DienVien,TheLoaiPhim,NgayPhatHanh,DanhGia,TrailerURL,NoiDungPremium,SourcePhim,HinhAnh,DangPhim,NgayCapNhat,IDAdmin,TrangThai")] Phim phim, IFormFile ImageFile)
         {
             if (ModelState.IsValid)
             {
-                if (hinhAnhFile != null && hinhAnhFile.Length > 0)
+                if (ImageFile == null || ImageFile.Length == 0)
                 {
-                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                    var fileExtension = Path.GetExtension(hinhAnhFile.FileName).ToLowerInvariant();
-
-                    if (!allowedExtensions.Contains(fileExtension))
-                    {
-                        ModelState.AddModelError(string.Empty, "Only image files (.jpg, .jpeg, .png, .gif) are allowed.");
-                        ViewBag.TheLoai = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
-                        return View(phim);
-                    }
-
-                    var fileName = Guid.NewGuid().ToString() + fileExtension; // Keep original extension
-                    var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                    if (!Directory.Exists(uploadsDir))
-                    {
-                        Directory.CreateDirectory(uploadsDir); // Ensure the directory exists
-                    }
-
-                    var filePath = Path.Combine(uploadsDir, fileName);
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await hinhAnhFile.CopyToAsync(fileStream);
-                    }
-
-                    phim.HinhAnh = fileName; // Save the file name in the database
+                    ModelState.AddModelError(string.Empty, "Image file is required.");
+                    PopulateViewData(phim);
+                    return View(phim);
                 }
 
-                phim.IDPhim = Guid.NewGuid().ToString();
+                // Check allowed file extensions
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var fileExtension = Path.GetExtension(ImageFile.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    ModelState.AddModelError(string.Empty, "Only image files (.jpg, .jpeg, .png, .gif) are allowed.");
+                    PopulateViewData(phim);
+                    return View(phim);
+                }
+
+                // Generate a unique file name and path
+                var fileName = Path.GetRandomFileName() + fileExtension;
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Uploads", fileName);
+
+                try
+                {
+                    // Save the file to the specified path
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await ImageFile.CopyToAsync(fileStream);
+                    }
+                    phim.HinhAnh = fileName;
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"An error occurred while uploading the image: {ex.Message}");
+                    PopulateViewData(phim);
+                    return View(phim);
+                }
+
                 _context.Add(phim);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.TheLoai = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
+            PopulateViewData(phim);
             return View(phim);
         }
 
+        // Helper method to populate ViewData
+        private void PopulateViewData(Phim phim)
+        {
+            ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
+            ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID", phim.IDAdmin);
+            ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
+        }
 
 
-        // GET: Phims/Edit/5
+        // GET: Admin/QuanLyPhims/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(id))
             {
                 return NotFound();
             }
@@ -132,63 +135,120 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            var movie = _context.Phim.Include(m => m.TheLoai) // Đảm bảo đã lấy thể loại phim nếu cần
-                  .FirstOrDefault(m => m.IDPhim == id);
-            if (movie == null)
+
+            // Populate dropdowns for the form
+            ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
+            ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID", phim.IDAdmin);
+            ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
+            return View(phim);
+        }
+
+        // POST: Admin/QuanLyPhims/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, [Bind("IDPhim,TenPhim,MoTa,DienVien,TheLoaiPhim,NgayPhatHanh,DanhGia,TrailerURL,NoiDungPremium,SourcePhim,HinhAnh,DangPhim,NgayCapNhat,IDAdmin,TrangThai")] Phim phim, IFormFile ImageFile)
+        {
+            if (id != phim.IDPhim)
             {
                 return NotFound();
             }
 
-            ViewBag.Categories = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
-            ViewBag.IDAdmin = new SelectList(_context.Users, "UsID", "UsID", phim.IDAdmin);
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Lấy thực thể hiện có từ ngữ cảnh
+                    var existingPhim = await _context.Phim.FindAsync(id);
+                    if (existingPhim == null)
+                    {
+                        return NotFound();
+                    }
 
+                    // Cập nhật chỉ những thuộc tính bạn muốn thay đổi
+                    existingPhim.TenPhim = phim.TenPhim;
+                    existingPhim.MoTa = phim.MoTa;
+                    existingPhim.DienVien = phim.DienVien;
+                    existingPhim.TheLoaiPhim = phim.TheLoaiPhim;
+                    existingPhim.NgayPhatHanh = phim.NgayPhatHanh;
+                    existingPhim.DanhGia = phim.DanhGia;
+                    existingPhim.TrailerURL = phim.TrailerURL;
+                    existingPhim.NoiDungPremium = phim.NoiDungPremium;
+                    existingPhim.SourcePhim = phim.SourcePhim;
+                    existingPhim.DangPhim = phim.DangPhim;
+                    existingPhim.NgayCapNhat = DateTime.UtcNow; // Cập nhật thời gian
+                    existingPhim.IDAdmin = phim.IDAdmin;
+                    existingPhim.TrangThai = phim.TrangThai;
+
+                    // Xử lý tải lên hình ảnh
+                    await HandleImageUpload(existingPhim, ImageFile);
+
+                    // Lưu thay đổi
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!PhimExists(phim.IDPhim))
+                    {
+                        return NotFound();
+                    }
+                    throw; // Ném lại ngoại lệ nếu phim vẫn tồn tại
+                }
+            }
+
+            PopulateViewData(phim);
             return View(phim);
         }
 
-        // POST: Phims/Edit/5
-        [HttpPost]
-        public async Task<IActionResult> Edit(Phim model, IFormFile hinhAnhFile)
+
+        private async Task HandleImageUpload(Phim phim, IFormFile ImageFile)
         {
-            if (ModelState.IsValid)
+            if (ImageFile != null && ImageFile.Length > 0)
             {
-                var existingMovie = await _context.Phim.FindAsync(model.IDPhim);
-                if (existingMovie == null)
+                // Validate file type and size
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var fileExtension = Path.GetExtension(ImageFile.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(fileExtension))
                 {
-                    return NotFound();
+                    ModelState.AddModelError(string.Empty, "Only image files (.jpg, .jpeg, .png, .gif) are allowed.");
+                    return;
                 }
 
-                // Xử lý file upload nếu có
-                if (hinhAnhFile != null && hinhAnhFile.Length > 0)
+                // Generate a unique file name and path
+                var fileName = Path.GetRandomFileName() + fileExtension;
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Uploads", fileName);
+
+                // Save the new image
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    var fileName = Path.GetFileName(hinhAnhFile.FileName);
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await hinhAnhFile.CopyToAsync(stream);
-                    }
-
-                    existingMovie.HinhAnh = fileName; // Cập nhật tên file
+                    await ImageFile.CopyToAsync(fileStream);
                 }
 
-                // Cập nhật các thuộc tính khác
-                existingMovie.TenPhim = model.TenPhim;
-                existingMovie.DienVien = model.DienVien;
-                existingMovie.SourcePhim = model.SourcePhim;
-                existingMovie.TheLoaiPhim = model.TheLoaiPhim;
-
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index)); // Chuyển hướng về trang danh sách
+                // Save the new image file name
+                phim.HinhAnh = fileName;
             }
-
-            ViewBag.Categories = _context.TheLoai.ToList(); // Lấy danh sách thể loại nếu có lỗi
-            return View(model);
+            else
+            {
+                // If no new image is uploaded, retain the existing image
+                var existingPhim = await _context.Phim.FindAsync(phim.IDPhim);
+                if (existingPhim != null)
+                {
+                    phim.HinhAnh = existingPhim.HinhAnh;
+                }
+            }
         }
 
 
 
+        private bool PhimExists(string id)
+        {
+            return _context.Phim.Any(e => e.IDPhim == id);
+        }
 
-        // GET: Phims/Delete/5
+
+
+        // GET: Admin/QuanLyPhims/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
@@ -200,7 +260,6 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 .Include(p => p.TheLoai)
                 .Include(p => p.User)
                 .FirstOrDefaultAsync(m => m.IDPhim == id);
-
             if (phim == null)
             {
                 return NotFound();
@@ -209,39 +268,15 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             return View(phim);
         }
 
-        // POST: Phims/Delete
+        // POST: Admin/QuanLyPhims/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                return NotFound();
-            }
-
             var phim = await _context.Phim.FindAsync(id);
-            if (phim != null)
-            {
-                _context.Phim.Remove(phim);
-                await _context.SaveChangesAsync();
-            }
-
+            _context.Phim.Remove(phim);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool PhimExists(string id)
-        {
-            return _context.Phim.Any(e => e.IDPhim == id);
-        }
-
-        public IActionResult Search(string query)
-        {
-            // Your logic to search the movies
-            var results = _context.Phim
-                .Where(p => p.TenPhim.Contains(query) || p.DienVien.Contains(query)) // Example criteria
-                .ToList();
-
-            return View(results); // Return the view with search results
         }
 
     }
