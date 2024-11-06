@@ -1,4 +1,6 @@
 ﻿using AHTB_TimBanCungGu_API.Data;
+using AHTB_TimBanCungGu_API.ViewModels;
+using AHTB_TimBanCungGu_MVC.Local;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +50,7 @@ namespace AHTB_TimBanCungGu_MVC
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -57,6 +60,9 @@ namespace AHTB_TimBanCungGu_MVC
                 app.UseExceptionHandler("/Home/Error");
             }
             app.UseStaticFiles();
+
+            // Đăng ký middleware MvcBaseUrlMiddleware
+            app.UseMiddleware<MvcBaseUrlMiddleware>();
 
             app.UseRouting();
 

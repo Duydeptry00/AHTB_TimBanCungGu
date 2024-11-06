@@ -1,0 +1,105 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đổi Mật Khẩu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS styles cho trang đổi mật khẩu */
+        body {
+            height: 100vh;
+            display: grid;
+            place-content: center;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f0f0; /* Màu nền */
+        }
+
+        .form_main {
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 40px;
+            box-shadow: 0px 0px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .heading {
+            color: #2e2e2e;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .inputField {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #adadad;
+            border-radius: 5px;
+        }
+
+        #button {
+            width: 100%;
+            background-color: #000;
+            color: #fff;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            #button:hover {
+                background-color: #fff;
+                color: #333;
+                border: 2px solid #333;
+            }
+
+        .forgotLink {
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <form asp-action="DoiMatKhau" method="post" class="form_main">
+        <h1 class="heading">Đổi Mật Khẩu</h1>
+
+        <!-- Trường email ẩn để gửi lại email -->
+        <input type="hidden" name="email" value="@ViewData["Email"]" />
+
+        <div>
+            <input type="password" class="inputField" name="newPassword" placeholder="Mật khẩu mới" required>
+        </div>
+        <div>
+            <input type="password" class="inputField" name="confirmPassword" placeholder="Xác nhận mật khẩu" required>
+        </div>
+
+        <button id="button" type="submit">Đổi Mật Khẩu</button>
+
+        <div>
+            @if (ViewBag.Message != null)
+            {
+                <p style="color: green;">@ViewBag.Message</p>
+            }
+            else if (ViewData.ModelState.ErrorCount > 0)
+            {
+                <ul style="color: red;">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            }
+        </div>
+    </form>
+</body>
+</html>
