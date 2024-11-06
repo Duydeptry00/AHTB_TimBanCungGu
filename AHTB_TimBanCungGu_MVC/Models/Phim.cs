@@ -21,6 +21,7 @@ namespace AHTB_TimBanCungGu_MVC.Models
         public bool NoiDungPremium { get; set; }
         public string SourcePhim { get; set; }
         public string HinhAnh { get; set; }
+        public string DangPhim { get; set; }
         public DateTime NgayCapNhat { get; set; }
         [ForeignKey("User")]
         public string IDAdmin { get; set; }
