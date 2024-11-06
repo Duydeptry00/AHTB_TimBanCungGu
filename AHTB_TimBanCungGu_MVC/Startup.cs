@@ -1,6 +1,7 @@
 ﻿using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.ViewModels;
 using AHTB_TimBanCungGu_MVC.Local;
+using AHTB_TimBanCungGu_MVC.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
