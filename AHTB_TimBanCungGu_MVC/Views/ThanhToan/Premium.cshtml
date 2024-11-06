@@ -1,6 +1,10 @@
-﻿@{
-    Layout = null;
+﻿
+@{
+    ViewData["Title"] = "Premium";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,51 +20,52 @@
             background-size: cover; /* Đảm bảo ảnh nền bao phủ toàn bộ màn hình */
             color: white; /* Màu chữ */
             text-align: center; /* Canh giữa chữ */
-            padding: 20px; /* Khoảng cách cho chữ */
         }
-        .comparison-table {
-    margin: 40px 20px;
-    background-color: #222; /* Màu nền của bảng */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
 
-    .comparison-table h2 {
-        text-align: center;
+        .comparison-table {
+            margin: 40px 20px;
+            background-color: #222; /* Màu nền của bảng */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+            .comparison-table h2 {
+                text-align: center;
                 color: white;
                 ; /* Màu đỏ */
-    }
+            }
 
-    .comparison-table table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
+            .comparison-table table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
 
-    .comparison-table th,
-    .comparison-table td {
-        padding: 10px;
-        text-align: center;
-        border: 1px solid #444; /* Viền bảng */
-        color: #fff; /* Màu chữ */
-    }
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px;
+                text-align: center;
+                border: 1px solid #444; /* Viền bảng */
+                color: #fff; /* Màu chữ */
+            }
 
-    .comparison-table th {
-        background-color: #c0392b; /* Màu đỏ cho tiêu đề */
-    }
+            .comparison-table th {
+                background-color: #c0392b; /* Màu đỏ cho tiêu đề */
+            }
 
-    .comparison-table tr:nth-child(even) {
-        background-color: #333; /* Màu nền cho hàng chẵn */
-    }
+            .comparison-table tr:nth-child(even) {
+                background-color: #333; /* Màu nền cho hàng chẵn */
+            }
 
-    .comparison-table tr:nth-child(odd) {
-        background-color: #444; /* Màu nền cho hàng lẻ */
-    }
+            .comparison-table tr:nth-child(odd) {
+                background-color: #444; /* Màu nền cho hàng lẻ */
+            }
 
     </style>
 </head>
 <body>
+    <br />
     <div class="hero-section">
         <h1 class="blink">Trải nghiệm Premium</h1>
         <p>Nâng cấp trải nghiệm của bạn với các tính năng độc quyền chỉ dành cho thành viên Premium.</p>
@@ -148,3 +153,5 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 </body>
 </html>
+
+

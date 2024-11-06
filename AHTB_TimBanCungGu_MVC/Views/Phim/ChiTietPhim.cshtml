@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Chi Tiết Phim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <head>
@@ -9,8 +10,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+ 
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+
+
     <link href="/css/chitietphim.css" rel="stylesheet" />
 </head>
 
@@ -102,6 +105,13 @@
         .btn-secondary:hover {
             background-color: #138496;
         }
+
+    .film-card img {
+     
+        height: 400px; 
+       
+    }
+
 </style>
 
 <body>
@@ -114,33 +124,46 @@
         </div>
 
 
-        <div class="com-sm-6 movie-detail">
-            <img src="/images/@Model.HinhAnh" alt="Movie Poster" class="img-fluid" style="border-radius: 8px;">
-            <div class="movie-info">
-                <h2>@Model.TenPhim</h2>
-                <p>
-                    @if (ViewBag.DanhSachPhan != null)
-                    {
-                        foreach (var phan in ViewBag.DanhSachPhan)
+        <div class="container">
+            <div class="row movie-detail">
+                <!-- Hình ảnh phim -->
+                <div class="col-md-6">
+                    <img src="/images/@Model.HinhAnh" alt="Áp phích phim" class="img-fluid" style="border-radius: 8px; width: 100%; height: 100%; object-fit: contain;">
+                </div>
+
+                <!-- Thông tin phim -->
+                <div class="col-md-6 movie-info">
+                    <h2>@Model.TenPhim</h2>
+                    <p>
+                        @if (ViewBag.DanhSachPhan != null)
                         {
-                            <h4>Phần @phan.SoPhan (Số tập: @phan.SoLuongTap)</h4>
+                            foreach (var phan in ViewBag.DanhSachPhan)
+                            {
+                                <h4>Phần @phan.SoPhan (Số tập: @phan.SoLuongTap)</h4>
+                            }
                         }
+                        <strong>Diễn Viên:</strong> @Model.DienVien<br>
+                        <strong>Ngày phát hành:</strong> @Model.NgayPhatHanh.Year<br>
+                        <strong>Mô tả:</strong> @Model.MoTa<br />
+                        <strong>Dạng Phim:</strong> <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
+                        <strong>Đánh giá:</strong> <b>@Model.DanhGia / 10</b>
+                    </p>
+
+                    <!-- Các phần phim -->
+                    @foreach (var phan in ViewBag.DanhSachPhan)
+                    {
+                        <button class="btn-watch">
+                            <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan , soluongTap = phan.SoLuongTap})" style="text-decoration: none; color: white;">Phần @phan.SoPhan</a>
+                        </button>
                     }
-                    Diễn Viên: @Model.DienVien<br>
-                    Ngày phát hành: @Model.NgayPhatHanh.Year<br>
-                    Mô tả: @Model.MoTa<br />
-                    Dạng Phim: <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
-                    Đánh giá: <b>@Model.DanhGia / 10</b>
-                </p>
-                @foreach (var phan in ViewBag.DanhSachPhan)
-                {
-                    <button class="btn-watch">
-                        <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan , soluongTap = phan.SoLuongTap})" style="text-decoration: none; color: white;">Phần @phan.SoPhan</a>
-                    </button>
-                }
-                <button class="btn-watch">Yêu Thích</button>
+
+                    <!-- Nút yêu thích -->
+                    <button class="btn-watch">Yêu Thích</button>
+                </div>
+
             </div>
         </div>
+
 
         <div class="recommended-section">
             <h2 style="color:white">Phim cùng thể loại</h2>
@@ -161,5 +184,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>

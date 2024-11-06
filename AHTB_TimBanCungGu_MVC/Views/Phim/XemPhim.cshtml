@@ -2,6 +2,7 @@
     ViewData["Title"] = "Xem Phim";
     var phan = ViewBag.Phan as AHTB_TimBanCungGu_API.Models.Phan;
     var phimDeCu = ViewBag.PhimDeCu as List<AHTB_TimBanCungGu_API.Models.Phim>;
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <!DOCTYPE html>
@@ -12,82 +13,17 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
 
+
     <style>
-        body {
-            font-family: Poppins, Arial, sans-serif;
-            margin: 0;
-            background-color: #010101;
-            color: #eee;
-        }
 
-        .navbar {
-            background-color: black;
-            padding: 10px 20px;
-        }
-
-        .navbar-brand {
-            color: rgb(255, 0, 0);
-            font-size: 40px;
-            font-weight: bold;
-        }
-
-        .navbar-nav {
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-            flex-grow: 1;
-        }
-
-            .navbar-nav .nav-link {
-                color: white;
-                margin: 0 20px;
-                font-size: 23px;
-                font-weight: 500;
-                transition: color 0.3s;
-            }
-
-                .nav-link.active,
-                .navbar-nav .nav-link:hover {
-                    color: #FF4500;
-                }
-
-        .navbar-icons i {
-            font-size: 38px;
-            color: white;
-            transition: color 0.3s;
-        }
-        .text-dark {
-            color: white !important;
-        }
-        /* CSS tùy chỉnh */
         .film-player {
             width: 100%;
             height: 500px;
             background-size: cover;
             background-position: center;
             border-radius: .375rem;
-        }
-
-        .film-item {
-            max-width: 150px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-            .film-item img {
-                border-radius: .375rem;
-            }
-
-            .film-item:hover {
-                transform: scale(1.05);
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            }
-
-        h2 {
-            color: white;
-        }
-
-        .bg-image {
-            background: url('/images/chieu.png') center center no-repeat;
+            overflow: hidden;
+            margin-bottom: 20px;
         }
 
         .episode-buttons {
@@ -95,7 +31,6 @@
             flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 20px;
-            max-width: calc(10 * (100px + 10px) - 10px);
         }
 
             .episode-buttons button {
@@ -106,61 +41,96 @@
                 font-size: 15px;
                 transition: background-color 0.3s ease, transform 0.3s ease;
                 width: 60px;
-                flex: 0 0 auto;
+                border-radius: .375rem; /* Add rounded corners */
+                padding: 5px; /* Add some padding */
             }
 
                 .episode-buttons button:hover {
-                    background-color: #383d41;
+                    background-color: #585c61;
                     transform: scale(1.05);
                 }
 
-        .comments {
-            margin-top: 40px;
+        .card-hover {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease-in-out;
+            background-color: #343a40;
+            color: #f8f9fa;
         }
 
-            .comments h2 {
-                font-size: 24px;
-                margin-bottom: 20px;
-                color: #383d41;
+            .card-hover img {
+                width: 100%;
+                height: 350px;
+                object-fit: cover;
+                transition: filter 0.3s ease-in-out;
+                border-radius: .375rem; /* Consistent border radius */
             }
 
-        .comment-item {
+            .card-hover:hover img {
+                filter: brightness(80%);
+            }
+
+            .card-hover:hover {
+                transform: scale(1.05);
+            }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .btn-xem-ngay {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
             display: flex;
             align-items: center;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #292929;
-            border: 1px solid #444;
-            margin-bottom: 10px;
+            justify-content: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px; /* Điều chỉnh để có góc bo tròn hơn */
+            font-size: 1rem; /* Để dễ đọc hơn */
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Tăng độ bóng để tạo chiều sâu */
+            transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+            cursor: pointer;
+            font-weight: bold; /* Chữ đậm để dễ nhìn hơn */
         }
 
-            .comment-item img {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                margin-right: 10px;
-            }
+        .card-hover:hover .btn-xem-ngay {
+            opacity: 1;
+            pointer-events: auto; /* Cho phép tương tác khi hover */
+            background-color: #c82333; /* Màu đỏ đậm hơn khi hover */
+            transform: translate(-50%, -50%) scale(1.05); /* Tăng kích thước một chút khi hover */
+        }
 
-            .comment-item p {
-                color: #ccc;
-                margin: 0;
-                line-height: 1.4;
-            }
+        .btn-xem-ngay i {
+            margin-right: 8px;
+            font-size: 18px; /* Tăng kích thước biểu tượng cho cân đối hơn */
+        }
+        .card-title {
+            font-size: 16px;
+            color: #f8f9fa;
+        }
 
-                .comment-item p strong {
-                    display: block;
-                    color: #1e90ff;
-                    margin-bottom: 5px;
-                }
+        .pagination {
+            margin-top: 20px;
+        }
 
-        /* Thẻ phim */
-        .film-card {
+     /*    .film-card {
             border: none;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
             .film-card img {
                 border-radius: .375rem;
+                max-height: 300px;
+                object-fit: cover;
             }
 
             .film-card:hover {
@@ -177,8 +147,9 @@
                 font-size: 1rem;
                 color: #333;
                 margin-top: .5rem;
-            }
-    </style>
+            } */
+
+   </style>
 </head>
 <body>
     <div class="container my-4">
@@ -194,6 +165,7 @@
             <div class="film-player bg-image">
                 <iframe id="filmPlayer" src="https://vidsrc.me/embed/tv?imdb=@phan.Phim.SourcePhim&season=@phan.SoPhan&episode=0" style="width: 100%; height: 100%;" frameborder="0" referrerpolicy="origin" allowfullscreen></iframe>
             </div>
+
             <div class="episode-buttons">
                 @if (phan.SoLuongTap != null)
                 {
@@ -203,6 +175,7 @@
                     }
                 }
             </div>
+
             <div class="mb-4">
                 <h2>Mô tả</h2>
                 <p>@phan.Phim.MoTa</p>
@@ -223,11 +196,16 @@
             <div class="row">
                 @foreach (var phim in phimDeCu)
                 {
-                    <div class="col-6 col-md-4 col-lg-3 mb-4">
-                        <div class="card film-card">
-                            <img src="/images/@phim.HinhAnh" class="card-img-top" alt="@phim.TenPhim">
-                            <div class="card-body text-center">
+                    <div class="col-md-3 mb-4">
+                        <div class="card-hover">
+                            <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim" class="card-img-top">
+                            <div class="card-body">
                                 <h5 class="card-title">@phim.TenPhim</h5>
+                                <button class="btn-xem-ngay">
+                                    <a asp-controller="Phim" asp-action="ChiTietPhim" asp-route-id="@phim.IDPhim" style="text-decoration: none; color: white;">
+                                        <i class="bi bi-play-fill"></i> Xem ngay
+                                    </a>
+                                </button>
                             </div>
                         </div>
                     </div>
