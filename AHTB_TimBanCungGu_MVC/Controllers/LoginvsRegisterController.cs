@@ -4,6 +4,10 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System.Text;
+using System.Text.Json;
+using AHTB_TimBanCungGu_API.ViewModels;
+using System.Reflection.Metadata;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -114,6 +118,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             return View();
         }
 
+
         [HttpPost]
         public async Task<IActionResult> VerifyOtp(string email, string otp)
         {
@@ -176,6 +181,111 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             return View();
         }
+        // Hiển thị trang quên mật khẩu
+        public IActionResult QuenMatKhau()
+        {
+
+            return View();
+        }
+
+        // Phương thức xử lý quên mật khẩu
+        [HttpPost]
+        public async Task<IActionResult> QuenMatKhau(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                ModelState.AddModelError(string.Empty, "Vui lòng nhập địa chỉ email.");
+                return View();
+            }
+            string local = GlobalSettings.MvcBaseUrl;
+            var content = new StringContent(
+                JsonSerializer.Serialize(new { email, local }),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync($"{ApiBaseUrl}/Account/ForgotPassword", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                ViewBag.Message = "Đường link đặt lại mật khẩu đã được gửi đến email của bạn.";
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Có lỗi xảy ra. Vui lòng thử lại.");
+            }
+
+            return View();
+        }
+        [HttpGet]
+        public async Task<IActionResult> DoiMatKhau(string token, string email)
+        {
+            // Kiểm tra token có hợp lệ không
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+            {
+                ModelState.AddModelError(string.Empty, "Token hoặc email không hợp lệ.");
+                return View(); // Trả về view hiện tại với lỗi
+            }
+            var content = new StringContent(
+            JsonSerializer.Serialize(new { token }),
+            Encoding.UTF8,
+            "application/json");
+
+            // Gửi yêu cầu kiểm tra token đến API
+            var response = await _httpClient.PostAsync($"{ApiBaseUrl}/Account/ResetPassword", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                ViewData["Email"] = email;
+                ViewData["Token"] = token;
+                ViewBag.Message = "Xác minh thành công! Bạn có thể đặt lại mật khẩu.";
+                return View(); // Chuyển đến view cho việc đặt lại mật khẩu
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Có lỗi xảy ra. Vui lòng thử lại.");
+                ViewData["Email"] = email; // Giữ email khi có lỗi
+                return View("QuenMatKhau"); // Trả về view hiện tại với lỗi
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> DoiMatKhau(string email, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                ModelState.AddModelError(string.Empty, "Vui lòng nhập đầy đủ thông tin.");
+                ViewData["Email"] = email; // Đảm bảo email được lưu lại nếu có lỗi
+                return View();
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                ModelState.AddModelError(string.Empty, "Mật khẩu không khớp.");
+                ViewData["Email"] = email; // Đảm bảo email được lưu lại nếu có lỗi
+                return View();
+            }
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(new { email, newPassword }),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync($"{ApiBaseUrl}/Account/ChangePassword", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                ViewBag.Message = "Mật khẩu đã được đổi thành công.";
+                return RedirectToAction("Login"); // Chuyển hướng đến trang đăng nhập
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Có lỗi xảy ra. Vui lòng thử lại.");
+                ViewData["Email"] = email; // Giữ email khi có lỗi
+                return View();
+            }
+        }
+
 
         private bool IsValidEmail(string email)
         {

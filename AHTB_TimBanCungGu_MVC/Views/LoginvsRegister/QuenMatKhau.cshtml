@@ -1,0 +1,160 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quên Mật Khẩu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css"> <!-- Liên kết với file CSS -->
+    <style>
+        body {
+            height: 100vh;
+            background: url('../image/background/backgrounddangnhap.jpg') no-repeat center center;
+            background-size: cover;
+            display: grid;
+            place-content: center;
+            font-family: 'Poppins', sans-serif; /* Font chữ Poppins */
+        }
+
+        .form_main {
+            width: 400px; /* Increased width */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #ffffff; /* Màu nền cho form */
+            padding: 40px; /* Increased padding */
+            box-shadow: 0px 0px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .form_main::before {
+                position: absolute;
+                content: "";
+                width: 250px;
+                height: 250px;
+                background-color: rgba(0, 0, 0, 0.1); /* Màu nền phụ */
+                transform: rotate(45deg);
+                left: -120px;
+                bottom: 30px;
+                border-radius: 30px;
+                box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1);
+                z-index: 1;
+            }
+
+        .heading {
+            color: #2e2e2e; /* Màu chữ cho tiêu đề */
+            font-weight: 600;
+            margin-bottom: 20px; /* Adjusted margin */
+            z-index: 2;
+            text-align: center;
+            font-size: 2em; /* Increased font size */
+        }
+
+        .description {
+            color: #333; /* Màu chữ cho mô tả */
+            text-align: center;
+            margin-bottom: 30px; /* Adjusted margin */
+            font-size: 1em; /* Increased font size */
+        }
+
+        .inputContainer {
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .inputIcon {
+            position: absolute;
+            left: 5px;
+            z-index: 2;
+            fill: #2e2e2e; /* Màu icon */
+        }
+
+        .inputField {
+            width: 100%;
+            padding: 12px 8px 12px 30px; /* Increased padding */
+            background-color: transparent; /* Nền trong suốt */
+            border: none;
+            border-bottom: 2px solid #adadad; /* Màu viền dưới */
+            font-size: 1em; /* Increased font size */
+            color: #333; /* Màu chữ */
+            z-index: 2;
+        }
+
+            .inputField:focus {
+                outline: none;
+                border-bottom: 2px solid #000; /* Màu viền khi focus */
+            }
+
+
+            .inputField::placeholder {
+                color: #888; /* Màu chữ placeholder */
+            }
+
+        #button {
+            width: 100%;
+            border: none;
+            background-color: #000; /* Màu nền nút */
+            color: #fff; /* Màu chữ nút */
+            font-size: 1.4em; /* Increased font size */
+            padding: 12px; /* Increased padding */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            z-index: 10;
+            border-radius: 5px; /* Bo góc nút */
+        }
+
+            #button:hover {
+                background-color: #fff; /* Màu nền khi di chuột qua nút */
+                color: #333; /* Màu chữ khi di chuột qua nút */
+                border: 2px solid #333; /* Viền màu chữ */
+            }
+
+            #button:focus {
+                outline: 2px solid #fff; /* Đường viền khi focus */
+                outline-offset: 2px;
+            }
+
+        .forgotLink {
+            font-size: 0.9em; /* Increased font size */
+            color: #000; /* Màu chữ link */
+            text-decoration: none; /* Không gạch chân */
+            margin-top: 15px; /* Adjusted margin */
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <form asp-action="QuenMatKhau" method="post" class="form_main">
+        <h1 class="heading">Quên Mật Khẩu</h1>
+        <p class="description">Nhập địa chỉ email của bạn để nhận hướng dẫn đặt lại mật khẩu.</p>
+        <div class="inputContainer">
+            <svg class="inputIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                <path d="M12 13.5l-10.5-7.5v-2l10.5 7.5 10.5-7.5v2z" fill="#2e2e2e" />
+                <path d="M21 5h-18c-1.104 0-2 .896-2 2v14c0 1.104.896 2 2 2h18c1.104 0 2-.896 2-2v-14c0-1.104-.896-2-2-2zm0 16h-18v-14h18v14z" fill="#2e2e2e" />
+            </svg>
+            <input type="email" class="inputField" id="email" name="email" placeholder="Email" aria-label="Email" required>
+        </div>
+
+        <button id="button" type="submit">Gửi mail</button>
+        <a class="forgotLink" asp-action="Login">Quay lại Đăng nhập?</a>
+        <div id="loader" style="display:none;">Loading...</div>
+    </form>
+
+    <script>
+        document.querySelector('.form_main').addEventListener('submit', function () {
+            document.getElementById('loader').style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>
