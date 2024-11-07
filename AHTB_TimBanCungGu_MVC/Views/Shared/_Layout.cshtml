@@ -12,22 +12,17 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-black">
         <div class="container-fluid">
-            <!-- Logo -->
             <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AHTB</a>
-
-            <!-- Nút chuyển đổi thanh điều hướng cho chế độ di động -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
-            <!-- Liên kết và Biểu tượng trong thanh điều hướng -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
                         <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Privacy">Giới thiệu</a>
+                        <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="GioiThieu">Giới thiệu</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-white" asp-area="" asp-controller="Movies" asp-action="Movies">Phim</a>
@@ -39,11 +34,10 @@
                         <a class="nav-link text-white" asp-area="" asp-controller="TimBanCungGu" asp-action="TrangChu">Tìm bạn cùng gu</a>
                     </li>
                 </ul>
-                <!-- Biểu tượng ở bên phải -->
                 <div class="navbar-icons d-flex align-items-center">
                     <div class="dropdown">
                         <i class="bi bi-bell-fill bell-icon" id="dropdownNotification" role="button" data-bs-toggle="dropdown" aria-expanded="false"></i>
-                        <ul class="dropdown-menu dropdown-menu-end bg-white text-white" aria-labelledby="dropdownNotification">
+                        <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownNotification">
                             <li><a class="dropdown-item" href="#">Thông báo 1: Bạn có một tin nhắn mới</a></li>
                             <li><a class="dropdown-item" href="#">Thông báo 2: Đã có một sự kiện mới</a></li>
                             <li><a class="dropdown-item" href="#">Thông báo 3: Cập nhật từ hệ thống</a></li>
@@ -51,13 +45,12 @@
                     </div>
                     <div class="dropdown">
                         <i class="bi bi-person-fill person-icon ms-3" id="dropdownAccount" role="button" data-bs-toggle="dropdown" aria-expanded="false"></i>
-                        <ul class="dropdown-menu dropdown-menu-end bg-white text-white" aria-labelledby="dropdownAccount">
+                        <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownAccount">
                             <li><a class="dropdown-item" href="#">Thông tin tài khoản</a></li>
                             <li><a class="dropdown-item" href="#">Đăng xuất</a></li>
                         </ul>
                     </div>
                 </div>
-
             </div>
         </div>
     </nav>
@@ -66,45 +59,63 @@
             @RenderBody()
         </main>
     </div>
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Giới thiệu</h5>
+                    <p>Chúng tôi là web phim hàng đầu, cung cấp những bộ phim mới nhất và dịch vụ tốt nhất cho khán giả.</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Liên hệ</h5>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="#" class="text-white" style="text-decoration: none;">
+                                <i class="bi bi-envelope-fill"></i> contact@film.com
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-white" style="text-decoration: none;">
+                                <i class="bi bi-telephone-fill"></i> 0123 456 789
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-white" style="text-decoration: none;">
+                                <i class="bi bi-geo-alt-fill"></i> 21 Đường 3/2, Quận Ninh Kiều, TP. Cần Thơ
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+            </div>
+            <div class="text-center mt-4">
+                <p>&copy; 2024 Anh Hùng Tranh Bá Film. Bản quyền thuộc về chúng tôi.</p>
+            </div>
+    </footer>
     <script>
         const socket = new WebSocket('http://localhost:60771/Admin/ThongTinCaNhans/ConnectWebSocket');
 
         socket.onmessage = function (event) {
-            // Hiển thị thông báo ở giữa màn hình bằng SweetAlert2
             Swal.fire({
                 title: 'Thông Báo',
                 html: event.data,
                 icon: 'warning',
                 confirmButtonText: 'Đóng',
-                timer: 5000, // Tự động đóng sau 5 giây
+                timer: 5000,
                 timerProgressBar: true,
-                position: 'center', // Hiển thị ở giữa màn hình
-                showConfirmButton: false, // Ẩn nút Đóng nếu muốn chỉ hiển thị trong vài giây
-                customClass: {
-                    popup: 'swal2-popup-custom', // Thêm class để tùy chỉnh giao diện
-                }
+                position: 'center',
+                showConfirmButton: false,
+                customClass: { popup: 'swal2-popup-custom' }
             });
         };
 
-        socket.onopen = function () {
-            console.log("WebSocket is open.");
-        };
-
-        socket.onclose = function () {
-            console.log("WebSocket closed.");
-        };
-
-        socket.onerror = function (error) {
-            console.log("WebSocket error:", error);
-        };
+        socket.onopen = function () { console.log("WebSocket is open."); };
+        socket.onclose = function () { console.log("WebSocket closed."); };
+        socket.onerror = function (error) { console.log("WebSocket error:", error); };
     </script>
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is loaded -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-   
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-                            
-

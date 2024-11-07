@@ -58,17 +58,17 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 return NotFound();
             }
 
-            // Lấy tên thể loại của phim hiện tại
-            var tenTheLoai = movie.TheLoai.TenTheLoai;
-
             // Lấy danh sách các phần của bộ phim
-            var danhSachPhan = movie.Phan.ToList();
+            var danhSachPhan = _context.Phan
+                                .Where(p => p.PhimID == id) // Lọc theo IDPhim kiểu string
+                                .OrderBy(p => p.SoPhan)     // Sắp xếp theo SoPhan từ thấp đến cao
+                                .ToList();                  // Chuyển thành danh sách
 
             // Lấy danh sách phim đề cử cùng thể loại và loại trừ phim hiện tại
             var phimDeCu = _context.Phim
                 .Include(p => p.TheLoai)
                 .Include(p => p.Phan)
-                .Where(p => p.TheLoai.TenTheLoai == tenTheLoai && p.IDPhim != movie.IDPhim)
+                .Where(p => p.TheLoai.TenTheLoai == movie.TheLoai.TenTheLoai && p.IDPhim != movie.IDPhim)
                 .ToList();
 
             // Lọc theo từ khóa tìm kiếm nếu từ khóa được cung cấp
@@ -78,12 +78,14 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                     .Where(p => p.TenPhim.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
+
             // Truyền danh sách phim đề cử và danh sách các phần qua ViewBag
             ViewBag.PhimDeCu = phimDeCu;
             ViewBag.DanhSachPhan = danhSachPhan;
 
             return View(movie); // Truyền phim hiện tại sang view
         }
+
 
 
         // GET: Phim

@@ -1,0 +1,196 @@
+﻿
+@{
+    ViewData["Title"] = "GioiThieu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anh Hùng Tranh Bá Cinema</title>
+ 
+</head>
+<style>
+    .hero-section {
+        text-align: center;
+        padding: 10px 0;
+        color: #FF4500;
+    }
+
+        .hero-section h1 {
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .hero-section p {
+            font-size: 30px;
+            color: white;
+        }
+
+    .description-section {
+        padding: 30px 0;
+    }
+
+        .description-section h3 {
+            color: #FF4500;
+        }
+
+    .team-section {
+        padding: 30px 0;
+    }
+
+        .team-section h3 {
+            color: #FF4500;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .team-section .member img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .team-section .member p {
+            font-size: 14px;
+            color: white;
+        }
+
+
+    /* Hero Section */
+    .hero-section {
+        padding: 50px 0;
+        text-align: center;
+    }
+
+        .hero-section h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .hero-section p {
+            font-size: 24px;
+        }
+
+    /* Description Section */
+    .description-section {
+        padding: 15px;
+        text-align: center;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        font-size: 18px; /* Tăng kích thước chữ */
+        line-height: 1.6; /* Điều chỉnh khoảng cách dòng để dễ đọc */
+    }
+
+    .member p {
+        margin-top: 10px;
+    }
+
+    /* Banner Image */
+    .banner-container {
+        max-width: 100%; /* Để phù hợp với container */
+        padding: 0 1px; /* Khoảng cách hai bên trong container */
+    }
+
+    .banner-image {
+        width: 100%; /* Để hình ảnh chiếm toàn bộ chiều rộng của container */
+        height: 500px;
+        object-fit: cover;
+        border-radius: 10px;
+        display: block;
+        margin: 0 auto 10px auto;
+    }
+
+    /* Team Section Images */
+    .team-section .member img {
+        border-radius: 50%;
+        width: 200px; /* Adjusted size */
+        height: 200px; /* Adjusted size */
+        margin-bottom: 10px;
+    }
+
+    .team-section .member {
+        padding: 10px;
+        margin: 0 auto;
+    }
+
+    .team-section .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .team-section .col-xs-6 {
+        margin-bottom: 20px;
+    }
+
+    .team-section .col-sm-4 {
+        flex: 1 1 33%;
+        max-width: 33%;
+    }
+
+    .team-section .col-md-4 {
+        flex: 1 1 33%;
+        max-width: 33%;
+    }
+</style>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1>ANH HÙNG TRANH BÁ CINEMA</h1>
+        <p class="highlight-text">Trang phim đỉnh nhất Việt Nam</p>
+    </div>
+
+    <!-- Container for the banner image -->
+    <div class="container banner-container">
+        <img src="~/images/quayphim.jpg" alt="" class="banner-image">
+    </div>
+
+
+    <!-- Description Section -->
+    <div class="container description-section">
+        <h3>Mô tả</h3>
+        <p>
+            Anh Hùng Tranh Bá là một trang web xem phim trực tuyến hàng đầu, chuyên cung cấp các bộ phim hành động, siêu anh hùng đầy kịch tính và hấp dẫn. Với giao diện hiện đại, dễ sử dụng, người dùng có thể dễ dàng khám phá và thưởng thức các bộ phim chất lượng cao từ khắp nơi trên thế giới. Đặc biệt, trang còn tích hợp tính năng “tìm bạn cùng gu”, giúp kết nối những người có chung sở thích phim ảnh, tạo điều kiện cho người dùng giao lưu, chia sẻ cảm nhận và trải nghiệm xem phim cùng nhau, từ đó xây dựng một cộng đồng yêu phim sôi động và gắn kết.
+        </p>
+    </div>
+
+    <!-- Team Section -->
+    <div class="container team-section">
+        <h3>Thành Viên</h3>
+        <div class="row text-center">
+            <div class="col-xs-6 col-sm-4 col-md-4 member">
+                <img src="~/images/Khang.jpg" alt="Member Image">
+                <p>Phan Vũ Thành Khang (Thành viên)</p>
+            </div>
+            <div class="col-xs-6 col-sm-4 col-md-4 member">
+                <img src="~/images/Duy.jpg" alt="Member Image">
+                <p>Tiêu Anh Duy (Nhóm Trưởng)</p>
+            </div>
+            <div class="col-xs-6 col-sm-4 col-md-4 member">
+                <img src="~/images/Nguyen.jpg" alt="Member Image">
+                <p>Nguyễn Nguyễn (Thành viên)</p>
+            </div>
+            <div class="col-xs-6 col-sm-4 col-md-4 member">
+                <img src="~/images/Cuong.jpg" alt="Member Image">
+                <p>Lương Chí Cường (Thành viên)</p>
+            </div>
+            <div class="col-xs-6 col-sm-4 col-md-4 member">
+                <img src="~/images/Kiet.jpg" alt="Member Image">
+                <p>Nguyễn Huỳnh Tuấn Kiệt (Thành viên)</p>
+            </div>
+            <div class="col-xs-6 col-sm-4 col-md-4 member">
+                <img src="~/images/Mann.jpg" alt="Member Image">
+                <p>Nguyễn Ngọc Mẫn (Thành viên)</p>
+            </div>
+        </div>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
+
