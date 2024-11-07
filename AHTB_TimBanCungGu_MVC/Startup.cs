@@ -86,7 +86,7 @@ namespace AHTB_TimBanCungGu_MVC
                 // Route mặc định
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=LoginvsRegister}/{action=Login}/{id?}");
             });
         }
     }

@@ -1,0 +1,73 @@
+﻿@model AHTB_TimBanCungGu_API.Models.ThongTinCaNhan
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Thông tin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<link rel="stylesheet" href="~/css/capnhatthongtin.css">
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Chỉnh sửa Thông tin cá nhân</h2>
+
+    <div class="card mb-4 shadow-lg custom-card">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @* Hidden ID Profile *@
+                <input type="hidden" asp-for="IDProfile" />
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Họ tên:</div>
+                    <div class="col-md-8">
+                        <input asp-for="HoTen" class="form-control" />
+                        <span asp-validation-for="HoTen" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Giới tính:</div>
+                    <div class="col-md-8">
+                        <div class="form-check d-inline-block mr-2">
+                            <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nam" id="Nam" />
+                            <label class="form-check-label" for="Nam">Nam</label>
+                        </div>
+                        <div class="form-check d-inline-block">
+                            <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nữ" id="Nu" />
+                            <label class="form-check-label" for="Nu">Nữ</label>
+                        </div>
+                        <span asp-validation-for="GioiTinh" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Ngày sinh:</div>
+                    <div class="col-md-8">
+                        <!-- Hiển thị ngày theo định dạng dd/MM/yyyy -->
+                        <input asp-for="NgaySinh" type="text" class="form-control" value="@Model.NgaySinh.ToString("dd/MM/yyyy")" />
+                        <span asp-validation-for="NgaySinh" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Số điện thoại:</div>
+                    <div class="col-md-8">
+                        <input asp-for="SoDienThoai" class="form-control" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Mô tả:</div>
+                    <div class="col-md-8">
+                        <textarea asp-for="MoTa" class="form-control" rows="1"></textarea>
+                        <span asp-validation-for="MoTa" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <input type="submit" value="Lưu" class="btn btn-primary" />
+                    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

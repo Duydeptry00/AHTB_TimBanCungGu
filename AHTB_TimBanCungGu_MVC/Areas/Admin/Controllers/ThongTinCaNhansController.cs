@@ -173,7 +173,9 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
 
             // Trả về thông báo thành công chỉ khi đã cập nhật
-            return Json(new { success = true, status = newStatus });
+            HttpContext.Session.Clear();
+
+            return Json(new { success = true, status = newStatus, redirectToLogin = "/LoginvsRegister/Login" });
         }
 
         public IActionResult TestLogin()

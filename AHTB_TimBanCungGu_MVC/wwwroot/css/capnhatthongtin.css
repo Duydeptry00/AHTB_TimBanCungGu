@@ -1,0 +1,71 @@
+﻿/* Tạo kiểu cho card */
+.custom-card {
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease-in-out;
+}
+/* Tạo kiểu cho các label và giá trị */
+.custom-label {
+    font-weight: bold;
+    color: #333333;
+}
+
+.custom-value {
+    font-size: 1rem;
+    color: #555555;
+    line-height: 1.6;
+}
+
+/* Thêm kiểu cho badge (Premium) */
+.badge-success {
+    background-color: #28a745;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+}
+
+/* Chỉnh sửa nút */
+.custom-btn {
+    background-color: #007bff;
+    color: #ffffff;
+    border-radius: 30px;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+    .custom-btn:hover {
+        background-color: #0056b3;
+        color: #ffffff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+/* Responsive: đảm bảo rằng khi trên các màn hình nhỏ, giao diện vẫn đẹp */
+@media (max-width: 767px) {
+    .custom-label {
+        font-size: 14px;
+    }
+
+    .custom-value {
+        font-size: 13px;
+    }
+
+    .custom-btn {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+}
+.form-check {
+    margin-right: 8px; 
+}
+
+
