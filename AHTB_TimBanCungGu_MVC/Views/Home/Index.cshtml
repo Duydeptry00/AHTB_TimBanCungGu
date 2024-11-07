@@ -1,19 +1,19 @@
 ﻿@using System.Linq
 @model IEnumerable<AHTB_TimBanCungGu_API.Models.Phim>
 
-<div class="slider" style="margin: 0px">
+<div class="slider" style="margin: 0;">
     <div class="list">
         @foreach (var phim in Model)
         {
             <div class="item @(Model.First() == phim ? "active" : "")">
-                <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim"> <!-- Image source from database -->
+                <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim">
                 <div class="content">
-                    <h1>@phim.TenPhim</h1> <!-- Movie title -->
+                    <h1>@phim.TenPhim</h1>
                     <div class="rating">
-                        <span>@phim.DanhGia/10</span> <!-- Rating display -->
+                        <span>@phim.DanhGia/10</span>
                     </div>
                     <p>@phim.DienVien</p>
-                    <p>@phim.TheLoai.TenTheLoai</p> <!-- Genre name -->
+                    <p>@phim.TheLoai.TenTheLoai</p>
                     <div class="icon-container">
                         <button class="btn btn-primary btn-icon btn-icon-add" title="Thêm Phim">
                             <i class="bi bi-plus"></i>
@@ -22,25 +22,21 @@
                             <i class="bi bi-play"></i>
                         </button>
                     </div>
-                    <h4 style="margin-top: 5px;">@phim.MoTa</h4> <!-- Movie description -->
+                    <h4 style="margin-top: 5px;">@phim.MoTa</h4>
                 </div>
             </div>
         }
     </div>
 </div>
-<<div class="thumbnail">
+<div class="thumbnail">
     @foreach (var phim in Model)
     {
         <div class="item @(Model.First() == phim ? "active" : "")">
-            <img src="/images/@phim.HinhAnh" style="margin: 0 20px;" alt="@phim.TenPhim"> <!-- Thumbnail image -->
+            <img src="/images/@phim.HinhAnh" style="margin: 0 20px;" alt="@phim.TenPhim">
         </div>
     }
 </div>
 
-
 <script src="/js/app.js?v=1.0"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
-

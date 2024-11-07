@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "Phim";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -10,46 +9,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh Sách Phim</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
 
-    <style>
 
+    <style>
+        /* Tạo hiệu ứng khi hover vào thẻ card */
         .card-hover {
             position: relative;
             overflow: hidden;
             transition: transform 0.3s ease-in-out;
-            background-color: #343a40;
-            color: #f8f9fa;
+            background-color: #343a40; /* Màu nền cho thẻ card */
+            color: #f8f9fa; /* Màu chữ cho thẻ card */
+            border-radius: 8px; /* Bo tròn các góc của thẻ */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng để thẻ nổi bật */
         }
 
             .card-hover img {
                 width: 100%;
                 height: 350px;
-                object-fit: cover;
+                object-fit: cover; /* Ảnh sẽ được cắt theo tỷ lệ và không bị biến dạng */
                 transition: filter 0.3s ease-in-out;
             }
 
+            /* Khi hover vào ảnh, độ sáng giảm để tạo hiệu ứng nổi bật */
             .card-hover:hover img {
                 filter: brightness(80%);
             }
 
+            /* Phóng to nhẹ thẻ card khi hover để tạo hiệu ứng nổi bật */
             .card-hover:hover {
                 transform: scale(1.05);
             }
 
         .card-body {
             padding: 15px;
+            text-align: center;
         }
 
+        /* Nút "Xem ngay" chỉ hiển thị khi hover vào thẻ card */
         .btn-xem-ngay {
             position: absolute;
             transition: opacity 0.3s ease-in-out;
             opacity: 0;
-            pointer-events: none; /* Ngăn chặn click */
+            pointer-events: none;
             display: flex;
-            align-items: center;
+            align-items: center; /* Giúp biểu tượng và chữ nằm cùng hàng */
             justify-content: center;
             top: 50%;
             left: 50%;
@@ -61,25 +66,40 @@
             border-radius: 50px;
             font-size: 16px;
             cursor: pointer;
-            min-width: 150px;
             text-align: center;
+            white-space: nowrap;
         }
 
+            .btn-xem-ngay i {
+                font-size: 1em; /* Giảm kích thước icon để vừa với chữ */
+                margin-right: 8px; /* Khoảng cách giữa biểu tượng và chữ */
+                vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
+            }
+
+
+
+        /* Khi hover vào thẻ card, nút sẽ hiện lên */
         .card-hover:hover .btn-xem-ngay {
             opacity: 1;
             pointer-events: auto; /* Cho phép click khi hover */
         }
 
+        /* Tạo biểu tượng cho nút "Xem ngay" */
         .card-hover .btn-xem-ngay i {
             margin-right: 8px;
         }
 
+        /* Điều chỉnh font và màu cho tiêu đề */
         .card-title {
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: bold;
             color: #f8f9fa;
         }
+
+        /* Căn chỉnh phân trang */
         .pagination {
             margin-top: 20px;
+            justify-content: center;
         }
     </style>
 </head>
@@ -94,67 +114,8 @@
                     </div>
                 </form>
             </div>
-            <script>
-                function startRecognition() {
-                    if (!('webkitSpeechRecognition' in window)) {
-                        alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.");
-                        return;
-                    }
-                    var recognition = new webkitSpeechRecognition();
-                    recognition.lang = 'vi-VN'; // Đặt ngôn ngữ tiếng Việt
-                    recognition.continuous = false;
-                    recognition.interimResults = false;
-
-                    recognition.onstart = function () {
-                        console.log("Bắt đầu nhận giọng nói...");
-                    };
-
-                    recognition.onerror = function (event) {
-                        console.log("Có lỗi xảy ra: ", event.error);
-                    };
-
-                    recognition.onresult = function (event) {
-                        var result = event.results[0][0].transcript;
-                        console.log("Kết quả nhận diện giọng nói:", result); // In kết quả nhận diện
-                        document.getElementById('searchBox').value = result; // Cập nhật ô input
-                        fetchMovies(1, $('#filter-options .dropdown-item.active').text(), result); // Gửi yêu cầu tìm kiếm
-
-                    };
-
-                    recognition.start();
-                }
-
-                // Hàm AJAX để lấy phim
-                function fetchMovies(page = 1, genre = 'Tất cả', search = '') {
-                    $.ajax({
-                        url: '@Url.Action("Movies", "Movies")',
-                        type: 'GET',
-                        data: {
-                            page: page,
-                            genre: genre,
-                            search: search
-                        },
-                        success: function (data) {
-                            $('#movie-container').html($(data).find('#movie-container').html());
-                            $('#pagination-container').html($(data).find('#pagination-container').html());
-                        }
-                    });
-                }
-
-                // Sự kiện input cho ô tìm kiếm
-                $('#searchBox').on('input', function () {
-                    fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
-                });
-
-                // Thay đổi thể loại khi chọn từ dropdown
-                $('.dropdown-item').on('click', function () {
-                    $('.dropdown-item').removeClass('active');
-                    $(this).addClass('active');
-                    fetchMovies(1, $(this).text(), $('#searchBox').val());
-                });
-            </script>
             <div class="col-md-2">
-                <button class="btn btn-secondary" style="width: 100px; height: 60px;padding-bottom: 2px; padding-right: 2px;border-top-width: 2px;border-left-width: 2px;padding-left: 2px;padding-top: 2px;border-bottom-width: 2px;" type="button" data-bs-toggle="dropdown">
+                <button class="btn btn-secondary" style="width: 100px; height: 60px;" type="button" data-bs-toggle="dropdown">
                     <i class="bi bi-funnel-fill"></i> Lọc
                 </button>
                 <ul class="dropdown-menu" id="filter-options">
@@ -165,6 +126,7 @@
                 </ul>
             </div>
         </div>
+
         <div class="row" id="movie-container">
             @if (ViewBag.NoResults == true)
             {
@@ -192,7 +154,7 @@
                 }
                 @if (ViewBag.TotalPages > 1)
                 {
-                    <nav aria-label="Phân trang ví dụ">
+                    <nav aria-label="Phân trang">
                         <ul class="pagination justify-content-center" id="pagination-container">
                             @for (int i = 1; i <= ViewBag.TotalPages; i++)
                             {
@@ -206,21 +168,17 @@
             }
         </div>
     </div>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
     <script>
         $(document).ready(function () {
-            // Lấy phim dựa trên thể loại đã chọn và từ khóa tìm kiếm
             function fetchMovies(page = 1, genre = 'Tất cả', search = '') {
                 $.ajax({
                     url: '@Url.Action("Movies", "Movies")',
                     type: 'GET',
-                    data: {
-                        page: page,
-                        genre: genre,
-                        search: search
-                    },
+                    data: { page: page, genre: genre, search: search },
                     success: function (data) {
                         $('#movie-container').html($(data).find('#movie-container').html());
                         $('#pagination-container').html($(data).find('#pagination-container').html());
@@ -228,26 +186,57 @@
                 });
             }
 
-            // Sự kiện click phân trang
+            // Thay đổi khi người dùng nhập từ khóa tìm kiếm
+            $('#searchBox').on('input', function () {
+                fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
+            });
+
+            // Thay đổi thể loại khi người dùng chọn thể loại
+            $('.dropdown-item').on('click', function () {
+                $('.dropdown-item').removeClass('active');
+                $(this).addClass('active');
+                fetchMovies(1, $(this).text(), $('#searchBox').val());
+            });
+
+            // Phân trang
             $(document).on('click', '.page-link', function (e) {
                 e.preventDefault();
                 var page = $(this).data('page');
                 fetchMovies(page, $('#filter-options .dropdown-item.active').text(), $('#searchBox').val());
             });
 
-            // Sự kiện thay đổi tìm kiếm phim
-            $('#searchBox').on('input', function () {
-                fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
-            });
-            $('.dropdown-item').on('click', function () {
-                $('.dropdown-item').removeClass('active');
-                $(this).addClass('active');
-                fetchMovies(1, $(this).text(), $('#searchBox').val());
-            });
-       
+            // Nhận diện giọng nói
+            function startRecognition() {
+                if (!('webkitSpeechRecognition' in window)) {
+                    alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.");
+                    return;
+                }
+                var recognition = new webkitSpeechRecognition();
+                recognition.lang = 'vi-VN';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = function () {
+                    console.log("Bắt đầu nhận giọng nói...");
+                };
+
+                recognition.onerror = function (event) {
+                    console.log("Có lỗi xảy ra: ", event.error);
+                };
+
+                recognition.onresult = function (event) {
+                    var result = event.results[0][0].transcript;
+                    console.log("Kết quả nhận diện giọng nói:", result);
+                    $('#searchBox').val(result);
+                    fetchMovies(1, $('#filter-options .dropdown-item.active').text(), result);
+                };
+
+                recognition.start();
+            }
+
+            // Gán sự kiện nhận diện giọng nói vào nút
+            $('button[type="button"]').click(startRecognition);
         });
     </script>
 </body>
 </html>
-
-

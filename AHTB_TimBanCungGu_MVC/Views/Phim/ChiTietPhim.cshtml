@@ -1,5 +1,6 @@
 ﻿@model AHTB_TimBanCungGu_API.Models.Phim
 
+
 @{
     ViewData["Title"] = "Chi Tiết Phim";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -9,121 +10,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
- 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
-
-
     <link href="/css/chitietphim.css" rel="stylesheet" />
 </head>
-
 <style>
-    body {
-        font-family: 'Roboto', sans-serif;
-        background-color: #333;
-        color: white;
+    /* Tạo hiệu ứng khi hover vào thẻ card */
+    .card-hover {
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+        background-color: #343a40; /* Màu nền cho thẻ card */
+        color: #f8f9fa; /* Màu chữ cho thẻ card */
+        border-radius: 8px; /* Bo tròn các góc của thẻ */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng để thẻ nổi bật */
     }
 
-    .container {
-        padding-top: 2rem;
-    }
-
-    .search-bar {
-        margin-bottom: 20px;
-    }
-
-    .movie-detail {
-        display: flex;
-        gap: 20px;
-        padding: 20px;
-        margin-bottom: 10px;
-    }
-
-    .movie-info h2 {
-        font-size: 1.8rem;
-        color: white;
-    }
-
-    .movie-info p {
-        font-size: 1rem;
-        color: #666;
-    }
-
-    .btn-watch {
-        margin-top: 10px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 0.9rem;
-        transition: background-color 0.3s ease;
-    }
-
-        .btn-watch:hover {
-            background-color: #0056b3;
+        .card-hover img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover; /* Ảnh sẽ được cắt theo tỷ lệ và không bị biến dạng */
+            transition: filter 0.3s ease-in-out;
         }
 
-    .recommended-section h2 {
-        font-size: 1.5rem;
-        color: #444;
-        margin-bottom: 15px;
-    }
+        /* Khi hover vào ảnh, độ sáng giảm để tạo hiệu ứng nổi bật */
+        .card-hover:hover img {
+            filter: brightness(80%);
+        }
 
-    .film-card {
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
-        background-color: #ffffff;
-    }
-
-        .film-card:hover {
+        /* Phóng to nhẹ thẻ card khi hover để tạo hiệu ứng nổi bật */
+        .card-hover:hover {
             transform: scale(1.05);
         }
 
-        .film-card img {
-            border-radius: 8px 8px 0 0;
-        }
+    .card-body {
+        padding: 15px;
+        text-align: center;
+    }
 
-        .film-card .card-body {
-            padding: 0.8rem;
-        }
-
-        .film-card .card-title {
-            font-size: 1rem;
-            color: #333;
-        }
-
-    .btn-secondary {
-        background-color: #17a2b8;
+    /* Nút "Xem ngay" chỉ hiển thị khi hover vào thẻ card */
+    .btn-xem-ngay {
+        position: absolute;
+        transition: opacity 0.3s ease-in-out;
+        opacity: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center; /* Giúp biểu tượng và chữ nằm cùng hàng */
+        justify-content: center;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #dc3545;
         border: none;
-        font-size: 0.85rem;
-        transition: background-color 0.3s ease;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        white-space: nowrap;
     }
 
-        .btn-secondary:hover {
-            background-color: #138496;
+        .btn-xem-ngay i {
+            font-size: 1em; /* Giảm kích thước icon để vừa với chữ */
+            margin-right: 8px; /* Khoảng cách giữa biểu tượng và chữ */
+            vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
         }
 
-    .film-card img {
-     
-        height: 400px; 
-       
+
+
+    /* Khi hover vào thẻ card, nút sẽ hiện lên */
+    .card-hover:hover .btn-xem-ngay {
+        opacity: 1;
+        pointer-events: auto; /* Cho phép click khi hover */
     }
 
-</style>
+    /* Tạo biểu tượng cho nút "Xem ngay" */
+    .card-hover .btn-xem-ngay i {
+        margin-right: 8px;
+    }
 
+    /* Điều chỉnh font và màu cho tiêu đề */
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #f8f9fa;
+    }
+
+    /* Căn chỉnh phân trang */
+    .pagination {
+        margin-top: 20px;
+        justify-content: center;
+    }
+</style>
 <body>
     <div class="container">
-        <div class="col-sm-6 search-bar">
-            <form method="get" action="@Url.Action("ChiTietPhim", "Phim")">
-                <input type="hidden" name="id" value="@Model.IDPhim" />
-                <input class="form-control" type="search" name="searchTerm" placeholder="Tìm kiếm" aria-label="Search" value="@Context.Request.Query["searchTerm"]">
-            </form>
-        </div>
-
-
         <div class="container">
             <div class="row movie-detail">
                 <!-- Hình ảnh phim -->
@@ -135,12 +115,16 @@
                 <div class="col-md-6 movie-info">
                     <h2>@Model.TenPhim</h2>
                     <p>
-                        @if (ViewBag.DanhSachPhan != null)
+                        @if (ViewBag.DanhSachPhan.Count > 1)
                         {
                             foreach (var phan in ViewBag.DanhSachPhan)
                             {
-                                <h4>Phần @phan.SoPhan (Số tập: @phan.SoLuongTap)</h4>
+                                <h4>Phần @phan.SoPhan (@phan.SoLuongTap Tập)</h4>
                             }
+                        }
+                        else
+                        {
+                            <h4>Phim lẻ</h4>
                         }
                         <strong>Diễn Viên:</strong> @Model.DienVien<br>
                         <strong>Ngày phát hành:</strong> @Model.NgayPhatHanh.Year<br>
@@ -149,33 +133,48 @@
                         <strong>Đánh giá:</strong> <b>@Model.DanhGia / 10</b>
                     </p>
 
-                    <!-- Các phần phim -->
-                    @foreach (var phan in ViewBag.DanhSachPhan)
+
+                    <!-- Logic hiển thị nút xem theo loại phim -->
+                    @if (ViewBag.DanhSachPhan != null && ViewBag.DanhSachPhan.Count == 1)
                     {
+                        <!-- Phim lẻ -->
                         <button class="btn-watch">
-                            <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan , soluongTap = phan.SoLuongTap})" style="text-decoration: none; color: white;">Phần @phan.SoPhan</a>
+                            <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = ViewBag.DanhSachPhan[0].SoPhan })" style="text-decoration: none; color: white;">Xem ngay</a>
                         </button>
+                    }
+                    else
+                    {
+                        <!-- Phim bộ -->
+                        @foreach (var phan in ViewBag.DanhSachPhan)
+                        {
+                            <button class="btn-watch">
+                                <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan, soluongTap = phan.SoLuongTap })" style="text-decoration: none; color: white;">
+                                    Phần @phan.SoPhan
+                                </a>
+                            </button>
+                        }
+
                     }
 
                     <!-- Nút yêu thích -->
                     <button class="btn-watch">Yêu Thích</button>
                 </div>
-
             </div>
         </div>
-
 
         <div class="recommended-section">
             <h2 style="color:white">Phim cùng thể loại</h2>
             <div class="row">
                 @foreach (var phim in ViewBag.PhimDeCu)
                 {
-                    <div class="col-6 col-md-4 col-lg-3 mb-4">
-                        <div class="card film-card">
-                            <img src="/images/@phim.HinhAnh" class="card-img-top" alt="@phim.TenPhim">
+                    <div class="col-md-3 mb-4">
+                        <div class="card-hover">
+                            <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim" class="card-img-top">
                             <div class="card-body text-center">
                                 <h5 class="card-title">@phim.TenPhim</h5>
-                                <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="btn btn-secondary">Chi Tiết</a>
+                                <button class="btn-xem-ngay">
+                                    <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" style="text-decoration: none; color: white;"> <i class="bi bi-play-fill"></i> Xem ngay</a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -183,7 +182,6 @@
             </div>
         </div>
     </div>
-
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>

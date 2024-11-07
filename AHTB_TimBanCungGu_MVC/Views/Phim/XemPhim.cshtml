@@ -50,40 +50,47 @@
                     transform: scale(1.05);
                 }
 
+        /* Tạo hiệu ứng khi hover vào thẻ card */
         .card-hover {
             position: relative;
             overflow: hidden;
             transition: transform 0.3s ease-in-out;
-            background-color: #343a40;
-            color: #f8f9fa;
+            background-color: #343a40; /* Màu nền cho thẻ card */
+            color: #f8f9fa; /* Màu chữ cho thẻ card */
+            border-radius: 8px; /* Bo tròn các góc của thẻ */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng để thẻ nổi bật */
         }
 
             .card-hover img {
                 width: 100%;
                 height: 350px;
-                object-fit: cover;
+                object-fit: cover; /* Ảnh sẽ được cắt theo tỷ lệ và không bị biến dạng */
                 transition: filter 0.3s ease-in-out;
-                border-radius: .375rem; /* Consistent border radius */
             }
 
+            /* Khi hover vào ảnh, độ sáng giảm để tạo hiệu ứng nổi bật */
             .card-hover:hover img {
                 filter: brightness(80%);
             }
 
+            /* Phóng to nhẹ thẻ card khi hover để tạo hiệu ứng nổi bật */
             .card-hover:hover {
                 transform: scale(1.05);
             }
 
         .card-body {
             padding: 15px;
+            text-align: center;
         }
 
+        /* Nút "Xem ngay" chỉ hiển thị khi hover vào thẻ card */
         .btn-xem-ngay {
             position: absolute;
+            transition: opacity 0.3s ease-in-out;
             opacity: 0;
             pointer-events: none;
             display: flex;
-            align-items: center;
+            align-items: center; /* Giúp biểu tượng và chữ nằm cùng hàng */
             justify-content: center;
             top: 50%;
             left: 50%;
@@ -92,34 +99,43 @@
             border: none;
             color: white;
             padding: 12px 24px;
-            border-radius: 30px; /* Điều chỉnh để có góc bo tròn hơn */
-            font-size: 1rem; /* Để dễ đọc hơn */
-            min-width: 150px;
-            text-align: center;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); /* Tăng độ bóng để tạo chiều sâu */
-            transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+            border-radius: 50px;
+            font-size: 16px;
             cursor: pointer;
-            font-weight: bold; /* Chữ đậm để dễ nhìn hơn */
+            text-align: center;
+            white-space: nowrap;
         }
 
+            .btn-xem-ngay i {
+                font-size: 1em; /* Giảm kích thước icon để vừa với chữ */
+                margin-right: 8px; /* Khoảng cách giữa biểu tượng và chữ */
+                vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
+            }
+
+
+
+        /* Khi hover vào thẻ card, nút sẽ hiện lên */
         .card-hover:hover .btn-xem-ngay {
             opacity: 1;
-            pointer-events: auto; /* Cho phép tương tác khi hover */
-            background-color: #c82333; /* Màu đỏ đậm hơn khi hover */
-            transform: translate(-50%, -50%) scale(1.05); /* Tăng kích thước một chút khi hover */
+            pointer-events: auto; /* Cho phép click khi hover */
         }
 
-        .btn-xem-ngay i {
+        /* Tạo biểu tượng cho nút "Xem ngay" */
+        .card-hover .btn-xem-ngay i {
             margin-right: 8px;
-            font-size: 18px; /* Tăng kích thước biểu tượng cho cân đối hơn */
         }
+
+        /* Điều chỉnh font và màu cho tiêu đề */
         .card-title {
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: bold;
             color: #f8f9fa;
         }
 
+        /* Căn chỉnh phân trang */
         .pagination {
             margin-top: 20px;
+            justify-content: center;
         }
 
      /*    .film-card {
@@ -155,10 +171,14 @@
     <div class="container my-4">
         <section class="mb-4">
             <h1>
-                @phan.Phim.TenPhim
-                @if (phan.SoPhan != null)
+               
+                @if (phan.SoPhan != 0)
                 {
-                    @($"(Phần {phan.SoPhan})")
+                    @phan.Phim.TenPhim @($"(Phần {phan.SoPhan})")
+                }
+                else
+                {
+                    @phan.Phim.TenPhim
                 }
             </h1>
 

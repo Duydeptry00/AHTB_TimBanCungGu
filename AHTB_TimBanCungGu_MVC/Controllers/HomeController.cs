@@ -33,7 +33,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             return View(phimList);
         }
-        public IActionResult Privacy()
+        public IActionResult GioiThieu()
         {
             return View();
         }
