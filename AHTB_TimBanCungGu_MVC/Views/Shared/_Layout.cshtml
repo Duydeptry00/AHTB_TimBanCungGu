@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="/css/trangchu.css?v=1.0" rel="stylesheet" />
 </head>
 <body>
@@ -45,8 +46,8 @@
                     </div>
                     <div class="dropdown">
                         <i class="bi bi-person-fill person-icon ms-3" id="dropdownAccount" role="button" data-bs-toggle="dropdown" aria-expanded="false"></i>
-                        <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownAccount">
-                            <li><a class="dropdown-item" href="#">Thông tin tài khoản</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end bg-white text-white" aria-labelledby="dropdownAccount">
+                            <li><a class="dropdown-item" asp-controller="ThongTinCaNhans" asp-action="Index">Thông tin tài khoản</a></li>
                             <li><a class="dropdown-item" href="#">Đăng xuất</a></li>
                         </ul>
                     </div>
@@ -59,59 +60,46 @@
             @RenderBody()
         </main>
     </div>
-    <footer class="bg-dark text-white py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>Giới thiệu</h5>
-                    <p>Chúng tôi là web phim hàng đầu, cung cấp những bộ phim mới nhất và dịch vụ tốt nhất cho khán giả.</p>
-                </div>
-                <div class="col-md-6">
-                    <h5>Liên hệ</h5>
-                    <ul class="list-unstyled">
-                        <li>
-                            <a href="#" class="text-white" style="text-decoration: none;">
-                                <i class="bi bi-envelope-fill"></i> contact@film.com
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-white" style="text-decoration: none;">
-                                <i class="bi bi-telephone-fill"></i> 0123 456 789
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-white" style="text-decoration: none;">
-                                <i class="bi bi-geo-alt-fill"></i> 21 Đường 3/2, Quận Ninh Kiều, TP. Cần Thơ
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                
-            </div>
-            <div class="text-center mt-4">
-                <p>&copy; 2024 Anh Hùng Tranh Bá Film. Bản quyền thuộc về chúng tôi.</p>
-            </div>
-    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const socket = new WebSocket('http://localhost:60771/Admin/ThongTinCaNhans/ConnectWebSocket');
 
         socket.onmessage = function (event) {
-            Swal.fire({
-                title: 'Thông Báo',
-                html: event.data,
-                icon: 'warning',
-                confirmButtonText: 'Đóng',
-                timer: 5000,
-                timerProgressBar: true,
-                position: 'center',
-                showConfirmButton: false,
-                customClass: { popup: 'swal2-popup-custom' }
-            });
+            console.log("Message received: ", event.data);  // In dữ liệu nhận được
+            if (event.data) {
+                Swal.fire({
+                    title: 'Thông Báo',
+                    html: event.data,
+                    icon: 'warning',
+                    confirmButtonText: 'Đóng',
+                    timer: 5000, // Tự động đóng sau 5 giây
+                    timerProgressBar: true,
+                    position: 'center',
+                    showConfirmButton: false,
+                    customClass: {
+                        popup: 'swal2-popup-custom',
+                    }
+                }).then(() => {
+                    // Chuyển hướng về trang đăng nhập sau khi thông báo đóng
+                    window.location.href = "/LoginvsRegister/Login";
+                });
+            } else {
+                console.log("Không có dữ liệu trong thông báo.");
+            }
         };
 
-        socket.onopen = function () { console.log("WebSocket is open."); };
-        socket.onclose = function () { console.log("WebSocket closed."); };
-        socket.onerror = function (error) { console.log("WebSocket error:", error); };
+
+        socket.onopen = function () {
+            console.log("WebSocket is open.");
+        };
+
+        socket.onclose = function () {
+            console.log("WebSocket closed.");
+        };
+
+        socket.onerror = function (error) {
+            console.log("WebSocket error:", error);
+        };
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

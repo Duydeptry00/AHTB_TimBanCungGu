@@ -1,0 +1,79 @@
+﻿@model AHTB_TimBanCungGu_API.Models.ThongTinCaNhan
+@{
+    ViewData["Title"] = "Chỉnh sửa Thông tin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<link rel="stylesheet" href="~/css/capnhatthongtin.css">
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Chỉnh sửa Thông tin cá nhân</h2>
+
+    <div class="card mb-4 shadow-lg custom-card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Email:</div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="Email" value="@Model.Email" disabled />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Họ tên:</div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="HoTen" value="@Model.HoTen" disabled />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Giới tính:</div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="GioiTinh" value="@Model.GioiTinh" disabled />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Ngày sinh:</div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="NgaySinh" value="@Model.NgaySinh.ToString("dd/MM/yyyy")" disabled />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Số điện thoại:</div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="SoDienThoai" value="@Model.SoDienThoai" disabled />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Premium:</div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="IsPremium" value="@(Model.IsPremium ? "Có" : "Không")" disabled />
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Mô tả:</div>
+                    <div class="col-md-8">
+                        <textarea class="form-control" name="MoTa" disabled>@Model.MoTa</textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4 font-weight-bold">Ngày tạo:</div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="NgayTao" value="@Model.NgayTao.ToString("dd/MM/yyyy")" disabled />
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="@Url.Action("Edit", "ThongTinCaNhans", new { id = Model.IDProfile })" class="btn btn-primary">Chỉnh sửa thông tin</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
