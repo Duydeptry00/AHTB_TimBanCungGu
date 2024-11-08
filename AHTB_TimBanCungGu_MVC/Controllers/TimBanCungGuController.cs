@@ -156,5 +156,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         {
             return _context.ThongTinCN.Any(e => e.IDProfile == id);
         }
+
     }
 }

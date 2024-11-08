@@ -62,11 +62,9 @@
             </div>
         </div>
     </nav>
-    <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main">
             @RenderBody()
         </main>
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const socket = new WebSocket('http://localhost:60771/Admin/ThongTinCaNhans/ConnectWebSocket');
