@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Models;
 using AHTB_TimBanCungGu_API.Data;
+using Microsoft.AspNetCore.Http;
 
 namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 {
@@ -45,8 +46,67 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 
             return View(phan);
         }
+
+        [HttpPost]
+        public IActionResult ToggleFavorite(string movieId)
+        {
+            var username = HttpContext.Session.GetString("TempUserName");
+
+            // Kiểm tra nếu người dùng chưa đăng nhập
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
+
+            // Kiểm tra xem người dùng có tồn tại trong bảng Users
+            var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+            if (user == null)
+            {
+                TempData["Message"] = "Người dùng không tồn tại!";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
+
+            // Kiểm tra nếu phim đã có trong danh sách yêu thích
+            var favorite = _context.PhimYeuThich
+                .FirstOrDefault(py => py.NguoiDungYT == user.UsID && py.PhimYT == movieId);  // So sánh với UsID
+
+            if (favorite != null)
+            {
+                // Nếu có trong danh sách yêu thích, xóa
+                _context.PhimYeuThich.Remove(favorite);
+                _context.SaveChanges();
+                TempData["Message"] = "Phim đã được xóa khỏi danh sách yêu thích!";
+            }
+            else
+            {
+                // Nếu chưa có, thêm vào danh sách yêu thích
+                var newFavorite = new PhimYeuThich
+                {
+                    NguoiDungYT = user.UsID,  // Sử dụng UsID thay vì username
+                    PhimYT = movieId
+                };
+                _context.PhimYeuThich.Add(newFavorite);
+                _context.SaveChanges();
+                TempData["Message"] = "Phim đã được thêm vào yêu thích!";
+            }
+
+            // Truyền thông tin trạng thái yêu thích về View
+            var isFavorite = _context.PhimYeuThich.Any(py => py.NguoiDungYT == user.UsID && py.PhimYT == movieId);
+            ViewBag.IsFavorite = isFavorite;
+
+            // Chuyển hướng về chi tiết phim
+            return RedirectToAction("ChiTietPhim", new { id = movieId });
+        }
+
+
+
+
+
         public IActionResult ChiTietPhim(string id, string searchTerm = null)
         {
+            // Lấy thông tin username từ Session
+            var username = HttpContext.Session.GetString("TempUserName");
+
             // Lấy thông tin chi tiết của phim dựa theo IDPhim
             var movie = _context.Phim
                 .Include(p => p.Phan)      // Bao gồm các phần của phim
@@ -60,9 +120,9 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 
             // Lấy danh sách các phần của bộ phim
             var danhSachPhan = _context.Phan
-                                .Where(p => p.PhimID == id) // Lọc theo IDPhim kiểu string
-                                .OrderBy(p => p.SoPhan)     // Sắp xếp theo SoPhan từ thấp đến cao
-                                .ToList();                  // Chuyển thành danh sách
+                                .Where(p => p.PhimID == id)
+                                .OrderBy(p => p.SoPhan)
+                                .ToList();
 
             // Lấy danh sách phim đề cử cùng thể loại và loại trừ phim hiện tại
             var phimDeCu = _context.Phim
@@ -78,13 +138,27 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                     .Where(p => p.TenPhim.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
+            var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
 
-            // Truyền danh sách phim đề cử và danh sách các phần qua ViewBag
+            // Kiểm tra xem phim này đã được người dùng yêu thích chưa
+            var isFavorite = _context.PhimYeuThich
+                .Any(py => py.NguoiDungYT == user.UsID && py.PhimYT == id);
+            ViewBag.IsFavorite = isFavorite;
+
+
+            // Truyền thông tin cần thiết qua ViewBag
             ViewBag.PhimDeCu = phimDeCu;
             ViewBag.DanhSachPhan = danhSachPhan;
+            ViewBag.Username = username;
+            ViewBag.IsFavorite = isFavorite; // Trạng thái yêu thích
 
             return View(movie); // Truyền phim hiện tại sang view
         }
+
 
 
 
