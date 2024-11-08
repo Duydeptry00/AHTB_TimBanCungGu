@@ -11,9 +11,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
-    <link href="/css/chitietphim.css" rel="stylesheet" />
+  @*   <link href="/css/chitietphim.css" rel="stylesheet" /> *@
 </head>
 <style>
+
+    /* Phần chi tiết phim */
+    .movie-detail {
+        margin-top: 20px;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        background-color: #222;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Hình ảnh phim */
+    .movie-poster {
+        width: 100%;
+        max-width: 400px; /* Giới hạn chiều rộng của ảnh */
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    /* Thông tin phim */
+    .movie-info {
+        flex: 1; /* Chiếm hết phần còn lại của chiều ngang */
+        color: #ddd;
+    }
+
+        .movie-info h2 {
+            font-size: 2rem;
+            color: #FF4500;
+        }
+
+        .movie-info p {
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        .movie-info strong {
+            color: #FF4500;
+        }
+
+    /* Nút Xem Phim và Yêu Thích */
+    .btn-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .btn-watch {
+        background-color: #dc3545;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        font-size: 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+    }
+
+        .btn-watch a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-watch:hover {
+            background-color: #b02a37;
+        }
+
+    /* Phần phim cùng thể loại */
+    .recommended-section {
+        margin-top: 40px;
+    }
+
     /* Tạo hiệu ứng khi hover vào thẻ card */
     .card-hover {
         position: relative;
@@ -105,62 +180,79 @@
 <body>
     <div class="container">
         <div class="container">
-            <div class="row movie-detail">
-                <!-- Hình ảnh phim -->
-                <div class="col-md-6">
-                    <img src="/images/@Model.HinhAnh" alt="Áp phích phim" class="img-fluid" style="border-radius: 8px; width: 100%; height: 100%; object-fit: contain;">
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Message"]
                 </div>
+            }
+            <div class="container">
+                <div class="row align-items-center movie-detail">
+                    <!-- Hình ảnh phim -->
+                    <div class="col-md-5 d-flex justify-content-center">
+                        <img src="/images/@Model.HinhAnh" alt="Áp phích phim" class="img-fluid movie-poster">
+                    </div>
 
-                <!-- Thông tin phim -->
-                <div class="col-md-6 movie-info">
-                    <h2>@Model.TenPhim</h2>
-                    <p>
-                        @if (ViewBag.DanhSachPhan.Count > 1)
-                        {
-                            foreach (var phan in ViewBag.DanhSachPhan)
+                    <!-- Thông tin phim -->
+                    <div class="col-md-7 movie-info">
+                        <h2>@Model.TenPhim</h2>
+                        <p>
+                            @if (ViewBag.DanhSachPhan.Count > 1)
                             {
-                                <h4>Phần @phan.SoPhan (@phan.SoLuongTap Tập)</h4>
+                                foreach (var phan in ViewBag.DanhSachPhan)
+                                {
+                                    <h4>Phần @phan.SoPhan (@phan.SoLuongTap Tập)</h4>
+                                }
                             }
-                        }
-                        else
-                        {
-                            <h4>Phim lẻ</h4>
-                        }
-                        <strong>Diễn Viên:</strong> @Model.DienVien<br>
-                        <strong>Ngày phát hành:</strong> @Model.NgayPhatHanh.Year<br>
-                        <strong>Mô tả:</strong> @Model.MoTa<br />
-                        <strong>Dạng Phim:</strong> <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
-                        <strong>Đánh giá:</strong> <b>@Model.DanhGia / 10</b>
-                    </p>
+                            else
+                            {
+                                <h4>Phim lẻ</h4>
+                            }
+                            <strong>Diễn Viên:</strong> @Model.DienVien<br>
+                            <strong>Ngày phát hành:</strong> @Model.NgayPhatHanh.Year<br>
+                            <strong>Mô tả:</strong> @Model.MoTa<br />
+                            <strong>Dạng Phim:</strong> <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
+                            <strong>Đánh giá:</strong> <b>@Model.DanhGia / 10</b>
+                        </p>
 
+                        <div class="btn-container">
+                            <!-- Nút xem phim -->
+                            @if (ViewBag.DanhSachPhan != null && ViewBag.DanhSachPhan.Count == 1)
+                            {
+                                <button class="btn-watch">
+                                    <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = ViewBag.DanhSachPhan[0].SoPhan })">Xem ngay</a>
+                                </button>
+                            }
+                            else
+                            {
+                                @foreach (var phan in ViewBag.DanhSachPhan)
+                                {
+                                    <button class="btn-watch">
+                                        <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan, soluongTap = phan.SoLuongTap })">
+                                            Phần @phan.SoPhan
+                                        </a>
+                                    </button>
+                                }
+                            }
 
-                    <!-- Logic hiển thị nút xem theo loại phim -->
-                    @if (ViewBag.DanhSachPhan != null && ViewBag.DanhSachPhan.Count == 1)
-                    {
-                        <!-- Phim lẻ -->
-                        <button class="btn-watch">
-                            <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = ViewBag.DanhSachPhan[0].SoPhan })" style="text-decoration: none; color: white;">Xem ngay</a>
-                        </button>
-                    }
-                    else
-                    {
-                        <!-- Phim bộ -->
-                        @foreach (var phan in ViewBag.DanhSachPhan)
-                        {
-                            <button class="btn-watch">
-                                <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan, soluongTap = phan.SoLuongTap })" style="text-decoration: none; color: white;">
-                                    Phần @phan.SoPhan
-                                </a>
-                            </button>
-                        }
-
-                    }
-
-                    <!-- Nút yêu thích -->
-                    <button class="btn-watch">Yêu Thích</button>
+                            <!-- Nút yêu thích -->
+                            <form asp-action="ToggleFavorite" method="post" style="display: inline;">
+                                <input type="hidden" name="movieId" value="@Model.IDPhim" />
+                                @if (ViewBag.IsFavorite)
+                                {
+                                    <button type="submit" class="btn-watch">Xóa yêu thích</button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn-watch">Yêu thích</button>
+                                }
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
 
         <div class="recommended-section">
             <h2 style="color:white">Phim cùng thể loại</h2>
@@ -184,4 +276,15 @@
     </div>
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+      
+        window.onload = function () {
+            var alert = document.querySelector('.alert-success');
+            if (alert) {
+                setTimeout(function () {
+                    alert.style.display = 'none';
+                }, 5000); 
+            }
+        };
+    </script>
 </body>

@@ -1,0 +1,73 @@
+﻿@model List<AHTB_TimBanCungGu_MVC.Controllers.PhimYeuThichController.PhimYeuThichViewModel>
+<style>
+    /* CSS dành cho thẻ card */
+    .movie-card {
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        overflow: hidden;
+    }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+    /* Hiệu ứng hover cho ảnh */
+    .image-wrapper {
+        overflow: hidden;
+        border-radius: 10px 10px 0 0;
+        height: 300px;
+    }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-wrapper:hover img {
+            transform: scale(1.05);
+        }
+
+    /* Nút xem chi tiết */
+    .btn-details {
+        background-color: #007bff;
+        border: none;
+        transition: background-color 0.3s;
+    }
+
+        .btn-details:hover {
+            background-color: #0056b3;
+        }
+
+</style>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Danh sách phim yêu thích</h2>
+    @if (Model == null || Model.Count == 0)
+    {
+        <p class="text-center">Bạn chưa có phim yêu thích nào.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var phim in Model)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card shadow-sm movie-card h-100">
+                        <div class="image-wrapper">
+                            <img src="/images/@phim.HinhAnh" class="card-img-top" alt="@phim.TenPhim">
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@phim.TenPhim</h5>
+                            <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IdPhim })" class="btn btn-primary btn-details">
+                                Xem Chi Tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -74,6 +74,8 @@ namespace AHTB_TimBanCungGu_MVC
 
             // S? d?ng middleware Session
             app.UseSession();
+            app.UseAuthentication(); // Đảm bảo middleware xác thực được sử dụng
+            app.UseAuthorization();  // Đảm bảo middleware phân quyền được sử dụng
 
             app.UseEndpoints(endpoints =>
             {
