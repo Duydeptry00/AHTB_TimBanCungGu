@@ -22,6 +22,7 @@ namespace AHTB_TimBanCungGu_API.Models
         public string SoDienThoai { get; set; }
         public bool IsPremium { get; set; }
         public string MoTa { get; set; }
+        public string DiaChi { get; set; }
         public DateTime NgayTao { get; set; }
         public string TrangThai { get; set; }
 

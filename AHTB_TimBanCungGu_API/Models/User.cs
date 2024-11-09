@@ -12,8 +12,8 @@ namespace AHTB_TimBanCungGu_API.Models
         public string UserName { get; set; }
         public string Password { get; set; }
         public string TrangThai { get; set; }
-        public DateTime NgayMoKhoa { get; set; }
-        public string LyDoKhoa { get; set; }
+        public DateTime? NgayMoKhoa { get; set; }
+        public string? LyDoKhoa { get; set; }
 
         public ThongTinCaNhan ThongTinCN { get; set; }
         public ICollection<User_Role> User_Role { get; set; }

@@ -26,6 +26,11 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             var dBAHTBContext = _context.Phim.Include(p => p.TheLoai).Include(p => p.User);
+            // Get all unique genres from the database
+            var genres = await _context.TheLoai.Select(t => t.TenTheLoai).Distinct().ToListAsync();
+
+            // Pass genres to ViewData
+            ViewData["Genres"] = genres;
             return View(await dBAHTBContext.ToListAsync());
         }
 

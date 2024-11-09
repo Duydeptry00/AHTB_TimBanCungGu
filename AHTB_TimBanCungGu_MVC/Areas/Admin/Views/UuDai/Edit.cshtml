@@ -1,0 +1,98 @@
+﻿@model AHTB_TimBanCungGu_API.Models.UuDai
+
+@{
+    ViewData["Title"] = "Chỉnh sửa ưu đãi";
+}
+
+<h1 style="color: #d32f2f; text-align: center; margin-bottom: 20px;">Chỉnh sửa ưu đãi</h1>
+
+<div class="card" style="background-color: #222; color: #fff; padding: 20px; border-radius: 8px; margin: 0 auto; max-width: 500px;">
+    <h4 style="color: #d32f2f;">Thông tin ưu đãi</h4>
+    <hr style="border-color: #d32f2f;" />
+
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="IdUuDai" />
+
+        <div class="form-group">
+            <label asp-for="TenUuDai" class="control-label" style="color: #d32f2f;"></label>
+            <input asp-for="TenUuDai" class="form-control" style="background-color: #333; color: #fff; border: none;" />
+            <span asp-validation-for="TenUuDai" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="NgayUuDai" class="control-label" style="color: #d32f2f;"></label>
+            <input asp-for="NgayUuDai" class="form-control" style="background-color: #333; color: #fff; border: none;" />
+            <span asp-validation-for="NgayUuDai" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="PhanTram" class="control-label" style="color: #d32f2f;"></label>
+            <input asp-for="PhanTram" class="form-control" style="background-color: #333; color: #fff; border: none;" />
+            <span asp-validation-for="PhanTram" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Hinh" class="control-label" style="color: #d32f2f;"></label>
+            <input asp-for="Hinh" class="form-control" style="background-color: #333; color: #fff; border: none;" />
+            <span asp-validation-for="Hinh" class="text-danger"></span>
+        </div>
+
+        <div class="form-group" style="text-align: center; margin-top: 20px;">
+            <input type="submit" value="Lưu" class="btn btn-custom btn-danger" />
+            <a asp-action="Index" class="btn btn-custom btn-secondary">Quay lại danh sách</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<style>
+    /* Button Custom Styling */
+    .btn-custom {
+        padding: 10px 20px;
+        font-weight: bold;
+        border-radius: 5px;
+        margin: 5px;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-danger {
+        background-color: #d32f2f;
+        border-color: #d32f2f;
+        color: #fff;
+    }
+
+        .btn-danger:hover {
+            background-color: #b71c1c;
+            border-color: #b71c1c;
+        }
+
+    .btn-secondary {
+        background-color: #555;
+        color: #fff;
+        border-color: #444;
+    }
+
+        .btn-secondary:hover {
+            background-color: #333;
+        }
+    /* Form input custom styling */
+    .form-control {
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+        .form-control:focus {
+            background-color: #444;
+            color: #fff;
+            outline: none;
+        }
+</style>

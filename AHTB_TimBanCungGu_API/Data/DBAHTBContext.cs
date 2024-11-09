@@ -7,6 +7,7 @@ namespace AHTB_TimBanCungGu_API.Data
     public class DBAHTBContext : DbContext
     {
         public DbSet<AnhCaNhan> AnhCaNhan { get; set; }
+        public DbSet<UuDai> UuDai { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<BaoCaoNguoiDung> BaoCaoNguoiDung { get; set; }
         public DbSet<CungGu> CungGu { get; set; }
@@ -43,7 +44,7 @@ namespace AHTB_TimBanCungGu_API.Data
             modelBuilder.Entity<TheLoai>().HasKey(p => p.IdTheLoai);
             modelBuilder.Entity<User_Role>().HasKey(p => p.IDRole_US);
             modelBuilder.Entity<ThongTinCaNhan>().HasKey(p => p.IDProfile);
-
+            modelBuilder.Entity<UuDai>().HasKey(p => p.IdUuDai);
             modelBuilder.Entity<AnhCaNhan>()
                 .HasOne(p => p.ThongTinCN)
                 .WithMany(c => c.AnhCaNhan)

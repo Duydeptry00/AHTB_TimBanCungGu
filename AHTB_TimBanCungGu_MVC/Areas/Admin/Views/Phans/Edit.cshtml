@@ -1,0 +1,47 @@
+﻿@model AHTB_TimBanCungGu_API.Models.Phan
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>Phan</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IDPhan" />
+            <div class="form-group">
+                <label asp-for="SoPhan" class="control-label"></label>
+                <input asp-for="SoPhan" class="form-control" />
+                <span asp-validation-for="SoPhan" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NgayCongChieu" class="control-label"></label>
+                <input asp-for="NgayCongChieu" class="form-control" />
+                <span asp-validation-for="NgayCongChieu" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SoLuongTap" class="control-label"></label>
+                <input asp-for="SoLuongTap" class="form-control" />
+                <span asp-validation-for="SoLuongTap" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhimID" class="control-label"></label>
+                <select asp-for="PhimID" class="form-control" asp-items="ViewBag.PhimID"></select>
+                <span asp-validation-for="PhimID" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
