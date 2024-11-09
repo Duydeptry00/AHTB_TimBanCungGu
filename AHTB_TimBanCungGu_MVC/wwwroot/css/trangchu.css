@@ -26,7 +26,6 @@ svg {
 .navbar-nav {
     margin: 0 auto; /* Giữa các mục */
     display: flex; /* Hiển thị dưới dạng flex */
-    justify-content: center; /* Căn giữa nội dung */
     flex-grow: 1; /* Cho phép navbar mở rộng */
 }
 
@@ -36,6 +35,7 @@ svg {
     font-size: 23px; /* Kích thước chữ */
     font-weight: 500; /* Độ đậm của chữ */
     transition: color 0.3s; /* Hiệu ứng chuyển màu */
+    margin-left : 150px;
 }
 
 .nav-link.active,
@@ -222,7 +222,7 @@ svg {
 }
 
 .bi {
-    font-size: 40px; /* Kích thước biểu tượng Bootstrap */
+    font-size: 32px !important; /* Kích thước biểu tượng Bootstrap */
 }
 
 .btn-icon-add {

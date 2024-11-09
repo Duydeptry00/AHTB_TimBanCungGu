@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AHTB_TimBanCungGu_API.Migrations
 {
-    public partial class cuongdz2k4 : Migration
+    public partial class dbmoi : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

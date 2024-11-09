@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
+using AHTB_TimBanCungGu_API.ViewModels;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -22,8 +23,30 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         // GET: TimBanCungGu
         public async Task<IActionResult> TrangChu()
         {
-            var dBAHTBContext = _context.ThongTinCN.Include(t => t.User);
-            return View(await dBAHTBContext.ToListAsync());
+            var dBAHTBContext = _context.ThongTinCN
+      .Include(t => t.User)
+      .Include(t => t.AnhCaNhan);
+
+
+            // Chuyển dữ liệu thành danh sách ViewModel
+            var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
+            {
+                IDProfile = t.IDProfile,
+                UsID = t.UsID,
+                HoTen = t.HoTen,
+                Email = t.Email,
+                GioiTinh = t.GioiTinh,
+                NgaySinh = t.NgaySinh,
+                SoDienThoai = t.SoDienThoai,
+                IsPremium = t.IsPremium,
+                MoTa = t.MoTa,
+                NgayTao = t.NgayTao,
+                TrangThai = t.TrangThai,
+                HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
+            }).ToListAsync();
+
+            // Trả về view và truyền dữ liệu qua ViewModel
+            return View(thongTinCaNhanViewModels);
         }
 
         // GET: TimBanCungGu/Details/5

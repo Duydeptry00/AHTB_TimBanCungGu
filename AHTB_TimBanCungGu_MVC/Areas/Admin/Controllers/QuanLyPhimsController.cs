@@ -63,7 +63,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IDPhim,TenPhim,MoTa,DienVien,TheLoaiPhim,NgayPhatHanh,DanhGia,TrailerURL,NoiDungPremium,SourcePhim,HinhAnh,DangPhim,NgayCapNhat,IDAdmin,TrangThai")] Phim phim, IFormFile ImageFile)
+        public async Task<IActionResult> Create([Bind("IDPhim,TenPhim,MoTa,DienVien,TheLoaiPhim,NgayPhatHanh,DanhGia,TrailerURL,NoiDungPremium,SourcePhim,HinhAnh,DangPhim,NgayCapNhat,IDAdmin,TrangThai")] Phim phim, IFormFile ImageFile , int? soluongtap)
         {
             if (ModelState.IsValid)
             {
@@ -103,8 +103,40 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     PopulateViewData(phim);
                     return View(phim);
                 }
+                if (phim.DangPhim == "Phim Bộ" && soluongtap.HasValue)
+                {
+                    // Lấy IDPhan cuối cùng và tính toán IDPhan tiếp theo
+                    string lastphanId = _context.Phan.OrderByDescending(kh => kh.IDPhan).Select(kh => kh.IDPhan).FirstOrDefault();
+                    int nextphanId = (lastphanId == null) ? 1 : int.Parse(lastphanId.Substring(2)) + 1;
 
-                _context.Add(phim);
+                    // Tạo phần mới
+                    var phan = new Phan
+                    {
+                        IDPhan = "PH" + nextphanId.ToString(),
+                        SoPhan = 1,
+                        SoLuongTap = soluongtap.Value,
+                        PhimID = phim.IDPhim
+                    };
+
+                    _context.Phan.Add(phan);
+                    await _context.SaveChangesAsync();
+                    string lasttapId = _context.Tap.OrderByDescending(t => t.IDTap).Select(t => t.IDTap).FirstOrDefault();
+                    int nexttapId = (lasttapId == null) ? 1 : int.Parse(lasttapId.Substring(1)) + 1;
+
+                    // Tạo các tập phim
+                    for (int i = 1; i <= soluongtap.Value; i++)
+                    {
+                        var tap = new Tap
+                        {
+                            IDTap = "T" + nexttapId,
+                            SoTap = i,
+                            PhanPhim = phan.IDPhan
+                        };
+                        _context.Tap.Add(tap);
+                        nexttapId++; // Tăng IDTap tiếp theo
+                    }
+                }
+                    _context.Add(phim);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
