@@ -1,4 +1,5 @@
 using AHTB_TimBanCungGu_API.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -7,10 +8,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace AHTB_TimBanCungGu_API
@@ -27,6 +30,20 @@ namespace AHTB_TimBanCungGu_API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // C?u hình xác th?c JWT
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true, // Ki?m tra Issuer
+                        ValidateAudience = true, // Ki?m tra Audience
+                        ValidateLifetime = true, // Ki?m tra th?i gian h?t h?n
+                        ValidIssuer = "Admin", // Issuer (có th? thay b?ng giá tr? c?a b?n)
+                        ValidAudience = "Admin", // Audience (có th? thay b?ng giá tr? c?a b?n)
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("AHTB_DATN")) // SecretKey c?a b?n
+                    };
+                });
             services.AddDbContext<DBAHTBContext>(options =>
          options.UseSqlServer(Configuration.GetConnectionString("DBConnection")));
             services.AddMemoryCache();
@@ -49,7 +66,8 @@ namespace AHTB_TimBanCungGu_API
             app.UseWebSockets();
 
             app.UseRouting();
-
+            // C?u hình middleware JWT
+            app.UseAuthentication(); // Ph?i g?i tr??c UseAuthorization
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
