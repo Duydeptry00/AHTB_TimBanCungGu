@@ -3,13 +3,23 @@
 }
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quên Mật Khẩu</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css"> <!-- Liên kết với file CSS -->
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- Toastr CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+    <!-- PNotify CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/pnotify@5.2.0/dist/PNotify.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/pnotify@5.2.0/dist/PNotifyBrightTheme.css" rel="stylesheet">
+    <!-- iziToast CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/css/iziToast.min.css">
+    <!-- Noty CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.2.0/jquery.noty.min.css">
     <style>
         body {
             height: 100vh;
@@ -74,7 +84,6 @@
         .inputIcon {
             position: absolute;
             left: 5px;
-            z-index: 2;
             fill: #2e2e2e; /* Màu icon */
         }
 
@@ -86,7 +95,6 @@
             border-bottom: 2px solid #adadad; /* Màu viền dưới */
             font-size: 1em; /* Increased font size */
             color: #333; /* Màu chữ */
-            z-index: 2;
         }
 
             .inputField:focus {
@@ -132,7 +140,6 @@
         }
     </style>
 </head>
-
 <body>
     <form asp-action="QuenMatKhau" method="post" class="form_main">
         <h1 class="heading">Quên Mật Khẩu</h1>
@@ -147,14 +154,104 @@
 
         <button id="button" type="submit">Gửi mail</button>
         <a class="forgotLink" asp-action="Login">Quay lại Đăng nhập?</a>
-        <div id="loader" style="display:none;">Loading...</div>
     </form>
 
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <!-- PNotify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/pnotify@5.2.0/dist/PNotify.js"></script>
+    <!-- iziToast JS -->
+    <script src="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js"></script>
+    <!-- Noty JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.2.0/jquery.noty.min.js"></script>
+
     <script>
-        document.querySelector('.form_main').addEventListener('submit', function () {
-            document.getElementById('loader').style.display = 'block';
+        // Khi người dùng submit form
+        document.querySelector('.form_main').addEventListener('submit', function (event) {
+
+            // SweetAlert2 Loading Notification
+            Swal.fire({
+                title: 'Đang xử lý...',
+                text: 'Vui lòng đợi...',
+                icon: 'info',
+                showConfirmButton: false,
+                backdrop: false,
+                didOpen: () => {
+                    Swal.showLoading(); // Hiển thị loading
+                }
+            });
+
+            // Giả lập thời gian chờ (ví dụ gọi API)
+            setTimeout(function () {
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: 'Chúng tôi đã gửi email xác nhận.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    backdrop: false,
+                }).then(() => {
+                    // Loại bỏ class swal2-height-auto sau khi thông báo thành công
+                    document.body.classList.remove('swal2-height-auto');
+                });
+            }, 3000); // Thời gian chờ 3 giây
+
+            // Toastr Loading Notification
+            toastr.info('Đang xử lý...');
+
+            setTimeout(function () {
+                toastr.success('Email đã được gửi thành công!');
+            }, 3000); // Thời gian chờ 3 giây
+
+            // PNotify Loading Notification
+            var loadingNotificationPNotify = PNotify.info({
+                text: 'Đang xử lý...',
+                title: 'Vui lòng đợi',
+                addClass: 'custom-class',
+                hide: false // Không tự động ẩn
+            });
+
+            setTimeout(function () {
+                loadingNotificationPNotify.update({
+                    text: 'Email đã được gửi thành công!',
+                    type: 'success',
+                    title: 'Thành công'
+                });
+            }, 3000); // Thời gian chờ 3 giây
+
+            // iziToast Loading Notification
+            iziToast.show({
+                title: 'Đang xử lý...',
+                message: 'Vui lòng đợi...',
+                position: 'topRight',
+                timeout: false, // Không tự động ẩn
+                overlay: true // Để tạo overlay
+            });
+
+            setTimeout(function () {
+                iziToast.success({
+                    title: 'Thành công!',
+                    message: 'Email đã được gửi.',
+                    position: 'topRight'
+                });
+            }, 3000); // Thời gian chờ 3 giây
+
+            // Noty Loading Notification
+            var loadingNotificationNoty = new Noty({
+                text: 'Đang xử lý...',
+                type: 'alert',
+                layout: 'topRight',
+                theme: 'relax',
+                timeout: false // Không tự động ẩn
+            }).show();
+
+            setTimeout(function () {
+                loadingNotificationNoty.setText('Email đã được gửi thành công!');
+                loadingNotificationNoty.setType('success');
+            }, 3000); // Thời gian chờ 3 giây
         });
     </script>
 </body>
-
 </html>

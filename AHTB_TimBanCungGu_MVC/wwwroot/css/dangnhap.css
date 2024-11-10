@@ -20,7 +20,11 @@ body {
     place-content: center;
     font-family: 'Poppins', sans-serif;
 }
-
+body, html {
+    overflow: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
 .container {
     position: relative;
     width: 850px;
@@ -37,6 +41,10 @@ body {
     height: 100%;
     padding: 0px 40px;
     transition: all 0.6s ease-in-out;
+}
+.form-container {
+    z-index: 10; /* Đảm bảo form không bị lớp phủ khác ảnh hưởng */
+    position: relative; /* Đặt vị trí để kiểm soát z-index */
 }
 
 .sign-up-container {
@@ -335,8 +343,8 @@ p {
     width: 8px; /* Stem width */
     height: 30px;
     background-color: #4CAF50; /* Green color for the stem */
-    top: 15px; /* Adjust position */
-    left: 25px; /* Adjust position */
+    top: 17px;
+    left: 30px;
     transform: rotate(45deg);
     opacity: 0;
     animation: draw-stem 0.5s 0.5s forwards; /* Delay to start after circle */
@@ -347,8 +355,8 @@ p {
     width: 8px; /* Kick width */
     height: 20px;
     background-color: #4CAF50; /* Green color for the kick */
-    top: 30px; /* Adjust position */
-    left: 15px; /* Adjust position */
+    top: 25px;
+    left: 18px;
     transform: rotate(-45deg);
     opacity: 0;
     animation: draw-kick 0.5s 0.8s forwards; /* Delay to start after stem */

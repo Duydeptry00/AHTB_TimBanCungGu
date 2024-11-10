@@ -125,7 +125,7 @@ namespace YourNamespace.Controllers
             }
 
             // Mã hóa mật khẩu
-            user.Password = HashPassword(request.email);
+            user.Password = HashPassword(request.newpassword);
 
             // Lưu thay đổi vào cơ sở dữ liệu
             var result = await _context.SaveChangesAsync();

@@ -1,7 +1,6 @@
 ﻿@{
     Layout = null;
 }
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -10,48 +9,79 @@
     <title>Đổi Mật Khẩu</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="~/css/DoiMatKhau.css" rel="stylesheet" />
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="login-box">
-        <h1>Đổi Mật Khẩu</h1>
-        <p class="subtitle">Vui lòng nhập mật khẩu mới của bạn</p>
-
+    <div class="form-container">
+        <h1 class="form-title">Đổi Mật Khẩu</h1>
+        <p class="form-description">Vui lòng nhập mật khẩu mới của bạn</p>
         <form asp-action="DoiMatKhau" method="post">
-            <!-- Trường email ẩn để gửi lại email -->
             <input type="hidden" name="email" value="@ViewData["Email"]" />
-
-            <div class="user-box">
-                <input type="password" name="newPassword" required="">
-                <label>Mật khẩu mới</label>
+            <div class="input-group">
+                <input type="password" name="newPassword" class="input-field" required placeholder="Mật khẩu mới">
             </div>
-            <div class="user-box">
-                <input type="password" name="confirmPassword" required="">
-                <label>Xác nhận mật khẩu</label>
+            <div class="input-group">
+                <input type="password" name="confirmPassword" class="input-field" required placeholder="Xác nhận mật khẩu">
             </div>
-
-            <center>
-                <a onclick="document.querySelector('form').submit()">
-                    Đổi Mật Khẩu
-                    <span></span>
-                </a>
-            </center>
-
-            <div>
-                @if (ViewBag.Message != null)
-                {
-                    <p style="color: green;">@ViewBag.Message</p>
-                }
-                else if (ViewData.ModelState.ErrorCount > 0)
-                {
-                    <ul style="color: red;">
-                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                        {
-                            <li>@error.ErrorMessage</li>
-                        }
-                    </ul>
-                }
-            </div>
+            <button type="submit" class="button">Đổi Mật Khẩu</button>
         </form>
     </div>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Kiểm tra nếu có thông báo từ ViewBag và hiển thị thông báo tương ứng
+        @if (ViewBag.Message == "Xác minh thành công! Bạn có thể đặt lại mật khẩu.")
+        {
+            <text>
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: '@Html.Raw(ViewBag.Message)', // Hiển thị thông báo từ ViewBag
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                });
+                // Loại bỏ class swal2-height-auto ngay khi thông báo hiển thị
+                document.body.classList.remove('swal2-height-auto');
+            </text>
+        }
+            });
+        document.addEventListener("DOMContentLoaded", function () {
+            // Kiểm tra nếu có thông báo từ ViewBag và hiển thị thông báo tương ứng
+        @if (ViewBag.Message == "Mật khẩu đã được đổi thành công.")
+        {
+            <text>
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: '@Html.Raw(ViewBag.Message)',
+                        icon: 'success',
+                        backdrop: false,
+                        willClose: () => {
+                            // Tự động chuyển hướng sau khi đóng thông báo
+                            window.location.href = '@Url.Action("Login", "loginvsregister")';
+                        }
+                    });
+            </text>
+        }
+                    });
+        document.addEventListener("DOMContentLoaded", function () {
+            // Kiểm tra nếu có thông báo từ ViewBag và hiển thị thông báo tương ứng
+        @if (ViewBag.Message != "Mật khẩu đã được đổi thành công." && ViewBag.Message != "Xác minh thành công! Bạn có thể đặt lại mật khẩu.")
+        {
+            <text>
+                    Swal.fire({
+                        title: 'Thất Bại!',
+                        text: '@Html.Raw(ViewBag.Message)', // Hiển thị thông báo từ ViewBag
+                        icon: 'error',
+                        backdrop: false
+                        });
+            </text>
+        }
+                            });
+    </script>
+
+
+
 </body>
 </html>
