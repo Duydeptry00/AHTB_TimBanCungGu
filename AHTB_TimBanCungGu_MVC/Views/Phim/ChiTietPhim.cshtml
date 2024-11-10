@@ -138,20 +138,34 @@
                     @if (ViewBag.DanhSachPhan != null && ViewBag.DanhSachPhan.Count == 1)
                     {
                         <!-- Phim lẻ -->
-                        <button class="btn-watch">
-                            <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = ViewBag.DanhSachPhan[0].SoPhan })" style="text-decoration: none; color: white;">Xem ngay</a>
-                        </button>
+                        @foreach (var phan in ViewBag.DanhSachPhan)
+                        {
+                            <button class="btn-watch"
+                                    data-phim-id="@Model.IDPhim"
+                                    data-phan-id="@phan.SoPhan"
+                                    onclick="luuLichSuXem(event)">
+                                <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan, soluongTap = phan.SoLuongTap })" style="text-decoration: none; color: white;">
+                                    Xem Ngay
+                                </a>
+                            </button>
+
+                        }
+
                     }
                     else
                     {
                         <!-- Phim bộ -->
                         @foreach (var phan in ViewBag.DanhSachPhan)
                         {
-                            <button class="btn-watch">
+                            <button class="btn-watch"
+                                    data-phim-id="@Model.IDPhim"
+                                    data-phan-id="@phan.SoPhan"
+                                    onclick="luuLichSuXem(event)">
                                 <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan, soluongTap = phan.SoLuongTap })" style="text-decoration: none; color: white;">
-                                    Phần @phan.SoPhan
+                                    Xem Ngay
                                 </a>
                             </button>
+
                         }
 
                     }
@@ -182,6 +196,41 @@
             </div>
         </div>
     </div>
+    <script>
+        function luuLichSuXem(event) {
+            event.preventDefault();  // Ngừng hành động mặc định của liên kết (mở URL)
 
+            // Lấy dữ liệu từ các thuộc tính data- của button
+            var phimId = $(event.target).closest('button').data('phim-id');
+            var phanId = $(event.target).closest('button').data('phan-id');
+
+            // Kiểm tra xem dữ liệu có hợp lệ không
+            if (!phimId || !phanId) {
+                alert('Dữ liệu không hợp lệ!');
+                return;
+            }
+
+            // Gửi yêu cầu AJAX tới controller
+            $.ajax({
+                url: '/LichSuXem/LuuLichSuXem',  // Địa chỉ controller
+                type: 'POST',
+                data: {
+                    phimId: phimId  // Chỉ cần truyền phimId
+                },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()  // Gửi CSRF token
+                },
+                success: function (response) {
+                   / Hiển thị thông báo thành công
+                    // Sau khi lưu thành công, chuyển đến trang xem phim
+                    window.location.href = $(event.target).closest('button').find('a').attr('href');
+                },
+                error: function (xhr, status, error) {
+                    alert("Có lỗi xảy ra: " + error);  // Thông báo lỗi cho người dùng
+                }
+            });
+        }
+
+    </script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AHTB_TimBanCungGu_API.Migrations
 {
     [DbContext(typeof(DBAHTBContext))]
-    [Migration("20241106063307_cuongdz2k4")]
-    partial class cuongdz2k4
+    [Migration("20241110064027_kiet")]
+    partial class kiet
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

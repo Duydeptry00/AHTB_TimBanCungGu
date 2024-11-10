@@ -1,0 +1,102 @@
+﻿/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #FFFFFF;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+    font-size: 2.5em;
+}
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+    max-width: 1300px;
+    overflow: hidden;
+}
+
+.movie-list {
+    display: flex;
+    gap: 10px; /* Adds consistent spacing between items */
+    transition: transform 0.3s ease-in-out;
+}
+
+.movie-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Đảm bảo căn giữa theo chiều dọc */
+    background-color: #1E1E1E;
+    border-radius: 15px;
+    padding: 20px;
+    min-width: calc((100% / 4) - 50px); /* Đảm bảo chiều rộng của các item */
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+    .movie-item:hover {
+        transform: scale(1.1);
+        box-shadow: 0px 0px 20px 5px rgba(255, 255, 255, 0.2);
+    }
+
+    .movie-item img {
+        width: 250px;
+        height: 350px;
+        
+        border-radius: 10px; /* Nếu muốn thêm bo tròn cho ảnh */
+    }
+
+.movie-details {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.movie-title {
+    font-size: 1.5em;
+    color: white;
+}
+
+.movie-date {
+    font-size: 1.2em;
+    color: #B0B0B0;
+    margin-top: 5px;
+}
+
+.carousel-controls {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+    padding: 0 20px;
+}
+
+.control-button {
+    position: absolute;
+    top: 50%; /* Đưa nút lên giữa theo chiều dọc */
+    transform: translateY(-50%); /* Căn giữa theo chiều dọc */
+
+    background: transparent; /* Xóa nền trắng */
+    font-size: 40px; /* Làm cho nút lớn hơn */
+    border: none;
+    color: #BB86FC;
+    padding: 15px; /* Tăng kích thước nút */
+    cursor: pointer;
+    z-index: 1; /* Đảm bảo nút hiển thị phía trên */
+}
+
+
+#prevButton {
+    left: 31px; /* Đặt nút này cách cạnh trái 10px */
+}
+
+#nextButton {
+    right: 1px; /* Đặt nút này cách cạnh phải 10px */
+}
