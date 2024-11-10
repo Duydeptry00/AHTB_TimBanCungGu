@@ -48,8 +48,17 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                     // Lưu JWT token vào Session hoặc Cookie (Session trong trường hợp này)
                     HttpContext.Session.SetString("JwtToken", tokenResponse.Token);
+                    HttpContext.Session.SetString("UserType", tokenResponse.UserType);
                     HttpContext.Session.SetString("TempUserName", userName);
                     ViewBag.ShowSuccessModal = true;
+                    if (tokenResponse.UserType == "Admin") 
+                    {
+                        ViewBag.ShowInterface = "Admin";
+                    }
+                    else if (tokenResponse.UserType == "Nhân Viên")
+                    {
+                        ViewBag.ShowInterface = "Nhân Viên";
+                    }
                     return View();
                 }
                 else

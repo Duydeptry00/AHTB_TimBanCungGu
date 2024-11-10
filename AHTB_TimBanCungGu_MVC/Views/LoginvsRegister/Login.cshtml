@@ -109,9 +109,21 @@
                 }, 3000); // Adjust the time as necessary
             </text>
         }
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+        @if (ViewBag.ShowSuccessModal != null && ViewBag.ShowSuccessModal == true && ViewBag.ShowInterface == "Admin" || ViewBag.ShowInterface == "Nhân Viên")
+        {
+            <text>
+                var modal = document.getElementById("successModal");
+                modal.style.display = "block";
 
-
-                });
+                setTimeout(function () {
+                    modal.style.display = "none";
+                    window.location.href = '@Url.Action("Index", "nhanvienss", new { area = "Admin" })';
+                }, 3000); // Adjust the time as necessary
+            </text>
+        }
+        });
 
     </script>
 
