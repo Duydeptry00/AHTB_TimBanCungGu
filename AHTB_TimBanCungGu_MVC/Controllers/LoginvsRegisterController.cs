@@ -42,10 +42,15 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Giả sử API trả về token nếu đăng nhập thành công
+                    var responseData = await response.Content.ReadAsStringAsync();
+                    var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseData);
+
+                    // Lưu JWT token vào Session hoặc Cookie (Session trong trường hợp này)
+                    HttpContext.Session.SetString("JwtToken", tokenResponse.Token);
                     HttpContext.Session.SetString("TempUserName", userName);
                     ViewBag.ShowSuccessModal = true;
                     return View();
-                    //return RedirectToAction("Index", "Home");
                 }
                 else
                 {
@@ -106,13 +111,17 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             return View();
         }
 
-
         public IActionResult VerifyOtp(string email)
         {
             if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("Login");
             }
+
+            // Lưu thời gian hiện tại vào Session khi người dùng yêu cầu OTP
+            DateTime currentTime = DateTime.Now;
+            // Lưu thời gian bắt đầu đếm ngược vào Session
+            HttpContext.Session.SetString("otpStartTime", currentTime.ToString());
 
             ViewBag.Email = email;
             return View();
@@ -159,7 +168,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         HttpContext.Session.Remove("TempEmail");
 
                         ViewBag.Message = "Đăng ký thành công! Vui lòng đăng nhập.";
-                        return RedirectToAction("Login");
+                        return View();
                     }
                     else
                     {
@@ -281,6 +290,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             // Kiểm tra kết quả trả về từ API
             if (response.IsSuccessStatusCode)
             {
+
                 // Nếu thành công, hiển thị thông báo thành công và chuyển hướng đến trang đăng nhập
                 ViewBag.Message = "Mật khẩu đã được đổi thành công.";
                 return View();

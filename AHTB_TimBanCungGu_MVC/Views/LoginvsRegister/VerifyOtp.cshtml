@@ -28,37 +28,103 @@
                         <div class="d-flex justify-content-center">
                             @for (int i = 0; i < 6; i++)
                             {
-                                <input type="text" class="form-control otp-input mx-1" maxlength="1" required oninput="moveToNext(this, @i)" />
+                                <input type="text" class="form-control otp-input mx-1" maxlength="1" required oninput="moveToNext(this, @i)" onpaste="handlePaste(event)" />
                             }
                         </div>
                         <span asp-validation-for="Otp" class="text-danger"></span>
                     </div>
-                    <button type="submit" class=" w-100">Xác thực</button>
-                </form>
+                    <button type="submit" class="w-100">Xác thực</button>
+                    <!-- Hiển thị thời gian còn lại -->
+@*                     <div class="alert alert-info mt-3 text-center" id="timer"></div> *@
 
-                @if (ViewBag.Message != null)
-                {
-                    <div class="alert alert-warning mt-3 text-center">@ViewBag.Message</div>
-                }
+                </form>
             </div>
         </div>
     </div>
-
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Kiểm tra nếu có thông báo từ ViewBag và hiển thị thông báo tương ứng
+        @if (ViewBag.Message == "Đăng ký thành công! Vui lòng đăng nhập.")
+        {
+            <text>
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: '@Html.Raw(ViewBag.Message)',
+                        icon: 'success',
+                        backdrop: false,
+                        willClose: () => {
+                            // Tự động chuyển hướng sau khi đóng thông báo
+                            window.location.href = '@Url.Action("Login", "loginvsregister")';
+                        }
+                    });
+            </text>
+            }
+        else
+        {
+            <text>
+                    Swal.fire({
+                        title: 'Lỗi!',
+                        text: '@Html.Raw(ViewBag.Message)',
+                        icon: 'error',
+                        backdrop: false,
+                    });
+            </text>
+        }
+                            });
+        // Lấy thời gian bắt đầu từ LocalStorage nếu có
+        const storedStartTime = localStorage.getItem('otpStartTime');
+        const countdownDuration = 5 * 60 * 1000; // 5 phút (được tính bằng milisecond)
+
+        let startTime;
+
+        if (storedStartTime) {
+            // Nếu có thời gian lưu trữ, sử dụng thời gian đã lưu
+            startTime = new Date(storedStartTime);
+        } else {
+            // Nếu không có, lấy thời gian hiện tại và lưu vào LocalStorage
+            startTime = new Date();
+            localStorage.setItem('otpStartTime', startTime.toString());
+        }
+
+        const endTime = startTime.getTime() + countdownDuration;
+
+        // Cập nhật bộ đếm thời gian
+        function updateTimer() {
+            const currentTime = new Date().getTime();
+            const timeLeft = endTime - currentTime;
+
+            if (timeLeft <= 0) {
+                document.getElementById("timer").innerHTML = "Thời gian hết hạn!";
+                clearInterval(timerInterval);
+            } else {
+                const minutes = Math.floor(timeLeft / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                document.getElementById("timer").innerHTML = `Thời gian còn lại: ${minutes} phút ${seconds} giây`;
+            }
+        }
+
+        // Cập nhật bộ đếm thời gian mỗi giây
+        const timerInterval = setInterval(updateTimer, 1000);
+    </script>
+    <script>
+     
+
+        // Bắt đầu bộ đếm thời gian khi t
         function moveToNext(current, index) {
-            if (current.value.length === 1) {
+            if (current.value.length > 0) {
+                // Nếu có ký tự mới nhập vào, sẽ xóa ký tự cũ
+                current.value = current.value.charAt(current.value.length - 1);
+
+                // Di chuyển focus đến ô tiếp theo nếu còn ô
                 var nextInput = document.getElementsByClassName('otp-input')[index + 1];
                 if (nextInput) {
                     nextInput.focus();
                 }
-            } else if (current.value.length === 0) {
-                var prevInput = document.getElementsByClassName('otp-input')[index - 1];
-                if (prevInput) {
-                    prevInput.focus();
-                }
             }
+            updateOtpValue(); // Cập nhật giá trị OTP hợp nhất
+        }
 
-            // Concatenate all OTP input values into the hidden input
+        function updateOtpValue() {
             var otpValue = '';
             var inputs = document.getElementsByClassName('otp-input');
             for (var i = 0; i < inputs.length; i++) {
@@ -66,6 +132,35 @@
             }
             document.getElementById('Otp').value = otpValue;
         }
+
+        function handlePaste(event) {
+            var pasteData = event.clipboardData.getData('text');
+            var inputs = document.getElementsByClassName('otp-input');
+            if (pasteData.length === inputs.length) {
+                for (var i = 0; i < inputs.length; i++) {
+                    inputs[i].value = pasteData.charAt(i);
+                }
+                updateOtpValue();
+                event.preventDefault(); // Prevent default paste behavior
+            }
+        }
+
+        // Thêm sự kiện keydown để xử lý phím Backspace
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Backspace') {
+                var inputs = document.getElementsByClassName('otp-input');
+                for (var i = 0; i < inputs.length; i++) {
+                    if (inputs[i] === document.activeElement && inputs[i].value === '') {
+                        var prevInput = inputs[i - 1];
+                        if (prevInput) {
+                            prevInput.focus();
+                            prevInput.value = ''; // Xóa giá trị nếu có trong ô trước
+                        }
+                    }
+                }
+            }
+        });
+
     </script>
 
     <style>
@@ -76,8 +171,9 @@
 
         .otp-input {
             margin: 10px;
-            height: 75px; /* Chiều cao cho mỗi ô nhập */
-            width: 100%; /* Độ rộng cho mỗi ô nhập */
+            height: auto; /* Chiều cao cho mỗi ô nhập */
+            width: 16.66666666667%; /* Độ rộng cho mỗi ô nhập */
+            aspect-ratio: 1 / 1; /* Đảm bảo chiều cao bằng chiều rộng */
             text-align: center; /* Căn giữa văn bản */
             font-size: 24px; /* Kích thước font lớn hơn để dễ nhập */
         }
