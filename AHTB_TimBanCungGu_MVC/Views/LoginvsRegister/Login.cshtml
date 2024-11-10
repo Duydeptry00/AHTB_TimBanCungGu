@@ -14,33 +14,33 @@
 </head>
 <body>
     <div class="container" id="container">
-    <!-- Đăng nhập Form -->
-  <div class="form-container sign-in-container">
-      <form id="signInForm" asp-action="Login" method="post">
-          <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-          <h1>Đăng nhập</h1>
-          <div class="social-container">
-              <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-              <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-          </div>
-          <span>hoặc sử dụng tài khoản của bạn</span>
-          <div class="infield">
-              <input asp-for="UserName" placeholder="UserName" name="UserName" required />
-              <span asp-validation-for="UserName" class="text-danger"></span>
-          </div>
-          <div class="infield">
-              <input type="password" asp-for="Password" placeholder="Password" name="password" required />
-              <span asp-validation-for="Password" class="text-danger"></span>
-          </div>
-          <button type="submit">Đăng nhập</button>
+        <!-- Đăng nhập Form -->
+        <div class="form-container sign-in-container">
+            <form id="signInForm" asp-action="Login" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <h1>Đăng nhập</h1>
+                <div class="social-container">
+                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+                </div>
+                <span>hoặc sử dụng tài khoản của bạn</span>
+                <div class="infield">
+                    <input asp-for="UserName" placeholder="UserName" name="UserName" required />
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+                </div>
+                <div class="infield">
+                    <input type="password" asp-for="Password" placeholder="Password" name="password" required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <button type="submit">Đăng nhập</button>
                 <a asp-action="QuenMatKhau" class="forgot-password-link">Quên mật khẩu?</a>
-      </form>
-  </div>
+            </form>
+        </div>
 
 
         <!-- Đăng ký Form -->
         <div class="form-container sign-up-container">
-        <form id="signUpForm" asp-action="Register" method="post">
+            <form id="signUpForm" asp-action="Register" method="post">
                 <h1>Tạo tài khoản</h1>
                 <div class="social-container">
                     <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
@@ -92,8 +92,7 @@
                 </div>
             </div>
 
-            <h2>Đăng Nhập Thành Công!</h2>
-            <p>Vui lòng đợi giây lát...</p>
+            <p>Đăng nhập thành công! Đang chuyển đến trang chủ...</p>
         </div>
     </div>
     <script>
@@ -101,21 +100,21 @@
         @if (ViewBag.ShowSuccessModal != null && ViewBag.ShowSuccessModal == true)
         {
             <text>
-                        var modal = document.getElementById("successModal");
+                                    var modal = document.getElementById("successModal");
                 modal.style.display = "block";
 
                 setTimeout(function () {
                     modal.style.display = "none";
                     window.location.href = '@Url.Action("Index", "Home")';
-                }, 100000); // Adjust the time as necessary
+                }, 3000); // Adjust the time as necessary
             </text>
         }
 
-           
-        });
+
+                });
 
     </script>
-   
+
     <script>
         // Xử lý chuyển đổi giữa đăng nhập và đăng ký
         const signInButton = document.getElementById('signIn');
@@ -170,10 +169,10 @@
             font-weight: bold;
         }
 
-        .close:hover, .close:focus {
-            color: black;
-            cursor: pointer;
-        }
+            .close:hover, .close:focus {
+                color: black;
+                cursor: pointer;
+            }
 
         .indicator.success {
             color: green;
