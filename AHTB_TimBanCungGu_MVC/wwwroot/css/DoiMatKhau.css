@@ -1,0 +1,98 @@
+﻿body {
+    height: 100vh;
+    background: url('../image/background/backgrounddangnhap.jpg') no-repeat center center;
+    background-size: cover;
+    display: grid;
+    place-content: center;
+    font-family: 'Poppins', sans-serif; /* Font chữ Poppins */
+}
+
+.form-container {
+    width: 380px; /* Chiều rộng form */
+    padding: 35px;
+    background-color: #ffffff;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+    .form-container::before {
+        position: absolute;
+        content: "";
+        width: 220px;
+        height: 220px;
+        background-color: rgba(0, 0, 0, 0.1);
+        transform: rotate(45deg);
+        left: -100px;
+        bottom: 20px;
+        border-radius: 20px;
+        z-index: 1;
+    }
+
+.form-title {
+    color: #2e2e2e;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.8em; /* Kích thước lớn */
+    z-index: 2;
+}
+
+.form-description {
+    color: #555;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 0.95em;
+}
+
+.input-group {
+    width: 93%;
+    position: relative;
+    margin: 12px 0;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px 8px 10px 15px;
+    border: 1px solid #ccc; /* Viền */
+    border-radius: 5px; /* Bo góc */
+    font-size: 1em;
+    color: #333;
+    background-color: transparent;
+}
+
+    .input-field:focus {
+        border: 1px solid #6a11cb; /* Viền khi focus */
+        outline: none;
+    }
+
+.button {
+    width: 100%;
+    background-color: #000; /* Màu nền */
+    color: #fff;
+    font-size: 1.2em;
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    margin-top: 15px;
+    transition: background-color 0.3s;
+}
+
+    .button:hover {
+        background-color: #fff; /* Màu nền khi di chuột */
+    }
+
+.forgot-link {
+    display: block;
+    font-size: 0.85em;
+    color: #555;
+    text-decoration: none;
+    margin-top: 12px;
+    text-align: center;
+}
+
+    .forgot-link:hover {
+        color: #6a11cb; /* Màu khi di chuột qua link */
+    }

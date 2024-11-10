@@ -252,39 +252,49 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> DoiMatKhau(string email, string newPassword, string confirmPassword)
         {
+            // Kiểm tra trường hợp thông tin không đầy đủ
             if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
             {
-                ModelState.AddModelError(string.Empty, "Vui lòng nhập đầy đủ thông tin.");
-                ViewData["Email"] = email; // Đảm bảo email được lưu lại nếu có lỗi
+                ViewBag.Message = "Thông tin đổi chưa đủ!";
+                ViewData["Email"] = email; // Giữ email khi có lỗi
                 return View();
             }
 
+            // Kiểm tra nếu mật khẩu và xác nhận mật khẩu không khớp
             if (newPassword != confirmPassword)
             {
-                ModelState.AddModelError(string.Empty, "Mật khẩu không khớp.");
-                ViewData["Email"] = email; // Đảm bảo email được lưu lại nếu có lỗi
+
+                ViewBag.Message = "Mật khẩu không khớp!";
+                ViewData["Email"] = email; // Giữ email khi có lỗi
                 return View();
             }
 
+            // Chuẩn bị dữ liệu cho API
             var content = new StringContent(
                 JsonSerializer.Serialize(new { email, newPassword }),
                 Encoding.UTF8,
                 "application/json");
 
+            // Gửi yêu cầu đến API để đổi mật khẩu
             var response = await _httpClient.PostAsync($"{ApiBaseUrl}/Account/ChangePassword", content);
 
+            // Kiểm tra kết quả trả về từ API
             if (response.IsSuccessStatusCode)
             {
+                // Nếu thành công, hiển thị thông báo thành công và chuyển hướng đến trang đăng nhập
                 ViewBag.Message = "Mật khẩu đã được đổi thành công.";
-                return RedirectToAction("Login"); // Chuyển hướng đến trang đăng nhập
+                return View();
             }
             else
             {
+                // Nếu có lỗi, hiển thị thông báo lỗi
+                ViewBag.Message = "Có lỗi xảy ra khi đổi mật khẩu!";
                 ModelState.AddModelError(string.Empty, "Có lỗi xảy ra. Vui lòng thử lại.");
                 ViewData["Email"] = email; // Giữ email khi có lỗi
                 return View();
             }
         }
+
 
 
         private bool IsValidEmail(string email)

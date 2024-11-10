@@ -82,7 +82,6 @@
     <!-- Success Modal -->
     <div id="successModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
 
             <!-- Animated Checkmark -->
             <div class="checkmark-container">
@@ -93,7 +92,8 @@
                 </div>
             </div>
 
-            <p>Login successful! Redirecting to Home...</p>
+            <h2>Đăng Nhập Thành Công!</h2>
+            <p>Vui lòng đợi giây lát...</p>
         </div>
     </div>
     <script>
@@ -107,7 +107,7 @@
                 setTimeout(function () {
                     modal.style.display = "none";
                     window.location.href = '@Url.Action("Index", "Home")';
-                }, 3000); // Adjust the time as necessary
+                }, 100000); // Adjust the time as necessary
             </text>
         }
 
