@@ -79,6 +79,8 @@ namespace AHTB_TimBanCungGu_API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
         {
+            request.UserType = "khach"; // Mặc định là khách nếu không có quyền
+
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
                 return BadRequest("Username và password không để trống.");
 
@@ -91,12 +93,23 @@ namespace AHTB_TimBanCungGu_API.Controllers
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 return Unauthorized("Thông tin đăng nhập không hợp lệ.");
 
+            // Kiểm tra xem người dùng có vai trò "nhanvien" hoặc "Admin" trong bảng User_Role hay không
+            var userRole = await _context.Role
+                .Include(ur => ur.Role) // Bao gồm thông tin bảng Role nếu cần
+                .FirstOrDefaultAsync(ur => ur.UsID == user.UsID && ur.TenRole == "Admin" || ur.TenRole == "Nhân Viên");
+
+            if (userRole != null)
+            {
+                request.UserType = userRole.TenRole; // Thiết lập UserType theo vai trò tìm thấy
+            }
+
             // Tạo JWT token nếu người dùng hợp lệ
             var expiration = DateTime.UtcNow.AddMinutes(30); // Hết hạn token sau 30 phút
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("UserType", request.UserType) // Thêm loại người dùng vào token
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
@@ -112,8 +125,9 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return Ok(new { token = tokenString, expiration = expiration });
+            return Ok(new { token = tokenString, expiration = expiration , userType = request.UserType });
         }
+
     }
 
     public class UserRegisterRequest
@@ -121,11 +135,13 @@ namespace AHTB_TimBanCungGu_API.Controllers
         public string UserName { get; set; }
         public string Password { get; set; }
         public string Email { get; set; }
+
     }
 
     public class UserLoginRequest
     {
         public string UserName { get; set; }
         public string Password { get; set; }
+        public string UserType { get; set; }
     }
 }

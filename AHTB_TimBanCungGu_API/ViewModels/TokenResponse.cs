@@ -11,5 +11,8 @@ namespace AHTB_TimBanCungGu_API.ViewModels
 
         [JsonPropertyName("expiration")]
         public DateTime Expiration { get; set; }  // Đảm bảo ánh xạ chính xác
+                                                  // Thêm thuộc tính UserType
+        [JsonPropertyName("userType")]
+        public string UserType { get; set; }
     }
 }
