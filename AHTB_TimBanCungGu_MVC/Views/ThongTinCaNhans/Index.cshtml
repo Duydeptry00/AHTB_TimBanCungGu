@@ -8,72 +8,80 @@
 <link rel="stylesheet" href="~/css/capnhatthongtin.css">
 
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Chỉnh sửa Thông tin cá nhân</h2>
+    <div class="text-center mb-4">
+        <h1>Chỉnh sửa Thông tin Cá nhân</h1>
+    </div>
 
-    <div class="card mb-4 shadow-lg custom-card">
+    <div class="card shadow-lg custom-card">
         <div class="card-body">
             <form method="post" enctype="multipart/form-data">
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Email:</div>
-                    <div class="col-md-8">
-                        <input type="text" class="form-control" name="Email" value="@Model.Email" disabled />
+                <div class="info-section">
+                    <div class="info-item">
+                        <label class="info-label">Email:</label>
+                        <span class="info-value">@Model.Email</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Họ tên:</label>
+                        <span class="info-value">@Model.HoTen</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Giới tính:</label>
+                        <span class="info-value">@Model.GioiTinh</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Ngày sinh:</label>
+                        <span class="info-value">@Model.NgaySinh.ToString("dd/MM/yyyy")</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Số điện thoại:</label>
+                        <span class="info-value">@Model.SoDienThoai</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Premium:</label>
+                        <span class="info-value">@(Model.IsPremium ? "Có" : "Không")</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Địa chỉ:</label>
+                        <span class="info-value">@Model.DiaChi</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Mô tả:</label>
+                        <span class="info-value">@Model.MoTa</span>
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Họ tên:</div>
-                    <div class="col-md-8">
-                        <input type="text" class="form-control" name="HoTen" value="@Model.HoTen" disabled />
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Giới tính:</div>
-                    <div class="col-md-8">
-                        <input type="text" class="form-control" name="GioiTinh" value="@Model.GioiTinh" disabled />
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Ngày sinh:</div>
-                    <div class="col-md-8">
-                        <input type="text" class="form-control" name="NgaySinh" value="@Model.NgaySinh.ToString("dd/MM/yyyy")" disabled />
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Số điện thoại:</div>
-                    <div class="col-md-8">
-                        <input type="text" class="form-control" name="SoDienThoai" value="@Model.SoDienThoai" disabled />
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Premium:</div>
-                    <div class="col-md-8">
-                        <input type="text" class="form-control" name="IsPremium" value="@(Model.IsPremium ? "Có" : "Không")" disabled />
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Mô tả:</div>
-                    <div class="col-md-8">
-                        <textarea class="form-control" name="MoTa" disabled>@Model.MoTa</textarea>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Ngày tạo:</div>
-                    <div class="col-md-8">
-                        <input type="text" class="form-control" name="NgayTao" value="@Model.NgayTao.ToString("dd/MM/yyyy")" disabled />
-                    </div>
+                <div class="photo-section">
+                    <h4 class="text-center mt-4">Ảnh Cá nhân</h4>
+                    @if (Model.AnhCaNhan != null && Model.AnhCaNhan.Any())
+                    {
+                        <div class="photo-grid">
+                            @foreach (var anh in Model.AnhCaNhan)
+                            {
+                                <div class="photo-item">
+                                    <div class="image-frame">
+                                        <img src="@Url.Content("~/uploads/" + anh.HinhAnh)" alt="Ảnh cá nhân" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-center">Chưa có ảnh cá nhân.</p>
+                    }
                 </div>
 
                 <div class="text-center mt-4">
-                    <a href="@Url.Action("Edit", "ThongTinCaNhans", new { id = Model.IDProfile })" class="btn btn-primary">Chỉnh sửa thông tin</a>
+                    <a href="@Url.Action("Edit", "ThongTinCaNhans", new { id = Model.IDProfile })" class="btn custom-btn">Chỉnh sửa thông tin</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
