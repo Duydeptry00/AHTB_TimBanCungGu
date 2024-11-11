@@ -9,59 +9,103 @@
 <link rel="stylesheet" href="~/css/capnhatthongtin.css">
 
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Chỉnh sửa Thông tin cá nhân</h2>
+    <!-- Phần tiêu đề -->
+    <div class="text-center mb-4">
+        <h1>Chỉnh sửa Thông tin Cá nhân</h1>
+    </div>
 
-    <div class="card mb-4 shadow-lg custom-card">
+    <!-- Bố cục chính -->
+    <div class="card shadow-lg custom-card">
         <div class="card-body">
-            <form asp-action="Edit" method="post">
-                @* Hidden ID Profile *@
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <!-- Hidden field cho ID Profile -->
                 <input type="hidden" asp-for="IDProfile" />
 
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Họ tên:</div>
-                    <div class="col-md-8">
-                        <input asp-for="HoTen" class="form-control" />
-                        <span asp-validation-for="HoTen" class="text-danger"></span>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Giới tính:</div>
-                    <div class="col-md-8">
-                        <div class="form-check d-inline-block mr-2">
-                            <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nam" id="Nam" />
-                            <label class="form-check-label" for="Nam">Nam</label>
+                <!-- Phần cập nhật thông tin cá nhân -->
+                <div class="row mb-4">
+                    <!-- Hàng 1: Thông tin cá nhân -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Họ tên:</label>
+                            <input asp-for="HoTen" class="form-control" />
+                            <span asp-validation-for="HoTen" class="text-danger"></span>
                         </div>
-                        <div class="form-check d-inline-block">
-                            <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nữ" id="Nu" />
-                            <label class="form-check-label" for="Nu">Nữ</label>
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Giới tính:</label>
+                            <div class="form-check d-inline-block mr-2">
+                                <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nam" id="Nam" />
+                                <label class="form-check-label" for="Nam">Nam</label>
+                            </div>
+                            <div class="form-check d-inline-block">
+                                <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nữ" id="Nu" />
+                                <label class="form-check-label" for="Nu">Nữ</label>
+                            </div>
+                            <span asp-validation-for="GioiTinh" class="text-danger"></span>
                         </div>
-                        <span asp-validation-for="GioiTinh" class="text-danger"></span>
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Ngày sinh:</label>
+                            <input asp-for="NgaySinh" type="text" class="form-control" value="@Model.NgaySinh.ToString("dd/MM/yyyy")" />
+                            <span asp-validation-for="NgaySinh" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Số điện thoại:</label>
+                            <input asp-for="SoDienThoai" class="form-control" />
+                            <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                        </div>
                     </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Ngày sinh:</div>
-                    <div class="col-md-8">
-                        <!-- Hiển thị ngày theo định dạng dd/MM/yyyy -->
-                        <input asp-for="NgaySinh" type="text" class="form-control" value="@Model.NgaySinh.ToString("dd/MM/yyyy")" />
-                        <span asp-validation-for="NgaySinh" class="text-danger"></span>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Số điện thoại:</div>
-                    <div class="col-md-8">
-                        <input asp-for="SoDienThoai" class="form-control" />
-                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+
+                    <!-- Hàng 2: Địa chỉ, mô tả và ảnh -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Địa chỉ:</label>
+                            <input asp-for="DiaChi" class="form-control" />
+                            <span asp-validation-for="DiaChi" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Mô tả:</label>
+                            <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Thêm ảnh cá nhân:</label>
+                            <input type="file" name="AnhCaNhanFile" id="AnhCaNhanFile" class="form-control" />
+                        </div>
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-4 font-weight-bold">Mô tả:</div>
-                    <div class="col-md-8">
-                        <textarea asp-for="MoTa" class="form-control" rows="1"></textarea>
-                        <span asp-validation-for="MoTa" class="text-danger"></span>
+                <!-- Phần ảnh cá nhân -->
+                <h4 class="text-center mt-4">Ảnh Cá nhân</h4>
+                @if (Model.AnhCaNhan != null && Model.AnhCaNhan.Any())
+                {
+                    <div class="photo-grid">
+                        @if (Model.AnhCaNhan != null && Model.AnhCaNhan.Any())
+                        {
+                            @foreach (var anh in Model.AnhCaNhan)
+                            {
+                                <div class="photo-item" id="image-@anh.IDAnhCN">
+                                    <div class="image-frame position-relative">
+                                        <img src="@Url.Content("~/uploads/" + anh.HinhAnh)" alt="Ảnh cá nhân" />
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                                onclick="deleteImage(@anh.IDAnhCN)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-center">Chưa có ảnh cá nhân.</p>
+                        }
                     </div>
-                </div>
 
+                }
+                else
+                {
+                    <p class="text-center">Chưa có ảnh cá nhân.</p>
+                }
+
+                <!-- Nút lưu và quay lại -->
                 <div class="text-center mt-4">
                     <input type="submit" value="Lưu" class="btn btn-primary" />
                     <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
@@ -70,4 +114,61 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+></script>
+<script>
+    // Kiểm tra và hiển thị thông báo nếu có lỗi
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <text>
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Bạn chỉ được tối đa là 7 ảnh',
+                position: 'top-end',
+                toast: true,
+                showConfirmButton: false,
+                timer: 3000
+            });
+        </text>
+    }
 
+        // Hiển thị nút xóa khi hover vào ảnh
+        document.querySelectorAll('.image-frame').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                item.querySelector('.btn-danger').style.display = 'block';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.querySelector('.btn-danger').style.display = 'none';
+            });
+        });
+
+    function deleteImage(id) {
+        Swal.fire({
+            title: "Bạn có chắc chắn muốn xóa ảnh này?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Xóa",
+            cancelButtonText: "Hủy"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post(`/ThongTinCaNhans/DeleteImage/${id}`, function () {
+                    // Xóa phần tử ảnh khỏi giao diện
+                    $(`#image-${id}`).remove();
+
+                    Swal.fire("Đã xóa", "Ảnh đã được xóa thành công", "success");
+                }).fail(function () {
+                    Swal.fire("Lỗi", "Không thể xóa ảnh", "error");
+                });
+            }
+        });
+    }
+
+
+    // Function to reload images dynamically
+    function loadImages() {
+        $.get('@Url.Action("LoadImages", "ThongTinCaNhans", new { id = Model.IDProfile })', function (data) {
+            $('.photo-grid').html(data);
+        });
+    }
+</script>
