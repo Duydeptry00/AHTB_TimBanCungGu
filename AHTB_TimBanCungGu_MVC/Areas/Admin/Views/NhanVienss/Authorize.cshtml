@@ -1,0 +1,230 @@
+﻿@model AHTB_TimBanCungGu_API.ViewModels.ListUser_role
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Input Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            border: 1px solid #ccc;
+            padding: 5px;
+            width: 349px;
+            min-height: 40px;
+            align-items: center;
+            background-color: white;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .tag {
+            background-color: white;
+            color: black;
+            padding: 5px 10px;
+            margin: 3px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+            .tag span {
+                margin-left: 8px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            flex-grow: 1;
+            padding: 5px;
+            background-color: white;
+            color: black;
+        }
+
+            .tag-input::placeholder {
+                color: black;
+            }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            border: 1px solid #ccc;
+            background-color: white;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+            .suggestions div {
+                padding: 8px;
+                cursor: pointer;
+            }
+
+                .suggestions div:hover {
+                    background-color: #f0f0f0;
+                }
+
+        /* Style cho phần cuộn Vai Trò và Tên Vai Trò */
+        .select-container {
+            margin-bottom: 20px;
+        }
+
+            .select-container select {
+                width: 100%;
+                padding: 10px;
+                margin: 5px 0;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+        .form-container {
+            width: 350px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <form method="post" asp-action="Authorize">
+            <!-- Vai Trò ID -->
+            <div class="select-container">
+                <label for="id-role">Vai Trò (ID):</label>
+                <select id="id-role" asp-for="Role" name="Role" required>
+                    @foreach (var role in Model.Roles)
+                    {
+                        <option value="@role.IDRole">@role.Module</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Tên Vai Trò -->
+            <div class="select-container">
+                <label for="ten-vai-tro">Vai Trò (Tên):</label>
+                <select id="ten-vai-tro" asp-for="Tenrole" name="Tenrole" required>
+                    <option value="Admin">Admin</option>
+                    <option value="Nhân Viên">Nhân Viên</option>
+                </select>
+            </div>
+
+            <!-- Nhân Viên -->
+            <div class="select-container">
+                <label for="username">Nhân Viên:</label>
+                <div class="tag-container">
+                    <input type="text" class="tag-input" id="username" placeholder="Nhập thẻ Username và nhấn Enter" />
+                    <div class="suggestions" id="suggestions"></div>
+                </div>
+            </div>
+
+            <!-- Hidden inputs to store the selected usernames -->
+            <div id="hidden-inputs-container"></div>
+
+            <div style="text-align: right;">
+                <button class="btn btn-success" type="submit">Cấp Quyền</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const tagContainer = document.querySelector('.tag-container');
+        const input = document.querySelector('.tag-input');
+        const suggestionsContainer = document.getElementById('suggestions');
+        const hiddenInputsContainer = document.getElementById('hidden-inputs-container');
+
+        // Convert model users into an array
+        const tags = @Html.Raw(Json.Serialize(Model.Users.Select(u => u.UserName).ToList()));
+        let addedTags = [];  // Mảng lưu các Username đã được thêm
+
+        input.addEventListener('input', function () {
+            const query = input.value.trim().toLowerCase();
+            if (query) {
+                showSuggestions(query);
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+
+        input.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const value = input.value.trim();
+
+                if (value && tags.includes(value) && !addedTags.includes(value)) {
+                    addTag(value);
+                    addedTags.push(value);
+                    input.value = '';
+                    suggestionsContainer.style.display = 'none';
+                } else if (addedTags.includes(value)) {
+                    alert('Username này đã được thêm!');
+                } else {
+                    alert('Username không hợp lệ hoặc không có trong danh sách!');
+                }
+            }
+        });
+
+        function showSuggestions(query) {
+            let filteredTags = tags.filter(tag => tag.toLowerCase().includes(query) && !addedTags.includes(tag));
+            suggestionsContainer.innerHTML = '';
+
+            if (filteredTags.length > 0) {
+                suggestionsContainer.style.display = 'block';
+                filteredTags.forEach((tag) => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.textContent = tag;
+                    suggestionItem.addEventListener('click', function () {
+                        addTag(tag);
+                        addedTags.push(tag);
+                        input.value = '';
+                        suggestionsContainer.style.display = 'none';
+                    });
+                    suggestionsContainer.appendChild(suggestionItem);
+                });
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
+        }
+
+        function addTag(text) {
+            // Create tag element
+            const tag = document.createElement('div');
+            tag.classList.add('tag');
+            tag.textContent = text;
+
+            // Create close button
+            const closeBtn = document.createElement('span');
+            closeBtn.textContent = 'x';
+            closeBtn.addEventListener('click', function () {
+                tagContainer.removeChild(tag);
+                addedTags = addedTags.filter(tag => tag !== text);
+                // Remove the corresponding hidden input
+                const hiddenInput = document.getElementById(`hidden-${text}`);
+                if (hiddenInput) hiddenInput.remove();
+            });
+
+            tag.appendChild(closeBtn);
+            tagContainer.insertBefore(tag, input);
+
+            // Create a hidden input for submission
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = `User[${addedTags.length}].UserName`;
+            hiddenInput.id = `hidden-${text}`;
+            hiddenInput.value = text;
+
+            hiddenInputsContainer.appendChild(hiddenInput);
+        }
+    </script>
+</body>
+</html>
