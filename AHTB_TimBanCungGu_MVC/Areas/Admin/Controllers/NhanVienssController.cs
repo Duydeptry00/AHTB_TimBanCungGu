@@ -1,5 +1,7 @@
 ﻿using AHTB_TimBanCungGu_API.Models;
 using AHTB_TimBanCungGu_API.ViewModels;
+using AHTB_TimBanCungGu_MVC.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -28,14 +30,22 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/NhanVienss
         public async Task<IActionResult> Index()
         {
-            var response = await _httpClient.GetAsync($"{ApiBaseUrl}");
-            if (response.IsSuccessStatusCode)
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
+            // Lấy JWT UserType từ Session
+            var UserType = HttpContext.Session.GetString("UserType");
+            if(UserType == "Admin" && token != null)
             {
-                var jsonData = await response.Content.ReadAsStringAsync();
-                var nhanViens = JsonConvert.DeserializeObject<List<NhanVienVM>>(jsonData);
-                return View(nhanViens);
+                var response = await _httpClient.GetAsync($"{ApiBaseUrl}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    var nhanViens = JsonConvert.DeserializeObject<List<NhanVienVM>>(jsonData);
+                    return View(nhanViens);
+                }
+                return View(new List<NhanVienVM>());
             }
-            return View(new List<NhanVienVM>());
+            return NotFound();
         }
 
         // GET: Admin/NhanVienss/Details/5
@@ -45,7 +55,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var jsonData = await response.Content.ReadAsStringAsync();
-                var nhanVien = JsonConvert.DeserializeObject<User>(jsonData);
+                var nhanVien = JsonConvert.DeserializeObject<AHTB_TimBanCungGu_API.Models.User>(jsonData);
                 return View(nhanVien);
             }
             return NotFound();
@@ -129,35 +139,58 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         }
         public async Task<IActionResult> Authorize()
         {
+            // Lấy danh sách người dùng từ API
+            var danhSachNguoiDung = await _httpClient.GetFromJsonAsync<List<NhanVienVM>>(ApiBaseUrl);
+            var danhSachNguoiDungGomUsername = danhSachNguoiDung.Select(u => u.UserName).ToList();
+
             var model = new ListUser_role
             {
-                Users = await _httpClient.GetFromJsonAsync<List<NhanVienVM>>(ApiBaseUrl), // Lấy danh sách người dùng từ API
-                Roles = await _httpClient.GetFromJsonAsync<List<RoleVM>>(_RoleapiUrl), // Lấy danh sách quyền từ API
-                RolesList = new List<User_role> { new User_role() } // Khởi tạo danh sách quyền
+                Users = danhSachNguoiDungGomUsername.Select(u => new NhanVienVM
+                {
+                    UserName = u
+                }).ToList() ?? new List<NhanVienVM>(), // Khởi tạo danh sách nếu rỗng
+                Roles = await _httpClient.GetFromJsonAsync<List<RoleVM>>(_RoleapiUrl),
+                RolesList = new List<User_role>()
             };
 
-            return PartialView("_Authorize", model); // Trả về PartialView với dữ liệu
+            return View(model);
         }
 
-        // POST: Admin/Quyens/Create
+        // POST: Admin/Authorize
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Authorize(ListUser_role userRole)
         {
-
-            foreach (var role in userRole.Roles)
+            if (userRole.User == null)
             {
-                // Gửi từng roleVM đến API
-                var response = await _httpClient.PostAsJsonAsync(_apiUrl, role);
-                if (!response.IsSuccessStatusCode)
-                {
-                    ModelState.AddModelError(string.Empty, "Lỗi khi tạo quyền mới cho module " + role);
-                    return PartialView("_Authorize", userRole); // Trả lại PartialView nếu có lỗi
-                }
+                userRole.User = new List<NhanVienVM>(); // Khởi tạo danh sách user nếu null
             }
 
-            return RedirectToAction(nameof(Index)); // Nếu tất cả thành công, chuyển đến trang Index // Trả lại PartialView nếu ModelState không hợp lệ
-        }
+            if (!ModelState.IsValid)
+            {
+                return View(userRole); // Trả lại form nếu model không hợp lệ
+            }
 
+            // Cập nhật RolesList cho từng User (nếu chưa có)
+            foreach (var user in userRole.User)
+            {
+                // Tạo đối tượng dữ liệu để gửi lên API
+                var userRoleRequest = new User_role
+                {
+                    Tenrole = userRole.Tenrole,  // Tên vai trò
+                    Username = user.UserName,  // Dùng UserName của nhân viên
+                    Id_Role = userRole.Role,    // Dùng Id_Role của vai trò
+                };
+
+                // Gửi yêu cầu tới API để gán quyền
+                var response = await _httpClient.PostAsJsonAsync(_apiUrl, userRoleRequest);
+                if (!response.IsSuccessStatusCode)
+                {
+                    ModelState.AddModelError(string.Empty, $"Lỗi khi tạo quyền mới cho người dùng: {user.UserName}");
+                    return View(userRole); // Trả lại form nếu có lỗi
+                }
+            }
+            return RedirectToAction(); // Chuyển đến trang Index khi thành công
+        }
     }
 }

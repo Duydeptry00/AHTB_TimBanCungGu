@@ -22,26 +22,38 @@ namespace AHTB_TimBanCungGu_API.Controllers
         [HttpPost]
         public async Task<ActionResult<User_role>> PostUserRole(User_role userRole)
         {
-            // Kiểm tra xem người dùng và vai trò có tồn tại trong cơ sở dữ liệu không
-            var userExists = await _context.Users.AnyAsync(u => u.UsID == userRole.Id_User); // Giả sử bạn có một bảng Users
-            var roleExists = await _context.Quyen.AnyAsync(r => r.IDRole == userRole.Id_Role); // Giả sử bạn có một bảng Roles
-            var newUserRole = new User_Role
+            // Kiểm tra xem người dùng có tồn tại trong cơ sở dữ liệu hay không
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userRole.Username);
+            if (user == null)
             {
-                IDRole = userRole.Id_Role,
-                UsID = userRole.Id_User,
-                TenRole = userRole.Tenrole
-            };
-            if (!userExists || !roleExists)
-            {
-                return BadRequest("Người dùng hoặc vai trò không hợp lệ.");
+                return BadRequest("Người dùng không hợp lệ.");
             }
 
-            _context.Role.Add(newUserRole); // Thêm bản ghi mới vào User_Role
-            await _context.SaveChangesAsync(); // Lưu thay đổi vào cơ sở dữ liệu
+            // Kiểm tra xem vai trò có tồn tại trong cơ sở dữ liệu hay không
+            var roleExists = await _context.Quyen.AnyAsync(r => r.IDRole == userRole.Id_Role);
+            if (!roleExists)
+            {
+                return BadRequest("Vai trò không hợp lệ.");
+            }
+
+            // Tạo đối tượng mới cho User_Role và gán các giá trị cần thiết
+            var newUserRole = new User_Role
+            {
+                IDRole = userRole.Id_Role,          // Gán ID vai trò từ request
+                UsID = user.UsID,                    // Lấy UsID từ đối tượng User tìm được
+                TenRole = userRole.Tenrole          // Tên vai trò từ request
+            };
+
+            // Thêm đối tượng vào bảng User_Role
+            _context.Role.Add(newUserRole);
+
+            // Lưu thay đổi vào cơ sở dữ liệu
+            await _context.SaveChangesAsync();
 
             // Trả về kết quả sau khi thêm thành công
             return CreatedAtAction(nameof(GetUserRole), new { id = userRole.Id_Role }, userRole);
         }
+
 
         // GET: api/PhanQuyens/{id}
         [HttpGet("{id}")]
