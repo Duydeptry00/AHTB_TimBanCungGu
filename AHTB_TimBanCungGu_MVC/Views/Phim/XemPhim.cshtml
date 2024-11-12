@@ -1,6 +1,8 @@
 ﻿@{
     ViewData["Title"] = "Xem Phim";
     var phan = ViewBag.Phan as AHTB_TimBanCungGu_API.Models.Phan;
+    var phimLe = ViewBag.PhimLe as AHTB_TimBanCungGu_API.Models.Phim;
+    var phimBo = ViewBag.PhimBo as AHTB_TimBanCungGu_API.Models.Phim;
     var phimDeCu = ViewBag.PhimDeCu as List<AHTB_TimBanCungGu_API.Models.Phim>;
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -11,192 +13,185 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
-
-    <style>
-
-        .film-player {
-            width: 100%;
-            height: 500px;
-            background-size: cover;
-            background-position: center;
-            border-radius: .375rem;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .episode-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-            .episode-buttons button {
-                background-color: #383d41;
-                border: none;
-                cursor: pointer;
-                color: #fff;
-                font-size: 15px;
-                transition: background-color 0.3s ease, transform 0.3s ease;
-                width: 60px;
-                border-radius: .375rem; /* Add rounded corners */
-                padding: 5px; /* Add some padding */
-            }
-
-                .episode-buttons button:hover {
-                    background-color: #585c61;
-                    transform: scale(1.05);
-                }
-
-        /* Tạo hiệu ứng khi hover vào thẻ card */
-        .card-hover {
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease-in-out;
-            background-color: #343a40; /* Màu nền cho thẻ card */
-            color: #f8f9fa; /* Màu chữ cho thẻ card */
-            border-radius: 8px; /* Bo tròn các góc của thẻ */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng để thẻ nổi bật */
-        }
-
-            .card-hover img {
-                width: 100%;
-                height: 350px;
-                object-fit: cover; /* Ảnh sẽ được cắt theo tỷ lệ và không bị biến dạng */
-                transition: filter 0.3s ease-in-out;
-            }
-
-            /* Khi hover vào ảnh, độ sáng giảm để tạo hiệu ứng nổi bật */
-            .card-hover:hover img {
-                filter: brightness(80%);
-            }
-
-            /* Phóng to nhẹ thẻ card khi hover để tạo hiệu ứng nổi bật */
-            .card-hover:hover {
-                transform: scale(1.05);
-            }
-
-        .card-body {
-            padding: 15px;
-            text-align: center;
-        }
-
-        /* Nút "Xem ngay" chỉ hiển thị khi hover vào thẻ card */
-        .btn-xem-ngay {
-            position: absolute;
-            transition: opacity 0.3s ease-in-out;
-            opacity: 0;
-            pointer-events: none;
-            display: flex;
-            align-items: center; /* Giúp biểu tượng và chữ nằm cùng hàng */
-            justify-content: center;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #dc3545;
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-size: 16px;
-            cursor: pointer;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-            .btn-xem-ngay i {
-                font-size: 1em; /* Giảm kích thước icon để vừa với chữ */
-                margin-right: 8px; /* Khoảng cách giữa biểu tượng và chữ */
-                vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
-            }
-
-
-
-        /* Khi hover vào thẻ card, nút sẽ hiện lên */
-        .card-hover:hover .btn-xem-ngay {
-            opacity: 1;
-            pointer-events: auto; /* Cho phép click khi hover */
-        }
-
-        /* Tạo biểu tượng cho nút "Xem ngay" */
-        .card-hover .btn-xem-ngay i {
-            margin-right: 8px;
-        }
-
-        /* Điều chỉnh font và màu cho tiêu đề */
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #f8f9fa;
-        }
-
-        /* Căn chỉnh phân trang */
-        .pagination {
-            margin-top: 20px;
-            justify-content: center;
-        }
-   </style>
 </head>
+<style>
+    .film-player {
+        width: 100%;
+        height: 500px;
+        background-size: cover;
+        background-position: center;
+        border-radius: .375rem;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    episode-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .episode-buttons button {
+        background-color: #383d41;
+        border: none;
+        cursor: pointer;
+        color: #fff;
+        font-size: 15px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        width: 60px;
+        border-radius: .375rem;
+        padding: 5px;
+    }
+
+        .episode-buttons button:hover {
+            background-color: #585c61;
+            transform: scale(1.05);
+        }
+
+    .card-hover {
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+        background-color: #343a40; /* Màu nền cho thẻ card */
+        color: #f8f9fa; /* Màu chữ cho thẻ card */
+        border-radius: 8px; /* Bo tròn các góc của thẻ */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng để thẻ nổi bật */
+    }
+
+        .card-hover img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover; /* Ảnh sẽ được cắt theo tỷ lệ và không bị biến dạng */
+            transition: filter 0.3s ease-in-out;
+        }
+
+        /* Khi hover vào ảnh, độ sáng giảm để tạo hiệu ứng nổi bật */
+        .card-hover:hover img {
+            filter: brightness(80%);
+        }
+
+        /* Phóng to nhẹ thẻ card khi hover để tạo hiệu ứng nổi bật */
+        .card-hover:hover {
+            transform: scale(1.05);
+        }
+
+    .card-body {
+        padding: 15px;
+        text-align: center;
+    }
+
+    /* Nút "Xem ngay" chỉ hiển thị khi hover vào thẻ card */
+    .btn-xem-ngay {
+        position: absolute;
+        transition: opacity 0.3s ease-in-out;
+        opacity: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center; /* Giúp biểu tượng và chữ nằm cùng hàng */
+        justify-content: center;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #dc3545;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+        .btn-xem-ngay i {
+            font-size: 1em; /* Giảm kích thước icon để vừa với chữ */
+            margin-right: 8px; /* Khoảng cách giữa biểu tượng và chữ */
+            vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
+        }
+
+
+
+    /* Khi hover vào thẻ card, nút sẽ hiện lên */
+    .card-hover:hover .btn-xem-ngay {
+        opacity: 1;
+        pointer-events: auto; /* Cho phép click khi hover */
+    }
+
+    /* Tạo biểu tượng cho nút "Xem ngay" */
+    .card-hover .btn-xem-ngay i {
+        margin-right: 8px;
+    }
+
+    /* Điều chỉnh font và màu cho tiêu đề */
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #f8f9fa;
+    }
+
+    /* Căn chỉnh phân trang */
+    .pagination {
+        margin-top: 20px;
+        justify-content: center;
+    }
+</style>
 <body>
     <div class="container my-4">
         <section class="mb-4">
             <h1>
-               
-                @if (phan.SoPhan != 0)
+                @if (phimLe != null)
                 {
-                    @phan.Phim.TenPhim @($"(Phần {phan.SoPhan})")
+                    @phimLe.TenPhim
                 }
-                else
+                else if (phimBo != null && phan != null)
                 {
-                    @phan.Phim.TenPhim
+                    @phimBo.TenPhim @($"(Phần {phan.SoPhan})")
                 }
             </h1>
 
-            <div class="film-player bg-image">
-                <iframe id="filmPlayer" src="https://vidsrc.me/embed/tv?imdb=@phan.Phim.SourcePhim&season=@phan.SoPhan&episode=0" style="width: 100%; height: 100%;" frameborder="0" referrerpolicy="origin" allowfullscreen></iframe>
-            </div>
+            @if (phimLe != null)
+            {
+                <div class="film-player">
+                    <iframe id="filmPlayer" src="https://vidsrc.me/embed/tv?imdb=@phimLe.SourcePhim" style="width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
+                </div>
+            }
+            else if (phimBo != null && phan != null)
+            {
+                <div class="film-player">
+                    <iframe id="filmPlayer" src="https://vidsrc.me/embed/tv?imdb=@phimBo.SourcePhim&season=@phan.SoPhan&episode=1" style="width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
+                </div>
+            }
 
-            <div class="episode-buttons">
-                @if (phan.SoLuongTap != null)
-                {
+            @if (phimBo != null && phan != null)
+            {
+                <div class="episode-buttons">
                     @for (int i = 1; i <= phan.SoLuongTap; i++)
                     {
-                        <button onclick="doiTap(@i)"> @i</button>
+                        <button onclick="doiTap(@i)">@i</button>
                     }
-                }
-            </div>
+                </div>
+            }
 
             <div class="mb-4">
                 <h2>Mô tả</h2>
-                <p>@phan.Phim.MoTa</p>
+                <p>@(phimLe != null ? phimLe.MoTa : (phimBo != null ? phimBo.MoTa : ""))</p>
             </div>
         </section>
 
-        <script>
-            function doiTap(soTap) {
-                const sourcePhim = "@phan.Phim.SourcePhim";
-                const soPhan = @phan.SoPhan;
-                const iframe = document.getElementById('filmPlayer');
-                iframe.src = `https://vidsrc.me/embed/tv?imdb=${sourcePhim}&season=${soPhan}&episode=${soTap}`;
-            }
-        </script>
 
         <section class="mb-4">
             <h2>Phim đề cử</h2>
             <div class="row">
-                @foreach (var phim in phimDeCu)
+                @foreach (var phimdecu in phimDeCu)
                 {
                     <div class="col-md-3 mb-4">
                         <div class="card-hover">
-                            <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim" class="card-img-top">
+                            <img src="/images/@phimdecu.HinhAnh" alt="@phimdecu.TenPhim" class="card-img-top">
                             <div class="card-body">
-                                <h5 class="card-title">@phim.TenPhim</h5>
+                              <h5 class="card-title">@phimdecu.TenPhim</h5>
                                 <button class="btn-xem-ngay">
-                                    <a asp-controller="Phim" asp-action="ChiTietPhim" asp-route-id="@phim.IDPhim" style="text-decoration: none; color: white;">
+                                    <a asp-controller="Phim" asp-action="ChiTietPhim" asp-route-id="@phimdecu.IDPhim" style="text-decoration: none; color: white;">
                                         <i class="bi bi-play-fill"></i> Xem ngay
                                     </a>
                                 </button>
@@ -208,6 +203,18 @@
         </section>
     </div>
 
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function doiTap(soTap) {
+            const phimLe = "@(phimLe != null ? "true" : "false")";
+            const sourcePhim = phimLe === "true" ? "@phimLe?.SourcePhim" : "@phimBo?.SourcePhim";
+            const iframe = document.getElementById('filmPlayer');
+            if (phimLe === "true") {
+                iframe.src = `https://vidsrc.me/embed/tv?imdb=${sourcePhim}`;
+            } else {
+                const soPhan = "@phan?.SoPhan";
+                iframe.src = `https://vidsrc.me/embed/tv?imdb=${sourcePhim}&season=${soPhan}&episode=${soTap}`;
+            }
+        }
+    </script>
 </body>
 </html>
