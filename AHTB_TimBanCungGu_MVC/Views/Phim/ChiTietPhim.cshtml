@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
-  @*   <link href="/css/chitietphim.css" rel="stylesheet" /> *@
+    @*   <link href="/css/chitietphim.css" rel="stylesheet" /> *@
 </head>
 <style>
 
@@ -197,16 +197,16 @@
                     <div class="col-md-7 movie-info">
                         <h2>@Model.TenPhim</h2>
                         <p>
-                            @if (ViewBag.DanhSachPhan.Count > 1)
+                            @if (ViewBag.IsSingleMovie)
+                            {
+                                <h4>@Model.DangPhim</h4>
+                            }
+                            else
                             {
                                 foreach (var phan in ViewBag.DanhSachPhan)
                                 {
                                     <h4>Phần @phan.SoPhan (@phan.SoLuongTap Tập)</h4>
                                 }
-                            }
-                            else
-                            {
-                                <h4>Phim lẻ</h4>
                             }
                             <strong>Diễn Viên:</strong> @Model.DienVien<br>
                             <strong>Ngày phát hành:</strong> @Model.NgayPhatHanh.Year<br>
@@ -217,36 +217,57 @@
 
                         <div class="btn-container">
                             <!-- Nút xem phim -->
-                            @if (ViewBag.DanhSachPhan != null && ViewBag.DanhSachPhan.Count == 1)
+                            @if (ViewBag.IsSingleMovie)
                             {
+                                <!-- Nút "Xem ngay" cho phim lẻ -->
                                 <button class="btn-watch">
-                                    <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = ViewBag.DanhSachPhan[0].SoPhan })">Xem ngay</a>
+                                    <a href="@Url.Action("XemPhim", "Phim", new { idPhim = ViewBag.PhimLe.IDPhim })">
+                                        Xem ngay
+                                    </a>
                                 </button>
                             }
+
                             else
                             {
+                                <!-- Hiển thị danh sách các phần của phim -->
                                 @foreach (var phan in ViewBag.DanhSachPhan)
                                 {
-                                    <button class="btn-watch">
-                                        <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan, soluongTap = phan.SoLuongTap })">
-                                            Phần @phan.SoPhan
-                                        </a>
-                                    </button>
+                                    <!-- Kiểm tra nếu `SoLuongTap` là null -->
+                                    if (phan.SoLuongTap == null)
+                                    {
+                                        <button class="btn-watch">
+                                            <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan })">
+                                                Xem ngay
+                                            </a>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-watch">
+                                            <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, soPhan = phan.SoPhan, soluongTap = phan.SoLuongTap })">
+                                                Phần @phan.SoPhan
+                                            </a>
+                                        </button>
+                                    }
                                 }
                             }
+
 
                             <!-- Nút yêu thích -->
                             <form asp-action="ToggleFavorite" method="post" style="display: inline;">
                                 <input type="hidden" name="movieId" value="@Model.IDPhim" />
-                                @if (ViewBag.IsFavorite)
-                                {
-                                    <button type="submit" class="btn-watch">Xóa yêu thích</button>
-                                }
-                                else
-                                {
-                                    <button type="submit" class="btn-watch">Yêu thích</button>
-                                }
+                                <button type="submit" class="btn-watch">
+                                    @if (ViewBag.IsFavorite)
+                                    {
+                                        <span>Xóa yêu thích</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Yêu thích</span>
+                                    }
+                                </button>
                             </form>
+
                         </div>
                     </div>
                 </div>
@@ -277,13 +298,13 @@
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-      
+
         window.onload = function () {
             var alert = document.querySelector('.alert-success');
             if (alert) {
                 setTimeout(function () {
                     alert.style.display = 'none';
-                }, 5000); 
+                }, 5000);
             }
         };
     </script>

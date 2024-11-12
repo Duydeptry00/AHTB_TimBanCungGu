@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AHTB_TimBanCungGu_API.Migrations
 {
-    public partial class dbmoi : Migration
+    public partial class cuong : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -44,12 +44,27 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TrangThai = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NgayMoKhoa = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    NgayMoKhoa = table.Column<DateTime>(type: "datetime2", nullable: true),
                     LyDoKhoa = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.UsID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UuDai",
+                columns: table => new
+                {
+                    IdUuDai = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TenUuDai = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NgayUuDai = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PhanTram = table.Column<int>(type: "int", nullable: false),
+                    Hinh = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UuDai", x => x.IdUuDai);
                 });
 
             migrationBuilder.CreateTable(
@@ -242,6 +257,7 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     SoDienThoai = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsPremium = table.Column<bool>(type: "bit", nullable: false),
                     MoTa = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DiaChi = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TrangThai = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -495,6 +511,9 @@ namespace AHTB_TimBanCungGu_API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Tap");
+
+            migrationBuilder.DropTable(
+                name: "UuDai");
 
             migrationBuilder.DropTable(
                 name: "ThongTinCN");
