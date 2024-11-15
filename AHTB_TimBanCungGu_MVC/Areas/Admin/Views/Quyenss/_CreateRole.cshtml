@@ -12,7 +12,14 @@
                 @for (int i = 0; i < Model.Roles.Count; i++)
                 {
                     <div class="role-entry mb-3">
-                        <input asp-for="Roles[i].Module" class="form-control" placeholder="Tên Module" />
+                        <select asp-for="Roles[i].Module" class="form-control">
+                            <option value="">Chọn Module</option>
+                            <option value="Quản Lý Ưu Đãi">Quản Lý Ưu Đãi</option>
+                            <option value="Quản Lý Người Dùng">Quản Lý Người Dùng</option>
+                            <option value="Thông Tin Người Dùng">Thông Tin Người Dùng</option>
+                            <option value="Quản Lý Phim">Quản Lý Phim</option>
+                            <option value="Quản Lý Phân Quyền">Quản Lý Phân Quyền</option>
+                        </select>
                         <span asp-validation-for="Roles[i].Module" class="text-danger"></span>
                         <div class="row">
                             <div class="col">
@@ -60,7 +67,14 @@
 
         const newRoleEntry = `
                 <div class="role-entry mb-3">
-                    <input name="Roles[${newIndex}].Module" class="form-control" placeholder="Tên Module" />
+                         <select name="Roles[${newIndex}].Module" class="form-control">
+                        <option value="">Chọn Module</option>
+                        <option value="Quản Lý Ưu Đãi">Quản Lý Ưu Đãi</option>
+                        <option value="Quản Lý Người Dùng">Quản Lý Người Dùng</option>
+                        <option value="Thông Tin Người Dùng">Thông Tin Người Dùng</option>
+                        <option value="Quản Lý Phim">Quản Lý Phim</option>
+                        <option value="Quản Lý Phân Quyền">Quản Lý Phân Quyền</option>
+                    </select>
                     <span class="text-danger" data-valmsg-for="Roles[${newIndex}].Module"></span>
                     <div class="row">
                         <div class="col">

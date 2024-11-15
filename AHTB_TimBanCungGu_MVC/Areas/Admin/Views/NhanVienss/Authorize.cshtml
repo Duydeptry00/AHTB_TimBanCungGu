@@ -6,34 +6,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tag Input Example</title>
+    <!-- Add FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
+        /* General Styling for Dark Theme */
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
         }
 
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            list-style: none;
+        }
+
+            .pagination .page-item {
+                margin: 0 5px;
+            }
+
+            .pagination .page-link {
+                background-color: #fff;
+                color: #333;
+                border: none;
+                font-size: 16px; /* Tăng kích thước chữ */
+                cursor: pointer;
+            }
+
+                .pagination .page-link:hover {
+                    background-color: #999;
+                }
+
+            .pagination .page-item.active .page-link {
+                background: linear-gradient(45deg, #00aaed, #3ac8ff);
+            }
+
+            .pagination .page-item.disabled .page-link {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+        /* Main Form Container */
+        .form-container {
+            width: 98%;
+            margin: 19px;
+            background-color: #1f1f1f;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Form Title */
+        h3 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Select Container Styling */
+        .select-container {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 20px;
+            vertical-align: top;
+        }
+
+            .select-container label {
+                font-weight: bold;
+                color: #bbb;
+                display: block;
+                margin-bottom: 8px;
+            }
+            .input-group label{
+            font-weight: bold;
+            color: #bbb;
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            }
+            .select-container select {
+                width: 100%;
+                padding: 14px;
+                border: 1px solid #444;
+                border-radius: 8px;
+                background-color: #333;
+                color: #e0e0e0;
+                transition: border-color 0.3s ease;
+            }
+
+                .select-container select:focus {
+                    outline: none;
+                    border-color: #4CAF50;
+                }
+
+        /* User Tag Input Container */
         .tag-container {
             display: flex;
+            margin-bottom:11px;
             flex-wrap: wrap;
-            border: 1px solid #ccc;
-            padding: 5px;
-            width: 349px;
-            min-height: 40px;
-            align-items: center;
-            background-color: white;
-            border-radius: 5px;
+            border: 1px solid #444;
+            padding: 15px;
+            background-color: #1f1f1f;
+            border-radius: 8px;
             position: relative;
         }
 
+        .tag-input {
+            padding: 10px;
+            border: none;
+            background-color: transparent;
+            color: #e0e0e0;
+        }
+
+        /* Selected Tags Styling */
         .tag {
-            background-color: white;
-            color: black;
-            padding: 5px 10px;
-            margin: 3px;
-            border: 1px solid #ccc;
+            background-color: #4CAF50;
+            color: white;
+            padding: 6px 12px;
+            margin: 4px;
             border-radius: 5px;
             display: inline-flex;
             align-items: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
             .tag span {
@@ -42,100 +143,419 @@
                 font-weight: bold;
             }
 
-        .tag-input {
-            border: none;
-            outline: none;
-            flex-grow: 1;
-            padding: 5px;
-            background-color: white;
-            color: black;
-        }
-
-            .tag-input::placeholder {
-                color: black;
+            .tag:hover {
+                background-color: #45a049;
             }
 
+        /* Suggestions Dropdown Styling */
         .suggestions {
             position: absolute;
             top: 100%;
             left: 0;
             width: 100%;
-            border: 1px solid #ccc;
-            background-color: white;
-            max-height: 150px;
+            border: 1px solid #444;
+            background-color: #333;
+            max-height: 200px;
             overflow-y: auto;
             z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
             display: none;
         }
 
             .suggestions div {
-                padding: 8px;
+                padding: 12px;
+                font-size: 14px;
                 cursor: pointer;
+                color: #e0e0e0;
+                transition: background-color 0.3s ease;
             }
 
                 .suggestions div:hover {
-                    background-color: #f0f0f0;
+                    background-color: #444;
                 }
 
-        /* Style cho phần cuộn Vai Trò và Tên Vai Trò */
-        .select-container {
-            margin-bottom: 20px;
+       /* Table Container */
+.table-container {
+    width: 98%;
+    margin: 19px;
+    background-color: #1f1f1f;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    overflow-x: auto; /* Thêm cuộn ngang nếu bảng quá rộng */
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Table Header */
+table th {
+    border: 1px solid #444;
+    padding: 12px;
+    text-align: left;
+    background-color: #4CAF50;
+    color: white;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px; /* Thêm khoảng cách giữa các chữ */
+}
+
+/* Table Cells */
+table td {
+    border: 1px solid #444;
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    color: #ddd; /* Màu chữ */
+}
+
+/* Alternate Row Colors */
+table tr:nth-child(even) {
+    background-color: #333;
+}
+
+/* Hover Effects */
+table tr:hover {
+    background-color: #555; /* Màu khi hover vào dòng */
+}
+
+
+/* Table Sorting Icon */
+table th.sortable {
+    cursor: pointer;
+    position: relative;
+}
+
+table th.sortable::after {
+    content: ' ▼';
+    font-size: 10px;
+    color: #bbb;
+    position: absolute;
+    right: 10px;
+}
+
+/* Sort Ascending */
+table th.sortable.asc::after {
+    content: ' ▲';
+}
+
+/* Sort Descending */
+table th.sortable.desc::after {
+    content: ' ▼';
+}
+
+        /* Button Styling */
+        .btn-success {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            margin-top: 17px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
 
-            .select-container select {
-                width: 100%;
-                padding: 10px;
-                margin: 5px 0;
-                border: 1px solid #ccc;
-                border-radius: 5px;
+            .btn-success:hover {
+                background-color: #45a049;
             }
 
-        .form-container {
-            width: 350px;
-            margin: 20px auto;
+        .btn-danger {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
         }
+
+            .btn-danger:hover {
+                background-color: #c9302c;
+            }
     </style>
+
 </head>
 <body>
+    <!-- Form Section -->
+    <!-- Adjusted Form Section -->
     <div class="form-container">
-        <form method="post" asp-action="Authorize">
-            <!-- Vai Trò ID -->
-            <div class="select-container">
-                <label for="id-role">Vai Trò (ID):</label>
-                <select id="id-role" asp-for="Role" name="Role" required>
-                    @foreach (var role in Model.Roles)
-                    {
-                        <option value="@role.IDRole">@role.Module</option>
-                    }
-                </select>
-            </div>
-
-            <!-- Tên Vai Trò -->
-            <div class="select-container">
-                <label for="ten-vai-tro">Vai Trò (Tên):</label>
-                <select id="ten-vai-tro" asp-for="Tenrole" name="Tenrole" required>
-                    <option value="Admin">Admin</option>
-                    <option value="Nhân Viên">Nhân Viên</option>
-                </select>
-            </div>
-
-            <!-- Nhân Viên -->
-            <div class="select-container">
-                <label for="username">Nhân Viên:</label>
-                <div class="tag-container">
-                    <input type="text" class="tag-input" id="username" placeholder="Nhập thẻ Username và nhấn Enter" />
-                    <div class="suggestions" id="suggestions"></div>
+        <h3>Cấp Quyền</h3>
+        <form method="post" asp-controller="NhanVienss" asp-action="Authorize" id="authorizeForm">
+            <!-- Container for Flex Alignment -->
+            <div class="form-row" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
+                <!-- Vai Trò ID -->
+                <div class="select-container" style="flex: 1;">
+                    <label for="id-role">Vai Trò (ID):</label>
+                    <select id="id-role" asp-for="Role" name="Role" required>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.IDRole">
+                                @role.Module
+                                (
+                                @(role.Add == "true" ? "Thêm" : "Không thêm"),
+                                @(role.Update == "true" ? "Cập nhật" : "Không cập nhật"),
+                                @(role.Delete == "true" ? "Xóa" : "Không xóa"),
+                                @(role.ReviewDetails == "true" ? "Xem chi tiết" : "Không xem chi tiết")
+                                )
+                            </option>
+                        }
+                    </select>
                 </div>
-            </div>
 
-            <!-- Hidden inputs to store the selected usernames -->
-            <div id="hidden-inputs-container"></div>
+                <!-- Tên Vai Trò -->
+                <div class="select-container" style="flex: 1;">
+                    <label for="ten-vai-tro">Vai Trò (Tên):</label>
+                    <select id="ten-vai-tro" asp-for="Tenrole" name="Tenrole" required>
+                        <option value="Admin">Admin</option>
+                        <option value="Nhân Viên">Nhân Viên</option>
+                    </select>
+                </div>
 
-            <div style="text-align: right;">
-                <button class="btn btn-success" type="submit">Cấp Quyền</button>
+                <!-- Nhân Viên & Button -->
+                <div class="input-group" style="flex: 4; display: flex; gap: 20px;">
+                    <div class="tag-container" style="flex-grow: 1;">
+                        <label for="username">Nhân Viên:</label>
+                        <input type="text" class="tag-input" id="User[]" placeholder="Nhập thẻ Username" />
+                        <div class="suggestions" id="suggestions"></div>
+                    </div>
+
+                    <div class="btn-container">
+                        <button class="btn-success" type="submit" id="submitButton">Cấp Quyền</button>
+                    </div>
+                </div>
+
+                <!-- Hidden inputs to store the selected usernames -->
+                <div id="hidden-inputs-container"></div>
             </div>
         </form>
     </div>
+
+
+
+    <!-- Table Section -->
+    <div class="table-container">
+        <h3>Danh Sách Người Dùng và Vai Trò</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Tên Vai Trò</th>
+                    <th>ID Vai Trò</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.PhanQuyen)
+                {
+                    <tr>
+                        <td>@user.Username</td>
+                        <td>
+                            @user.Module
+                            (
+                            @(user.Add == "true" ? "Thêm" : "Không thêm"),
+                            @(user.Update == "true" ? "Cập nhật" : "Không cập nhật"),
+                            @(user.Delete == "true" ? "Xóa" : "Không xóa"),
+                            @(user.ReviewDetails == "true" ? "Xem chi tiết" : "Không xem chi tiết")
+                            )
+                        </td>
+                        <td>@user.Tenrole</td>
+                        <td>
+                            <!-- Delete Button with Trash Icon -->
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete('@user.Id')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="d-flex justify-content-center">
+            @if (Model.TotalPages > 1)
+            {
+                <ul class="pagination">
+                    <!-- Nút Trang Trước (Ẩn nếu là trang đầu) -->
+                    @if (Model.PageNumber > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Authorize", "NhanVienss", new { page = Model.PageNumber - 1, pageSize = Model.PageSize })" aria-label="Trang Trước">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    }
+
+                    <!-- Hiển thị các số trang với dấu ba chấm nếu cần -->
+                    @if (Model.TotalPages > 5)
+                    {
+                        <!-- Hiển thị trang đầu -->
+                        <li class="page-item @(Model.PageNumber == 1 ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Authorize", "NhanVienss", new { page = 1, pageSize = Model.PageSize })">1</a>
+                        </li>
+
+                        @if (Model.PageNumber > 3)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+
+                        @for (int i = Model.PageNumber - 1; i <= Model.PageNumber + 1; i++)
+                        {
+                            if (i > 1 && i < Model.TotalPages)
+                            {
+                                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Authorize", "NhanVienss", new { page = i, pageSize = Model.PageSize })">@i</a>
+                                </li>
+                            }
+                        }
+
+                        @if (Model.PageNumber < Model.TotalPages - 2)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.PageNumber == Model.TotalPages ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Authorize", "NhanVienss", new { page = Model.TotalPages, pageSize = Model.PageSize })">@Model.TotalPages</a>
+                        </li>
+                    }
+                    else
+                    {
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Authorize", "NhanVienss", new { page = i, pageSize = Model.PageSize })">@i</a>
+                            </li>
+                        }
+                    }
+
+                    <!-- Nút Trang Sau (Ẩn nếu là trang cuối) -->
+                    @if (Model.PageNumber < Model.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Authorize", "NhanVienss", new { page = Model.PageNumber + 1, pageSize = Model.PageSize })" aria-label="Trang Sau">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+
+    </div>
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Add FontAwesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+        document.getElementById('authorizeForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Ngăn chặn gửi form mặc định
+
+            // Thu thập dữ liệu từ form dưới dạng FormData
+            const formData = new FormData(this);
+            // Kiểm tra và log dữ liệu thu thập từ form
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData // Gửi FormData thay vì JSON
+                });
+
+                if (response.ok) {
+                    // Hiển thị thông báo thành công
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'Quyền đã được cấp thành công cho người dùng!',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Tải lại trang hoặc chuyển hướng nếu cần
+                        window.location.reload();
+                    });
+                } else {
+                    // Hiển thị thông báo thất bại
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Có lỗi xảy ra khi cấp quyền. Vui lòng thử lại.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                // Hiển thị thông báo lỗi mạng hoặc lỗi khác
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không thể kết nối đến server. Vui lòng thử lại.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+        </script>
+    <script>
+        function confirmDelete(id) {
+            // Hiển thị hộp thoại xác nhận
+            Swal.fire({
+                title: 'Bạn có chắc chắn?',
+                text: "Bạn muốn xóa quyền của người dùng này?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Có, xóa!',
+                cancelButtonText: 'Hủy',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Gửi yêu cầu xóa bằng Fetch API hoặc XMLHttpRequest
+                    fetch(`/Admin/NhanVienss/DeleteUserRole/${id}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                // Hiển thị thông báo thành công
+                                Swal.fire(
+                                    'Đã xóa!',
+                                    'Quyền của người dùng đã được xóa thành công.',
+                                    'success'
+                                ).then(() => {
+                                    // Tải lại trang hoặc cập nhật giao diện
+                                    window.location.reload();
+                                });
+                            } else {
+                                // Hiển thị thông báo lỗi
+                                Swal.fire(
+                                    'Lỗi!',
+                                    'Có lỗi xảy ra khi xóa quyền người dùng.',
+                                    'error'
+                                );
+                            }
+                        })
+                        .catch(error => {
+                            // Xử lý lỗi mạng hoặc các lỗi khác
+                            Swal.fire(
+                                'Lỗi!',
+                                'Không thể kết nối để xóa. Vui lòng thử lại.',
+                                'error'
+                            );
+                        });
+                }
+            });
+        }
+    </script>
 
     <script>
         const tagContainer = document.querySelector('.tag-container');
@@ -146,6 +566,7 @@
         // Convert model users into an array
         const tags = @Html.Raw(Json.Serialize(Model.Users.Select(u => u.UserName).ToList()));
         let addedTags = [];  // Mảng lưu các Username đã được thêm
+        let selectedIndex = -1; // Vị trí của gợi ý đang được chọn
 
         input.addEventListener('input', function () {
             const query = input.value.trim().toLowerCase();
@@ -157,19 +578,36 @@
         });
 
         input.addEventListener('keydown', function (event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                const value = input.value.trim();
+            const suggestions = suggestionsContainer.querySelectorAll('div');
 
-                if (value && tags.includes(value) && !addedTags.includes(value)) {
-                    addTag(value);
-                    addedTags.push(value);
-                    input.value = '';
-                    suggestionsContainer.style.display = 'none';
-                } else if (addedTags.includes(value)) {
-                    alert('Username này đã được thêm!');
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                if (suggestions.length > 0) {
+                    // Dịch chuyển xuống trong danh sách gợi ý
+                    if (selectedIndex < suggestions.length - 1) {
+                        selectedIndex++;
+                        highlightSuggestion(suggestions, selectedIndex);
+                    }
+                }
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (suggestions.length > 0) {
+                    // Dịch chuyển lên trong danh sách gợi ý
+                    if (selectedIndex > 0) {
+                        selectedIndex--;
+                        highlightSuggestion(suggestions, selectedIndex);
+                    }
+                }
+            } else if (event.key === 'Tab') {
+                event.preventDefault();
+                // Thêm thẻ nếu có gợi ý được chọn
+                if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+                    const selectedValue = suggestions[selectedIndex].textContent;
+                    addTagIfValid(selectedValue);
                 } else {
-                    alert('Username không hợp lệ hoặc không có trong danh sách!');
+                    // Thêm thẻ từ giá trị đầu vào
+                    const value = input.value.trim();
+                    addTagIfValid(value);
                 }
             }
         });
@@ -177,6 +615,7 @@
         function showSuggestions(query) {
             let filteredTags = tags.filter(tag => tag.toLowerCase().includes(query) && !addedTags.includes(tag));
             suggestionsContainer.innerHTML = '';
+            selectedIndex = -1; // Đặt lại chỉ mục khi hiển thị gợi ý mới
 
             if (filteredTags.length > 0) {
                 suggestionsContainer.style.display = 'block';
@@ -184,47 +623,79 @@
                     const suggestionItem = document.createElement('div');
                     suggestionItem.textContent = tag;
                     suggestionItem.addEventListener('click', function () {
-                        addTag(tag);
-                        addedTags.push(tag);
-                        input.value = '';
-                        suggestionsContainer.style.display = 'none';
+                        addTagIfValid(tag);
                     });
                     suggestionsContainer.appendChild(suggestionItem);
                 });
             } else {
-                suggestionsContainer.style.display = 'none';
+                suggestionsContainer.style.display = 'none'; // Ẩn nếu không có kết quả
             }
         }
 
-        function addTag(text) {
-            // Create tag element
-            const tag = document.createElement('div');
-            tag.classList.add('tag');
-            tag.textContent = text;
+        function highlightSuggestion(suggestions, index) {
+            // Xóa lớp đánh dấu khỏi tất cả gợi ý
+            suggestions.forEach((suggestion, i) => {
+                suggestion.style.backgroundColor = i === index ? '#4CAF50' : 'transparent'; // Tô màu gợi ý được chọn
+                suggestion.style.color = i === index ? 'white' : '#fff'; // Thay đổi màu chữ
 
-            // Create close button
-            const closeBtn = document.createElement('span');
-            closeBtn.textContent = 'x';
-            closeBtn.addEventListener('click', function () {
-                tagContainer.removeChild(tag);
-                addedTags = addedTags.filter(tag => tag !== text);
-                // Remove the corresponding hidden input
-                const hiddenInput = document.getElementById(`hidden-${text}`);
-                if (hiddenInput) hiddenInput.remove();
+                // Cuộn vào vùng nhìn thấy nếu mục đang được chọn
+                if (i === index) {
+                    suggestion.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }
             });
+        }
 
-            tag.appendChild(closeBtn);
-            tagContainer.insertBefore(tag, input);
 
-            // Create a hidden input for submission
+        function addTagIfValid(tag) {
+            if (addedTags.length >= 8) {
+                alert('Bạn không thể thêm quá 8 thẻ!');
+                return;
+            }
+            if (tag && tags.includes(tag) && !addedTags.includes(tag)) {
+                addTag(tag);
+                addedTags.push(tag);
+                input.value = '';
+                suggestionsContainer.style.display = 'none';
+                selectedIndex = -1; // Reset chỉ mục khi thêm xong
+            } else if (addedTags.includes(tag)) {
+                alert('Username này đã được thêm!');
+            } else {
+                alert('Username không hợp lệ hoặc không có trong danh sách!');
+            }
+        }
+
+        function addTag(tag) {
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag';
+            tagElement.innerHTML = tag + '<span onclick="removeTag(event)">x</span>';
+            tagContainer.insertBefore(tagElement, input);
+
             const hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
-            hiddenInput.name = `User[${addedTags.length}].UserName`;
-            hiddenInput.id = `hidden-${text}`;
-            hiddenInput.value = text;
-
+            hiddenInput.name = 'User[]';
+            hiddenInput.value = tag;
             hiddenInputsContainer.appendChild(hiddenInput);
         }
+
+        function removeTag(event) {
+            const tagElement = event.target.parentElement;
+            const tagValue = tagElement.textContent.trim().slice(0, -1); // Lấy giá trị trước ký tự 'x'
+
+            addedTags = addedTags.filter(tag => tag !== tagValue);
+            tagContainer.removeChild(tagElement);
+
+            // Cập nhật lại input ẩn
+            const hiddenInputs = hiddenInputsContainer.querySelectorAll('input');
+            hiddenInputs.forEach(input => {
+                if (input.value === tagValue) {
+                    hiddenInputsContainer.removeChild(input);
+                }
+            });
+        }
+
     </script>
 </body>
 </html>

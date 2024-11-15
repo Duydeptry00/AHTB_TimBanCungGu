@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AHTB_TimBanCungGu_API.Models;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.ViewModels;
+using System.Linq;
 
 namespace AHTB_TimBanCungGu_API.Controllers
 {
@@ -35,6 +36,14 @@ namespace AHTB_TimBanCungGu_API.Controllers
             {
                 return BadRequest("Vai trò không hợp lệ.");
             }
+            // Kiểm tra xem nhân viên đó đã được cấp quyền đó trong cơ sở dữ liệu hay không
+            var User_roleExists = await _context.Role.AnyAsync(r => r.IDRole == userRole.Id_Role && r.UsID == user.UsID);
+
+            if (User_roleExists) // Nếu đã tồn tại, trả về lỗi
+            {
+                return BadRequest("Vai trò và người dùng đã tồn tại.");
+            }
+
 
             // Tạo đối tượng mới cho User_Role và gán các giá trị cần thiết
             var newUserRole = new User_Role
@@ -53,8 +62,43 @@ namespace AHTB_TimBanCungGu_API.Controllers
             // Trả về kết quả sau khi thêm thành công
             return CreatedAtAction(nameof(GetUserRole), new { id = userRole.Id_Role }, userRole);
         }
+        [HttpGet]
+        public async Task<ActionResult<ListPhanQuyen>> GetPhanQUyen()
+        {
+            var User_role = await _context.Role.Include(r => r.Role).Include(u => u.User).ToListAsync();
+            var PhanQuyen = User_role.Select(PQ => new ListPhanQuyen
+            {
+                Id = PQ.IDRole_US,
+                Module = PQ.Role.Module,
+                Add = PQ.Role.Add,
+                Update = PQ.Role.Update,
+                Delete = PQ.Role.Delete,
+                ReviewDetails = PQ.Role.ReviewDetails,
+                Username = PQ.User.UserName,
+                Tenrole = PQ.TenRole,
+            });
+            return Ok(PhanQuyen);
+        }
+        // DELETE: api/PhanQuyens/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUserRole(int id)
+        {
+            // Find the User_Role by ID
+            var userRole = await _context.Role.FindAsync(id);
+            if (userRole == null)
+            {
+                return NotFound();  // Return 404 if the User_Role is not found
+            }
 
+            // Remove the User_Role from the context
+            _context.Role.Remove(userRole);
 
+            // Save changes to commit the deletion
+            await _context.SaveChangesAsync();
+
+            // Return a no-content status to indicate success
+            return NoContent();
+        }
         // GET: api/PhanQuyens/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<User_Role>> GetUserRole(int id)

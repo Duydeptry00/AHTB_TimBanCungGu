@@ -1,99 +1,355 @@
-﻿@model IEnumerable<AHTB_TimBanCungGu_API.ViewModels.NhanVienVM>
+﻿@model AHTB_TimBanCungGu_API.ViewModels.NhanVienListViewModel
 
-
-<h1>Quản Lý Nhân Viên</h1>
-<p class="text-end mb-3">
-    <a asp-action="Authorize">
-        <i class="fas fa-user-cog"></i> Cấp quyền
-    </a>
-    <button class="btn btn-success" onclick="loadCreateUser()">
-        <i class="fas fa-plus"></i> Thêm mới
-    </button>
-</p>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+@{
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";  // Đảm bảo view sử dụng _LayoutAdmin
 }
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-<table class="table text-light">
-    <thead>
-        <tr>
-            <th><i class="fas fa-user"></i> Tên Tài Khoản</th>
-            <th><i class="fas fa-envelope"></i> Email</th>
+<style>
+    /* Tùy chỉnh giao diện phân trang */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+        list-style: none;
+    }
 
-            <th><i class="fas fa-user-cog"></i> Quyền</th>
-            <th><i class="fas fa-info-circle"></i> Trạng Thái</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.UserName</td>
-                <td>@item.Email</td>
-                <td>@item.UserName</td>
-                <td>
-                    @if (item.TrangThai == "Hoạt Động")
-                    {
-                        <span class="badge bg-success">@item.TrangThai</span>
-                    }
-                    else if (item.TrangThai == "Đình Chỉ")
-                    {
-                        <span class="badge bg-warning">@item.TrangThai</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">@item.TrangThai</span>
-                    }
-                </td>
-                <td>
-                    <div class="d-flex">
-                        <button class="btn btn-primary me-2" onclick="loadEditUser('@item.IdNhanVien')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <a asp-action="AssignRoles" asp-route-id="@item.IdNhanVien" class="btn btn-secondary me-2">
-                            <i class="fas fa-user-cog"></i>
-                        </a>
-                        <form asp-action="DeleteConfirmed" asp-route-id="@item.IdNhanVien" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa không?');">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
+        .pagination .page-item {
+            margin: 0 5px;
         }
-    </tbody>
-</table>
+
+        .pagination .page-link {
+            background-color: #fff;
+            color: #333;
+            border: none;
+            font-size: 16px; /* Tăng kích thước chữ */
+            cursor: pointer;
+        }
+
+            .pagination .page-link:hover {
+                background-color: #999;
+            }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(45deg, #00aaed, #3ac8ff);
+        }
+            
+        .pagination .page-item.disabled .page-link {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+         /* Thêm lớp cho vùng chứa bảng */
+    .table-container {
+        margin-top: 17px;
+        background-color: #2f353b; /* Màu nền đen nhạt */
+        padding: 20px; /* Thêm khoảng cách xung quanh bảng */
+        border-radius: 10px; /* Bo góc để tạo độ mềm mại */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Thêm hiệu ứng đổ bóng */
+    }
+
+    /* Thêm viền nhẹ cho bảng */
+    .table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        /* Cột STT - Giới hạn chiều rộng */
+        .table th:nth-child(1), .table td:nth-child(1) {
+            width: 50px; /* Giới hạn chiều rộng cột STT */
+            white-space: nowrap; /* Ngăn ngừa việc dòng bị ngắt */
+            text-align: center; /* Căn giữa cho cột STT */
+        }
+
+        /* Cải thiện thẻ th và td */
+        .table th, .table td {
+            text-align: center; /* Căn giữa theo chiều ngang */
+            vertical-align: middle; /* Căn giữa theo chiều dọc */
+            word-wrap: break-word; /* Đảm bảo từ dài không bị tràn */
+            border: 1px solid #ddd; /* Thêm viền cho các ô */
+            font-size: 16px; /* Tăng kích thước chữ */
+        }
+
+        /* Tiêu đề bảng */
+        .table th {
+            background-color: #343a40;
+            color: white;
+            border: 2px solid #007bff; /* Viền nổi bật cho tiêu đề */
+        }
+
+        /* Dữ liệu trong bảng */
+        .table td {
+            background-color: #212529;
+            color: #f8f9fa;
+            border: 1px solid #333; /* Viền nhẹ cho ô dữ liệu */
+        }
+
+            /* Hiệu ứng hover cho các dòng */
+            .table td:hover {
+                background-color: #555555; /* Nền xám khi hover vào ô */
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+        /* Khoảng cách giữa các dòng */
+        .table tbody tr {
+            transition: background-color 0.3s ease; /* Thêm hiệu ứng cho các dòng */
+        }
+
+            /* Tạo khoảng cách giữa các hàng để dễ nhìn hơn */
+            .table tbody tr:nth-child(even) {
+                background-color: #2c2f36; /* Nền tối cho các dòng chẵn */
+            }
+
+            .table tbody tr:nth-child(odd) {
+                background-color: #22272b; /* Nền đen cho các dòng lẻ */
+            }
+
+            /* Hiệu ứng hover cho dòng */
+            .table tbody tr:hover {
+                background-color: #3a4149; /* Nền sáng lên khi hover vào dòng */
+            }
+    /* Tạo kiểu cho dropdown PageSize */
+    .select2-container {
+        width: 100% !important; /* Đảm bảo dropdown sử dụng hết chiều rộng */
+    }
+
+    .select2-selection {
+        padding: 10px; /* Thêm khoảng cách xung quanh chữ */
+        font-size: 16px; /* Điều chỉnh kích thước chữ */
+        border-radius: 5px; /* Bo góc cho dropdown */
+        border: 1px solid #ddd; /* Viền sáng */
+        background-color: #fff; /* Nền trắng */
+        color: #333; /* Màu chữ */
+    }
+
+    .select2-selection__rendered {
+        padding-right: 20px; /* Thêm khoảng cách bên phải cho dropdown */
+    }
+
+    /* Tạo hiệu ứng khi hover */
+    .select2-selection:hover {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    /* Đối với phần tử <select> nếu muốn sử dụng kiểu custom */
+    select.form-select {
+        padding: 6px;
+        font-size: 16px;
+        border-radius: 5px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        color: #333;
+        width: 100%; /* Đảm bảo select sử dụng hết chiều rộng */
+    }
+
+        select.form-select:focus {
+            border-color: #007bff; /* Đổi màu viền khi focus */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+</style>
+
+
+
+<div class="container-fluid">
+   
+
+    <div class="table-container">
+        <div class="row mb-3 mt-3">
+            <div class="col-md-6" >
+                <!-- Bộ lọc người dùng -->
+                <form method="get" class="row">
+                    <div class="col-md-1 mb-2">
+                        @Html.DropDownList("PageSize", new List<SelectListItem>
+                        {
+                        new SelectListItem { Value = "5", Text = "5", Selected = Model.PageSize == 5 },
+                        new SelectListItem { Value = "10", Text = "10", Selected = Model.PageSize == 10 }
+                        }, new { @class = "form-select" })  <!-- Thêm lớp "form-select" -->
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="usernameFilter" name="usernameFilter" placeholder="Tìm kiếm nhân viên..." value="@Model.UsernameFilter" />
+                            <button type="submit" class="btn btn-info text-light">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-2">
+                        <!-- Mã lọc trạng thái có thể được thêm lại ở đây nếu cần -->
+                    </div>
+                    <div class="col-md-12 text-end">
+                        <!-- Các nút lọc có thể ở đây -->
+                    </div>
+                </form>
+            </div>
+            <div class="col text-end">
+                <a asp-action="Authorize" class="btn btn-warning">
+                    <i class="fas fa-user-cog"></i> Cấp quyền
+                </a>
+                <button class="btn btn-success" onclick="loadCreateUser()">
+                    <i class="fas fa-plus"></i> Thêm mới
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark text-light">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> STT</th>
+                        <th><i class="fas fa-user"></i> Tên Tài Khoản</th>
+                        <th><i class="fas fa-envelope"></i> Email</th>
+                        <th><i class="fas fa-user-cog"></i> Quyền</th>
+                        <th><i class="fas fa-info-circle"></i> Trạng Thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.NhanViens)
+                    {
+                        <tr>
+                            <td>@item.STT</td>
+                            <td>@item.UserName</td>
+                            <td>@item.Email</td>
+                            <td>
+                                <span class="@(string.IsNullOrWhiteSpace(item.Quyen) || item.Quyen == "Chưa cấp quyền cho nhân viên" ? "badge bg-secondary" : "badge bg-primary")">
+                                    @item.Quyen
+                                </span>
+                            </td>
+                            <td>
+                                @if (item.TrangThai == "Hoạt Động")
+                                {
+                                    <span class="badge bg-success">@item.TrangThai</span>
+                                }
+                                else if (item.TrangThai == "Đình Chỉ")
+                                {
+                                    <span class="badge bg-warning">@item.TrangThai</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@item.TrangThai</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex">
+                                    <button class="btn btn-primary me-2" onclick="loadEditUser('@item.IdNhanVien')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a asp-action="AssignRoles" asp-route-id="@item.IdNhanVien" class="btn btn-secondary me-2">
+                                        <i class="fas fa-user-cog"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger" onclick="deleteUser('@item.IdNhanVien')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end">
+    @if (Model.TotalPages > 1)
+    {
+        <ul class="pagination">
+            <!-- Nút Trang Trước (Ẩn nếu là trang đầu) -->
+            @if (Model.PageNumber > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", "NhanVienss", new { page = Model.PageNumber - 1, pageSize = Model.PageSize, usernameFilter = Model.UsernameFilter, roleFilter = Model.RoleFilter })" aria-label="Trang Trước">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            }
+
+            <!-- Hiển thị các số trang với dấu ba chấm nếu cần -->
+            @if (Model.TotalPages > 5)
+            {
+                <!-- Hiển thị trang đầu -->
+                <li class="page-item @(Model.PageNumber == 1 ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", "NhanVienss", new { page = 1, pageSize = Model.PageSize, usernameFilter = Model.UsernameFilter, roleFilter = Model.RoleFilter })">1</a>
+                </li>
+
+                @if (Model.PageNumber > 3)
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                }
+
+                @for (int i = Model.PageNumber - 1; i <= Model.PageNumber + 1; i++)
+                {
+                    if (i > 1 && i < Model.TotalPages)
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", "NhanVienss", new { page = i, pageSize = Model.PageSize, usernameFilter = Model.UsernameFilter, roleFilter = Model.RoleFilter })">@i</a>
+                        </li>
+                    }
+                }
+
+                @if (Model.PageNumber < Model.TotalPages - 2)
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                }
+
+                <li class="page-item @(Model.PageNumber == Model.TotalPages ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", "NhanVienss", new { page = Model.TotalPages, pageSize = Model.PageSize, usernameFilter = Model.UsernameFilter, roleFilter = Model.RoleFilter })">@Model.TotalPages</a>
+                </li>
+            }
+            else
+            {
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", "NhanVienss", new { page = i, pageSize = Model.PageSize, usernameFilter = Model.UsernameFilter, roleFilter = Model.RoleFilter })">@i</a>
+                    </li>
+                }
+            }
+
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", "NhanVienss", new { page = Model.PageNumber + 1, pageSize = Model.PageSize, usernameFilter = Model.UsernameFilter, roleFilter = Model.RoleFilter })" aria-label="Trang Sau">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+    </div>
+</div>
 
 <!-- Modal -->
-<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content" id="editModalContent">
-            <!-- Nội dung sẽ được tải vào đây -->
+            <!-- Nội dung modal sẽ được tải vào đây -->
         </div>
     </div>
 </div>
-<!-- Thêm thư viện jQuery và Bootstrap -->
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Lắng nghe sự kiện thay đổi của dropdown PageSize và tự động gửi form
+    document.querySelector("select[name='PageSize']").addEventListener('change', function () {
+        this.closest('form').submit(); // Gửi form khi chọn một giá trị mới
+    });
+</script>
+<script>
+
+    // Hàm tải form chỉnh sửa người dùng vào modal
     function loadEditUser(userId) {
         if (!userId) {
             alert('User ID không hợp lệ. Vui lòng chọn một người dùng để chỉnh sửa.');
-            return; // Ngừng thực hiện hàm nếu userId rỗng
+            return;
         }
         $.ajax({
             url: '@Url.Action("Edit", "NhanVienss")/' + userId,
@@ -109,6 +365,7 @@
         });
     }
 
+    // Hàm tải form tạo mới người dùng vào modal
     function loadCreateUser() {
         $.ajax({
             url: '@Url.Action("Create", "NhanVienss")', // Đảm bảo đường dẫn đến hành động Create
@@ -119,57 +376,60 @@
                 editModal.show(); // Hiện modal
             },
             error: function () {
-                alert('Lỗi khi tải form thêm mới.');
+                alert('Lỗi khi tải form tạo mới người dùng.');
             }
         });
-    }
-    function submitCreateEditForm() {
-        const form = $('#createEditForm');
-        const url = form.attr('action');
-        $.ajax({
-            url: url,
-            type: 'POST',
-            data: form.serialize(),
-            success: function () {
-                alert('Thao tác thành công!');
-                location.reload();
-            },
-            error: function (xhr) {
-                alert(`Có lỗi xảy ra: ${xhr.responseText}`);
-            }
-        });
-    }
-    function deleteUser(userId) {
-        if (!userId) {
-            alert('User ID không hợp lệ. Vui lòng chọn một người dùng để xóa.');
-            return;
-        }
-        if (confirm('Bạn có chắc chắn muốn xóa không?')) {
-            $.ajax({
-                url: '@Url.Action("DeleteConfirmed", "NhanVienss")/' + userId,
-                type: 'POST',
-                headers: {
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() // Thêm token CSRF vào header
-                },
-                success: function () {
-                    location.reload(); // Làm mới trang nếu thành công
-                },
-                error: function (xhr) {
-                    alert(`Có lỗi xảy ra khi xóa nhân viên: ${xhr.responseText}`);
-                }
-            });
-        }
-    }
-</script>
-<style>
-    /* Center content in modal horizontally */
-    #assignRolesModal .modal-dialog {
-        max-width: 90%; /* Adjust width as needed */
     }
 
-    #assignRolesModal .modal-content {
-        display: flex;
-        /*         flex-direction: row; */
-        padding: 20px;
+    // Hàm xóa người dùng
+    function deleteUser(userId) {
+        event.preventDefault(); // Ngừng hành động mặc định
+        if (!userId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'User ID không hợp lệ. Vui lòng chọn một người dùng để xóa.'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Bạn có chắc chắn muốn xóa?',
+            text: 'Thao tác này không thể hoàn tác!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '@Url.Action("DeleteConfirmed", "NhanVienss")/' + userId,
+                    type: 'POST',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() // Thêm token CSRF vào header
+                    },
+                    success: function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Đã xóa!',
+                            text: 'Người dùng đã được xóa thành công.',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            location.reload(); // Làm mới trang sau khi xóa
+                        });
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: `Có lỗi xảy ra khi xóa nhân viên: ${xhr.responseText}`
+                        });
+                    }
+                });
+            }
+        });
     }
-</style>
+</script>

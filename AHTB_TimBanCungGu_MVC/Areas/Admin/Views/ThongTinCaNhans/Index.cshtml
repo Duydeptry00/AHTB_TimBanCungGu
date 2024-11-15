@@ -100,18 +100,18 @@
                             </td>
                             <td>@item.NgayTao.ToString("dd/MM/yyyy")</td>
                             <td id="status-@item.IDProfile">
-                                @if (item.TrangThai == "Hoạt động")
+                                @if (item.TrangThai == "Hoạt Động")
                                 {
-                                    <span class="text-success"><strong>Hoạt động</strong></span>
+                                    <span class="text-success"><strong>Hoạt Động</strong></span>
                                 }
                                 else
                                 {
-                                    <span class="text-danger"><strong>Không hoạt động</strong></span>
+                                    <span class="text-danger"><strong>Không Hoạt Động</strong></span>
                                 }
                             </td>
                             <td>
                                 <button class="btn toggle-status" data-id="@item.IDProfile" data-status="@item.TrangThai">
-                                    @if (item.TrangThai == "Hoạt động")
+                                    @if (item.TrangThai == "Hoạt Động")
                                     {
                                         <i class="bi bi-lock text-danger" title="Khóa"></i>
                                     }
@@ -141,9 +141,9 @@
             $('.toggle-status').click(function () {
                 var userId = $(this).data('id');
                 var currentStatus = $(this).data('status');
-                var action = currentStatus === "Hoạt động" ? "khóa" : "mở khóa";
+                var action = currentStatus === "Hoạt Động" ? "khóa" : "mở khóa";
 
-                if (currentStatus === "Hoạt động") {
+                if (currentStatus === "Hoạt Động") {
                     Swal.fire({
                         title: 'Khóa tài khoản trong bao lâu?',
                         html:

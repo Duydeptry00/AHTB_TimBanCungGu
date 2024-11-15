@@ -89,10 +89,14 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 return BadRequest("Quyền đang rỗng.");
             }
 
-            // Kiểm tra quyền có trùng lặp không dựa trên Module
-            if (_context.Quyen.Any(r => r.Module == roleVM.Module))
+            // Kiểm tra quyền có trùng lặp không dựa trên Module và các chức năng
+            if (_context.Quyen.Any(r => r.Module == roleVM.Module &&
+                                         r.Add == roleVM.Add &&
+                                         r.Update == roleVM.Update &&
+                                         r.Delete == roleVM.Delete &&
+                                         r.ReviewDetails == roleVM.ReviewDetails))
             {
-                return Conflict("Quyền với module này đã tồn tại.");
+                return Conflict("Quyền với module và chức năng này đã tồn tại.");
             }
 
             // Tạo đối tượng Role mới từ RoleVM
