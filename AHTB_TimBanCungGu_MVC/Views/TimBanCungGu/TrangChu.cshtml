@@ -27,7 +27,7 @@
             background: linear-gradient(0deg, rgba(55,54,54,0) 23%, rgba(255,0,0,1) 100%);
             padding: 20px;
             position : absolute;
-            margin-left : -300px;
+            margin-left : 0px;
             height : 650px;
 
         }
@@ -40,7 +40,6 @@
             .menu-container li {
                 margin: 30px 0;
             }
-           scsjjjd
 
             .menu-container a {
                 text-decoration: none;
@@ -201,7 +200,7 @@
             @for (int i = 0; i < Model.Count(); i++)
             {
                 var thongTin = Model.ElementAt(i);
-                <div class="card-container" data-index="@i" style="display:@(i == 0 ? "block" : "none")">
+                <div class="card-container" data-index="@i" style="display:@(i == 0 ? "block" : "none")" data-userid="@thongTin.IDProfile">
                     <div class="card">
                         @if (thongTin.HinhAnh != null && thongTin.HinhAnh.Count > 0)
                         {
@@ -260,62 +259,71 @@
         const cardContainers = document.querySelectorAll(".card-container");
         const detailsContainers = document.querySelectorAll(".details-container");
 
-        dislikeButtons.forEach((button, index) => {
-            button.addEventListener("click", () => swipeCard(index, -150)); // Trượt trái
+       async function sendSwipeAction(userId2, action) {
+    if (!userId2) {
+        alert("Không tìm thấy ID người dùng.");
+        return;
+    }
+    try {
+        const response = await fetch('/TimBanCungGu/LuuSwipeAction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId2, action })
         });
 
-        likeButtons.forEach((button, index) => {
-            button.addEventListener("click", () => swipeCard(index, 150)); // Trượt phải
-        });
+        const result = await response.json();
+        if (!result.success) {
+            console.error(result.message);
+            alert("Lỗi: " + result.message);
+        }
+    } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+        alert("Đã xảy ra lỗi khi gửi hành động.");
+    }
+}
 
-        function swipeCard(index, direction) {
+
+        function swipeCard(index, direction, action) {
             const currentCard = cardContainers[index];
             const currentDetails = detailsContainers[index];
 
+            // Lấy UserID từ dữ liệu của thẻ
+            const userId2 = currentCard.dataset.userid;
+
+            sendSwipeAction(userId2, action);
+
+            // Thêm animation
             currentCard.style.transform = `translateX(${direction}%)`;
             currentCard.style.opacity = "0";
-            currentDetails.style.transform = `translateX(${direction}%)`;
             currentDetails.style.opacity = "0";
-            currentDetails.style.animation = "fadeOut 0.5s forwards"; // Thêm hiệu ứng mờ
 
             setTimeout(() => {
-                resetCard(index);
+                currentCard.style.display = "none";
+                currentDetails.style.display = "none";
                 showNextCard(index);
             }, 500);
-        }
-        function resetCard(index) {
-            const currentCard = cardContainers[index];
-            const currentDetails = detailsContainers[index];
-
-            currentCard.style.transition = "none"; // Tắt transition để reset tức thì
-            currentCard.style.transform = "translateX(0)";
-            currentCard.style.opacity = "1";
-            currentDetails.style.transition = "none"; // Tắt transition để reset tức thì
-            currentDetails.style.transform = "translateX(0)";
-            currentDetails.style.opacity = "1";
-
-            setTimeout(() => {
-                currentCard.style.transition = "transform 0.3s ease-out, opacity 0.5s ease";
-                currentDetails.style.transition = "transform 0.3s ease-out, opacity 0.5s ease";
-            }, 0);
         }
 
         function showNextCard(index) {
             const nextIndex = index + 1;
-
             if (nextIndex < cardContainers.length) {
-                cardContainers[index].style.display = "none";
-                detailsContainers[index].style.display = "none";
-
                 cardContainers[nextIndex].style.display = "block";
                 detailsContainers[nextIndex].style.display = "block";
             } else {
-                // Khi hết thẻ, thông báo hoặc làm mới
                 alert("Bạn đã duyệt hết tất cả!");
             }
         }
-    });
 
+        dislikeButtons.forEach((button, index) => {
+            button.addEventListener("click", () => swipeCard(index, -150, "Dislike"));
+        });
+
+        likeButtons.forEach((button, index) => {
+            button.addEventListener("click", () => swipeCard(index, 150, "Like"));
+        });
+    });
 </script>
 
 </html>

@@ -359,6 +359,9 @@ namespace AHTB_TimBanCungGu_API.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("DiaChi")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
@@ -406,7 +409,7 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<string>("LyDoKhoa")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("NgayMoKhoa")
+                    b.Property<DateTime?>("NgayMoKhoa")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Password")
@@ -446,6 +449,28 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.HasIndex("UsID");
 
                     b.ToTable("Role");
+                });
+
+            modelBuilder.Entity("AHTB_TimBanCungGu_API.Models.UuDai", b =>
+                {
+                    b.Property<string>("IdUuDai")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Hinh")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("NgayUuDai")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PhanTram")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TenUuDai")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdUuDai");
+
+                    b.ToTable("UuDai");
                 });
 
             modelBuilder.Entity("AHTB_TimBanCungGu_API.Models.AnhCaNhan", b =>

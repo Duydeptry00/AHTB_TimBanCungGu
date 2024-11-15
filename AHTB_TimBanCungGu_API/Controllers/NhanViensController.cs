@@ -98,6 +98,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 GioiTinh = "", // Giá trị mặc định
                 NgaySinh = DateTime.Now, // Hoặc ngày mặc định
                 SoDienThoai = "",
+                DiaChi = "",
                 IsPremium = false,
                 MoTa = "",
                 NgayTao = DateTime.Now,

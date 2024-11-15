@@ -8,24 +8,44 @@ using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
 using AHTB_TimBanCungGu_API.ViewModels;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Http;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
     public class TimBanCungGuController : Controller
     {
         private readonly DBAHTBContext _context;
-
+        private readonly IMongoCollection<BsonDocument> _MatchNguoiDung;
         public TimBanCungGuController(DBAHTBContext context)
         {
             _context = context;
+            var connectionString = "mongodb://localhost:27017"; // URI của MongoDB
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase("AHTBdb"); // Tên database của bạn
+            _MatchNguoiDung = database.GetCollection<BsonDocument>("MatchNguoiDung"); // Tên collection của bạn
         }
-
+          
         // GET: TimBanCungGu
         public async Task<IActionResult> TrangChu()
         {
+
+            var userName = HttpContext.Session.GetString("TempUserName");
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+            }
+
+            var nguoitimdoituong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
+            if (nguoitimdoituong == null)
+            {
+                return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+            }
             var dBAHTBContext = _context.ThongTinCN
-      .Include(t => t.User)
-      .Include(t => t.AnhCaNhan);
+          .Include(t => t.User)
+          .Include(t => t.AnhCaNhan);
 
 
             // Chuyển dữ liệu thành danh sách ViewModel
@@ -43,30 +63,13 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 NgayTao = t.NgayTao,
                 TrangThai = t.TrangThai,
                 HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
-            }).ToListAsync();
+            }).Where(x=>x.UsID != nguoitimdoituong.UsID).ToListAsync();
 
             // Trả về view và truyền dữ liệu qua ViewModel
             return View(thongTinCaNhanViewModels);
         }
 
-        // GET: TimBanCungGu/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var thongTinCaNhan = await _context.ThongTinCN
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(m => m.IDProfile == id);
-            if (thongTinCaNhan == null)
-            {
-                return NotFound();
-            }
-
-            return View(thongTinCaNhan);
-        }
+   
 
         // GET: TimBanCungGu/Create
         public IActionResult Create()
@@ -75,110 +78,63 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             return View();
         }
 
-        // POST: TimBanCungGu/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IDProfile,UsID,Email,HoTen,GioiTinh,NgaySinh,SoDienThoai,IsPremium,MoTa,NgayTao,TrangThai")] ThongTinCaNhan thongTinCaNhan)
+        public async Task<IActionResult> LuuSwipeAction([FromBody] SwipeRequest request)
         {
-            if (ModelState.IsValid)
+            if (string.IsNullOrEmpty(request.UserId2) || string.IsNullOrEmpty(request.Action))
             {
-                _context.Add(thongTinCaNhan);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID", thongTinCaNhan.UsID);
-            return View(thongTinCaNhan);
-        }
-
-        // GET: TimBanCungGu/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
+                return BadRequest(new { success = false, message = "Dữ liệu đầu vào không hợp lệ." });
             }
 
-            var thongTinCaNhan = await _context.ThongTinCN.FindAsync(id);
-            if (thongTinCaNhan == null)
+            try
             {
-                return NotFound();
-            }
-            ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID", thongTinCaNhan.UsID);
-            return View(thongTinCaNhan);
-        }
-
-        // POST: TimBanCungGu/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IDProfile,UsID,Email,HoTen,GioiTinh,NgaySinh,SoDienThoai,IsPremium,MoTa,NgayTao,TrangThai")] ThongTinCaNhan thongTinCaNhan)
-        {
-            if (id != thongTinCaNhan.IDProfile)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                int iduser2 = int.Parse(request.UserId2);
+                var IdDoituong = _context.ThongTinCN.FirstOrDefault(x => x.IDProfile == iduser2 );
+                if (IdDoituong == null)
                 {
-                    _context.Update(thongTinCaNhan);
-                    await _context.SaveChangesAsync();
+                    return NotFound(new { success = false, message = "Người dùng không tồn tại." });
                 }
-                catch (DbUpdateConcurrencyException)
+                var doituong = _context.Users.FirstOrDefault(x=>x.UsID == IdDoituong.UsID);
+                var userName = HttpContext.Session.GetString("TempUserName");
+                if (string.IsNullOrEmpty(userName))
                 {
-                    if (!ThongTinCaNhanExists(thongTinCaNhan.IDProfile))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
                 }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID", thongTinCaNhan.UsID);
-            return View(thongTinCaNhan);
-        }
 
-        // GET: TimBanCungGu/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
+                var nguoitimdoituong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
+                if (nguoitimdoituong == null)
+                {
+                    return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+                }
+
+                var matchNguoiDung = new BsonDocument
+                {
+                    { "IDMatch", Guid.NewGuid().ToString() },
+                    { "User1", nguoitimdoituong.UserName },
+                    { "User2", doituong.UserName },
+                    { "MatchedAt", DateTime.UtcNow },
+                    { "SwipeAction", request.Action }
+                };
+
+                await _MatchNguoiDung.InsertOneAsync(matchNguoiDung);
+
+                return Ok(new { success = true, message = "Đã lưu hành động swipe." });
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                return StatusCode(500, new { success = false, message = $"Lỗi hệ thống: {ex.Message}" });
             }
-
-            var thongTinCaNhan = await _context.ThongTinCN
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(m => m.IDProfile == id);
-            if (thongTinCaNhan == null)
-            {
-                return NotFound();
-            }
-
-            return View(thongTinCaNhan);
         }
 
-        // POST: TimBanCungGu/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public class SwipeRequest
         {
-            var thongTinCaNhan = await _context.ThongTinCN.FindAsync(id);
-            _context.ThongTinCN.Remove(thongTinCaNhan);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            public string UserId2 { get; set; }
+            public string Action { get; set; }
         }
 
-        private bool ThongTinCaNhanExists(int id)
-        {
-            return _context.ThongTinCN.Any(e => e.IDProfile == id);
-        }
+
+
+
 
     }
 }

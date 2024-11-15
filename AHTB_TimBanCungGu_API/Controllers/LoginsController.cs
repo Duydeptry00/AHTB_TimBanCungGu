@@ -55,6 +55,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 HoTen = "", // Initialize other properties as needed
                 GioiTinh = "",
                 NgaySinh = DateTime.Now, // Or set to a default date
+                DiaChi = "",
                 SoDienThoai = "",
                 IsPremium = false,
                 MoTa = "",
