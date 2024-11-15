@@ -69,6 +69,15 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
+        public IActionResult Logout()
+        {
+            // Xóa JWT token khỏi Session
+            HttpContext.Session.Remove("JwtToken");
+            HttpContext.Session.Remove("UserType");
+            HttpContext.Session.Remove("TempUserName");
+            // Chuyển hướng về trang đăng nhập
+            return RedirectToAction("Login", "LoginvsRegister");
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

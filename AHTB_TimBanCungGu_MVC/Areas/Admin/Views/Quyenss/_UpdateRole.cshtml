@@ -8,7 +8,18 @@
     <form asp-action="Edit" asp-route-id="@Model.IDRole" method="post" id="editRoleForm">
         <div class="mb-3">
             <label asp-for="Module" class="form-label">Module</label>
-            <input asp-for="Module" class="form-control" />
+            @Html.DropDownListFor(
+                     model => model.Module,
+                     new SelectList(new[]
+                     {
+            "Quản Lý Ưu Đãi",
+            "Quản Lý Người Dùng",
+            "Thông Tin Người Dùng",
+            "Quản Lý Phim",
+            "Quản Lý Phân Quyền"
+            }, Model.Module),
+                     "Chọn quyền",
+                     new { @class = "form-control" })
             <span asp-validation-for="Module" class="text-danger"></span>
         </div>
         <div class="mb-3">

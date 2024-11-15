@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,20 +29,66 @@ namespace AHTB_TimBanCungGu_API.Controllers
         {
             // Fetch users and their associated personal information
             var users = await _context.Users
-                .Include(u => u.ThongTinCN) // Assuming there's a navigation property to ThongTinCaNhan
+                .Include(u => u.ThongTinCN) // Tải thông tin cá nhân liên kết
+                .Include(u => u.User_Role)  // Giả sử User_Role là bảng trung gian kết nối với Role
+                .ThenInclude(ur => ur.Role) // Nạp dữ liệu từ bảng Role qua quan hệ trung gian
                 .ToListAsync();
 
             // Map to NhanVienVM
-            var userViewModels = users.Select(user => new NhanVienVM
+            var userViewModels = users.Select((user, index) => new NhanVienVM
             {
+                STT = index + 1,  // Số thứ tự, bắt đầu từ 1
                 IdNhanVien = user.UsID,
                 UserName = user.UserName,
-                Email = user.ThongTinCN.Email, // Assuming Email is a property of ThongTinCaNhan
-                TrangThai = user.TrangThai                           // Do not expose Password for security reasons
-            });
+                Email = user.ThongTinCN?.Email, // Kiểm tra null cho an toàn
+                TrangThai = user.TrangThai,
+                Quyen = user.User_Role != null && user.User_Role.Any()
+                    ? string.Join(", ", user.User_Role.Select(ur => ur.Role.Module)) // Lấy tên quyền từ Role
+                    : "Chưa cấp quyền cho nhân viên" // Hiển thị thông báo nếu không có quyền
+            }).ToList();
 
-            return Ok(userViewModels); // Return the mapped view models
+            return Ok(userViewModels); // Trả về danh sách view model đã ánh xạ
         }
+
+        // GET: api/NhanViens/UserName?query=nha
+        [HttpGet("UserName")]
+        public async Task<ActionResult<IEnumerable<NhanVienVM>>> GetNhanViensByUserName(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return BadRequest("Query parameter is required");
+            }
+
+            var users = await _context.Users
+                .Include(u => u.ThongTinCN)
+                 .Include(u => u.User_Role)
+                 .ThenInclude(ur => ur.Role)
+                                       .Where(u => u.UserName.Contains(query))
+                                       .ToListAsync();
+
+            if (users == null || users.Count == 0)
+            {
+                return NotFound();
+            }
+
+            // Map to NhanVienVM
+            var userViewModels = users.Select((user, index) => new NhanVienVM
+            {
+                STT = index + 1,  // Số thứ tự, bắt đầu từ 1
+                IdNhanVien = user.UsID,
+                UserName = user.UserName,
+                Email = user.ThongTinCN.Email, // Kiểm tra null cho an toàn
+                TrangThai = user.TrangThai,
+                Quyen = user.User_Role != null && user.User_Role.Any()
+                    ? string.Join(", ", user.User_Role.Select(ur => ur.Role.Module)) // Lấy tên quyền từ Role
+                    : "Chưa cấp quyền cho nhân viên" // Hiển thị thông báo nếu không có quyền
+            }).ToList();
+
+            return userViewModels;
+        }
+
+
+
 
         // GET: api/NhanViens/5
         [HttpGet("{id}")]
@@ -97,6 +144,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 HoTen = "", // Giá trị mặc định hoặc giá trị từ nơi khác
                 GioiTinh = "", // Giá trị mặc định
                 NgaySinh = DateTime.Now, // Hoặc ngày mặc định
+                DiaChi = "",
                 SoDienThoai = "",
                 IsPremium = false,
                 MoTa = "",
@@ -176,18 +224,47 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             // Tìm thông tin cá nhân dựa trên UsID của nhân viên
             var thongTinCaNhan = await _context.ThongTinCN.FirstOrDefaultAsync(t => t.UsID == id);
-            if (thongTinCaNhan != null)
+
+            using var transaction = await _context.Database.BeginTransactionAsync(); // Sử dụng giao dịch để đảm bảo tính nhất quán
+
+            try
             {
-                // Xóa thông tin cá nhân
-                _context.ThongTinCN.Remove(thongTinCaNhan);
+                if (thongTinCaNhan != null)
+                {
+                    // Xóa thông tin cá nhân
+                    _context.ThongTinCN.Remove(thongTinCaNhan);
+                }
+
+                // Xóa nhân viên
+                _context.Users.Remove(nhanVien);
+
+                // Lưu thay đổi
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return NoContent(); // Xóa thành công
             }
+            catch (Exception ex)
+            {
+                // Nếu xảy ra lỗi, cập nhật trạng thái nhân viên thành "Đình Chỉ"
+                await transaction.RollbackAsync();
+                nhanVien.TrangThai = "Đình Chỉ";
 
-            // Xóa nhân viên
-            _context.Users.Remove(nhanVien);
-            await _context.SaveChangesAsync();
+                try
+                {
+                    // Lưu thay đổi trạng thái vào cơ sở dữ liệu
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception innerEx)
+                {
+                    // Xử lý lỗi khi không thể cập nhật trạng thái (nếu cần)
+                    return StatusCode(500, $"Lỗi trong khi cập nhật trạng thái: {innerEx.Message}");
+                }
 
-            return NoContent();
+                return StatusCode(500, $"Lỗi khi xóa nhân viên: {ex.Message}");
+            }
         }
+
 
 
         private bool NhanVienExists(string id)
