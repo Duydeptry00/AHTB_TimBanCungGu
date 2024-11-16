@@ -198,35 +198,40 @@
     </div>
     <script>
         function luuLichSuXem(event) {
-            event.preventDefault();  // Ngừng hành động mặc định của liên kết (mở URL)
+            event.preventDefault();  // Ngừng hành động mặc định
 
-            // Lấy dữ liệu từ các thuộc tính data- của button
-            var phimId = $(event.target).closest('button').data('phim-id');
-            var phanId = $(event.target).closest('button').data('phan-id');
+            // Tìm button hoặc phần tử gần nhất có data- thuộc tính
+            var button = $(event.target).closest('button');
+            var phimId = button.data('phim-id');
+            var phanId = button.data('phan-id');  // Nếu cần sử dụng phanId
 
-            // Kiểm tra xem dữ liệu có hợp lệ không
-            if (!phimId || !phanId) {
-                alert('Dữ liệu không hợp lệ!');
+            // Kiểm tra dữ liệu hợp lệ
+            if (!phimId) {
+                alert('ID phim không hợp lệ!');
                 return;
             }
 
-            // Gửi yêu cầu AJAX tới controller
+            // Gửi yêu cầu AJAX
             $.ajax({
-                url: '/LichSuXem/LuuLichSuXem',  // Địa chỉ controller
+                url: '/LichSuXem/LuuLichSuXem',
                 type: 'POST',
                 data: {
-                    phimId: phimId  // Chỉ cần truyền phimId
+                    phimId: phimId  // Chỉ truyền phimId
                 },
                 headers: {
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()  // Gửi CSRF token
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()  // CSRF token
                 },
                 success: function (response) {
-                   / Hiển thị thông báo thành công
-                    // Sau khi lưu thành công, chuyển đến trang xem phim
-                    window.location.href = $(event.target).closest('button').find('a').attr('href');
+                    // Nếu lưu thành công, chuyển đến trang phim (hoặc thực hiện hành động khác)
+                    var link = button.find('a').attr('href');
+                    if (link) {
+                        window.location.href = link;
+                    } else {
+                        alert("Không tìm thấy liên kết để chuyển hướng.");
+                    }
                 },
                 error: function (xhr, status, error) {
-                    alert("Có lỗi xảy ra: " + error);  // Thông báo lỗi cho người dùng
+                    alert("Có lỗi xảy ra: " + error);
                 }
             });
         }

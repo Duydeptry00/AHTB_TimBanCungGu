@@ -37,7 +37,12 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 return BadRequest("ID phim không hợp lệ.");
             }
-
+            // BẮT user
+            //var UsID = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //if (string.IsNullOrEmpty(UsID))
+            //{
+            //    return Unauthorized("Người dùng chưa đăng nhập.");
+            //}
             var phim = _context.Phim.FirstOrDefault(p => p.IDPhim == phimId);
             if (phim == null)
             {
