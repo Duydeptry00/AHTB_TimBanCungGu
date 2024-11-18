@@ -31,42 +31,54 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         // GET: TimBanCungGu
         public async Task<IActionResult> TrangChu()
         {
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
 
-            var userName = HttpContext.Session.GetString("TempUserName");
-            if (string.IsNullOrEmpty(userName))
+            if (!string.IsNullOrEmpty(token))
             {
-                return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+                var userName = HttpContext.Session.GetString("TempUserName");
+                if (string.IsNullOrEmpty(userName))
+                {
+                    return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+                }
+
+                var nguoitimdoituong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
+                if (nguoitimdoituong == null)
+                {
+                    return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+                }
+                var dBAHTBContext = _context.ThongTinCN
+              .Include(t => t.User)
+              .Include(t => t.AnhCaNhan);
+
+
+                // Chuyển dữ liệu thành danh sách ViewModel
+                var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
+                {
+                    IDProfile = t.IDProfile,
+                    UsID = t.UsID,
+                    HoTen = t.HoTen,
+                    Email = t.Email,
+                    GioiTinh = t.GioiTinh,
+                    NgaySinh = t.NgaySinh,
+                    SoDienThoai = t.SoDienThoai,
+                    IsPremium = t.IsPremium,
+                    MoTa = t.MoTa,
+                    NgayTao = t.NgayTao,
+                    TrangThai = t.TrangThai,
+                    HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
+                }).Where(x => x.UsID != nguoitimdoituong.UsID).ToListAsync();
+
+                // Trả về view và truyền dữ liệu qua ViewModel
+                return View(thongTinCaNhanViewModels);
             }
-
-            var nguoitimdoituong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
-            if (nguoitimdoituong == null)
+            else
             {
-                return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
             }
-            var dBAHTBContext = _context.ThongTinCN
-          .Include(t => t.User)
-          .Include(t => t.AnhCaNhan);
-
-
-            // Chuyển dữ liệu thành danh sách ViewModel
-            var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
-            {
-                IDProfile = t.IDProfile,
-                UsID = t.UsID,
-                HoTen = t.HoTen,
-                Email = t.Email,
-                GioiTinh = t.GioiTinh,
-                NgaySinh = t.NgaySinh,
-                SoDienThoai = t.SoDienThoai,
-                IsPremium = t.IsPremium,
-                MoTa = t.MoTa,
-                NgayTao = t.NgayTao,
-                TrangThai = t.TrangThai,
-                HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
-            }).Where(x=>x.UsID != nguoitimdoituong.UsID).ToListAsync();
-
-            // Trả về view và truyền dữ liệu qua ViewModel
-            return View(thongTinCaNhanViewModels);
+           
         }
 
    
@@ -74,8 +86,21 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         // GET: TimBanCungGu/Create
         public IActionResult Create()
         {
-            ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID");
-            return View();
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                ViewData["UsID"] = new SelectList(_context.Users, "UsID", "UsID");
+                return View();
+            }
+            else
+            {
+                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
+          
         }
 
         [HttpPost]

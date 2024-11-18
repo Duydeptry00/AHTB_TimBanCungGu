@@ -146,7 +146,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 NgaySinh = DateTime.Now, // Hoặc ngày mặc định
                 DiaChi = "",
                 SoDienThoai = "",
-                DiaChi = "",
                 IsPremium = false,
                 MoTa = "",
                 NgayTao = DateTime.Now,

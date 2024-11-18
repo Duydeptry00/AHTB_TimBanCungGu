@@ -177,7 +177,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         HttpContext.Session.Remove("TempEmail");
 
                         ViewBag.Message = "Đăng ký thành công! Vui lòng đăng nhập.";
-                        return View();
+                        return RedirectToAction("Login");
                     }
                     else
                     {

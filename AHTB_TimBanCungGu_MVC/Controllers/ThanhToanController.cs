@@ -27,7 +27,19 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         [HttpGet]
         public IActionResult Premium()
         {
-            return View();
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                return View();
+            }
+            else
+            {
+                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
         }
 
         [HttpPost]
@@ -57,12 +69,36 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
         public IActionResult PaymentSuccess()
         {
-            return View();
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                return View();
+            }
+            else
+            {
+                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
         }
 
         public IActionResult PaymentFail()
         {
-            return View();
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                return View();
+            }
+            else
+            {
+                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
         }
 
         public IActionResult PaymentCallBack()

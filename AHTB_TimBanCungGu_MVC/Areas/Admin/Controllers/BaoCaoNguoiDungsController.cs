@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -23,8 +24,18 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/BaoCaoNguoiDungs
         public async Task<IActionResult> Index()
         {
-            var dBAHTBContext = _context.BaoCaoNguoiDung.Include(b => b.DoiTuongBaoCaoUser).Include(b => b.NguoiBaoCaoUser);
-            return View(await dBAHTBContext.ToListAsync());
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
+            {
+                var dBAHTBContext = _context.BaoCaoNguoiDung.Include(b => b.DoiTuongBaoCaoUser).Include(b => b.NguoiBaoCaoUser);
+                return View(await dBAHTBContext.ToListAsync());
+            }
+
+            return NotFound();
+         
         }
     } 
 }

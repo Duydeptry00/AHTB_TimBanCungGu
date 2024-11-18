@@ -22,43 +22,67 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            var userName = HttpContext.Session.GetString("TempUserName");
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
 
-            var thongTinCaNhan = await _context.ThongTinCN
-          .Include(t => t.User)              // Nạp thông tin người dùng
-          .Include(t => t.AnhCaNhan)         // Nạp ảnh cá nhân
-          .FirstOrDefaultAsync(t => t.User.UserName == userName);
-
-            if (thongTinCaNhan == null)
+            if (!string.IsNullOrEmpty(token))
             {
-                return NotFound();
-            }
+                var userName = HttpContext.Session.GetString("TempUserName");
 
-            return View(thongTinCaNhan); // Truyền một đối tượng duy nhất
+                var thongTinCaNhan = await _context.ThongTinCN
+              .Include(t => t.User)              // Nạp thông tin người dùng
+              .Include(t => t.AnhCaNhan)         // Nạp ảnh cá nhân
+              .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+                if (thongTinCaNhan == null)
+                {
+                    return NotFound();
+                }
+
+                return View(thongTinCaNhan); // Truyền một đối tượng duy nhất
+            }
+            else
+            {
+                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
         }
 
         // GET: ThongTinCaNhans/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (!string.IsNullOrEmpty(token))
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var userName = HttpContext.Session.GetString("TempUserName");
+
+                // Tìm thông tin cá nhân của người dùng theo ID và UserName từ session,
+                // bao gồm cả ảnh cá nhân (AnhCaNhan)
+                var thongTinCaNhan = await _context.ThongTinCN
+                    .Include(t => t.AnhCaNhan) // Nạp dữ liệu từ bảng AnhCaNhan
+                    .FirstOrDefaultAsync(t => t.IDProfile == id && t.User.UserName == userName);
+
+                if (thongTinCaNhan == null)
+                {
+                    return Unauthorized(); // Trả về Unauthorized nếu không tìm thấy thông tin của người dùng
+                }
+
+                return View(thongTinCaNhan); // Truyền thông tin đến view để hiển thị
             }
-
-            var userName = HttpContext.Session.GetString("TempUserName");
-
-            // Tìm thông tin cá nhân của người dùng theo ID và UserName từ session,
-            // bao gồm cả ảnh cá nhân (AnhCaNhan)
-            var thongTinCaNhan = await _context.ThongTinCN
-                .Include(t => t.AnhCaNhan) // Nạp dữ liệu từ bảng AnhCaNhan
-                .FirstOrDefaultAsync(t => t.IDProfile == id && t.User.UserName == userName);
-
-            if (thongTinCaNhan == null)
+            else
             {
-                return Unauthorized(); // Trả về Unauthorized nếu không tìm thấy thông tin của người dùng
+                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
             }
-
-            return View(thongTinCaNhan); // Truyền thông tin đến view để hiển thị
         }
 
         [HttpPost]

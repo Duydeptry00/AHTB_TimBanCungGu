@@ -37,61 +37,81 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/ThongTinCaNhans
         public async Task<IActionResult> Index()
         {
-            var dBAHTBContext = _context.ThongTinCN.Include(t => t.User);
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
 
-            // Lấy danh sách tất cả thông tin cá nhân
-            var thongTinCaNhanList = await dBAHTBContext.ToListAsync();
-
-            // Lấy danh sách người dùng có ngày mở khóa đã đến hoặc đã qua
-            var usersToUpdate = thongTinCaNhanList
-                .Select(t => t.User)
-                .Where(u => u.NgayMoKhoa != null && u.NgayMoKhoa <= DateTime.Now)
-                .ToList();
-
-            // Cập nhật trạng thái cho từng người dùng và thông tin cá nhân
-            foreach (var user in usersToUpdate)
+            if (userType == "Admin" && token != null)
             {
-                user.TrangThai = "Hoạt động"; // Đặt trạng thái thành "Hoạt động"
-                user.NgayMoKhoa = DateTime.Now; // Cập nhật ngày mở khóa thành ngày hiện tại
+                var dBAHTBContext = _context.ThongTinCN.Include(t => t.User);
 
-                // Cập nhật trạng thái của người dùng
-                _context.Users.Update(user);
+                // Lấy danh sách tất cả thông tin cá nhân
+                var thongTinCaNhanList = await dBAHTBContext.ToListAsync();
 
-                // Cập nhật trạng thái tương ứng trong bảng ThongTinCN
-                var thongTinCN = thongTinCaNhanList.FirstOrDefault(t => t.UsID == user.UsID);
-                if (thongTinCN != null)
+                // Lấy danh sách người dùng có ngày mở khóa đã đến hoặc đã qua
+                var usersToUpdate = thongTinCaNhanList
+                    .Select(t => t.User)
+                    .Where(u => u.NgayMoKhoa != null && u.NgayMoKhoa <= DateTime.Now)
+                    .ToList();
+
+                // Cập nhật trạng thái cho từng người dùng và thông tin cá nhân
+                foreach (var user in usersToUpdate)
                 {
-                    thongTinCN.TrangThai = "Hoạt động"; // Đặt lại trạng thái thành "Hoạt động"
-                    _context.ThongTinCN.Update(thongTinCN);
+                    user.TrangThai = "Hoạt động"; // Đặt trạng thái thành "Hoạt động"
+                    user.NgayMoKhoa = DateTime.Now; // Cập nhật ngày mở khóa thành ngày hiện tại
+
+                    // Cập nhật trạng thái của người dùng
+                    _context.Users.Update(user);
+
+                    // Cập nhật trạng thái tương ứng trong bảng ThongTinCN
+                    var thongTinCN = thongTinCaNhanList.FirstOrDefault(t => t.UsID == user.UsID);
+                    if (thongTinCN != null)
+                    {
+                        thongTinCN.TrangThai = "Hoạt động"; // Đặt lại trạng thái thành "Hoạt động"
+                        _context.ThongTinCN.Update(thongTinCN);
+                    }
                 }
+
+                await _context.SaveChangesAsync(); // Lưu các thay đổi vào cơ sở dữ liệu
+
+                return View(thongTinCaNhanList);
             }
 
-            await _context.SaveChangesAsync(); // Lưu các thay đổi vào cơ sở dữ liệu
-
-            return View(thongTinCaNhanList);
+            return NotFound();
+       
         }
 
 
         [HttpGet]
         public async Task<IActionResult> Search(string searchString)
         {
-            ViewData["CurrentFilter"] = searchString;
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
 
-            // Truy vấn dữ liệu từ bảng ThongTinCN và include User để lấy thông tin liên quan
-            var profileInfos = from p in _context.ThongTinCN.Include(p => p.User)
-                               select p;
-
-            // Nếu searchString không trống, tìm kiếm theo các trường hợp
-            if (!String.IsNullOrEmpty(searchString))
+            if (userType == "Admin" && token != null)
             {
-                profileInfos = profileInfos.Where(p =>
-                    p.User.UserName.Contains(searchString) || // Tìm kiếm theo UserName
-                    p.HoTen.Contains(searchString) ||         // Tìm kiếm theo Họ Tên
-                    p.SoDienThoai.Contains(searchString));    // Tìm kiếm theo Số Điện Thoại
+                ViewData["CurrentFilter"] = searchString;
+
+                // Truy vấn dữ liệu từ bảng ThongTinCN và include User để lấy thông tin liên quan
+                var profileInfos = from p in _context.ThongTinCN.Include(p => p.User)
+                                   select p;
+
+                // Nếu searchString không trống, tìm kiếm theo các trường hợp
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    profileInfos = profileInfos.Where(p =>
+                        p.User.UserName.Contains(searchString) || // Tìm kiếm theo UserName
+                        p.HoTen.Contains(searchString) ||         // Tìm kiếm theo Họ Tên
+                        p.SoDienThoai.Contains(searchString));    // Tìm kiếm theo Số Điện Thoại
+                }
+
+                // Trả về view Index với kết quả tìm kiếm
+                return View("Index", await profileInfos.ToListAsync());
             }
 
-            // Trả về view Index với kết quả tìm kiếm
-            return View("Index", await profileInfos.ToListAsync());
+            return NotFound();
+           
         }
         [HttpPost]
         public async Task<IActionResult> ToggleStatus(int id, int days = 0, int months = 0, int years = 0, string lyDoKhoa = "")

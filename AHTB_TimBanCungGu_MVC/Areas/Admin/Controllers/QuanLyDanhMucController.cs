@@ -23,44 +23,73 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: QuanLyDanhMuc
         public async Task<IActionResult> Index(string searchString)
         {
-            ViewData["CurrentFilter"] = searchString;
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
 
-            // Only select TenPhim and MoTa for search
-            var phimList = from p in _context.Phim
-                           select p;
-
-            if (!String.IsNullOrEmpty(searchString))
+            if (userType == "Admin" && token != null)
             {
-                phimList = phimList.Where(p =>
-                    p.TenPhim.Contains(searchString) ||  // Search by TenPhim
-                    p.MoTa.Contains(searchString));      // Search by MoTa
+                ViewData["CurrentFilter"] = searchString;
+
+                // Only select TenPhim and MoTa for search
+                var phimList = from p in _context.Phim
+                               select p;
+
+                if (!String.IsNullOrEmpty(searchString))
+                {
+                    phimList = phimList.Where(p =>
+                        p.TenPhim.Contains(searchString) ||  // Search by TenPhim
+                        p.MoTa.Contains(searchString));      // Search by MoTa
+                }
+
+                return View(await phimList.ToListAsync());
             }
 
-            return View(await phimList.ToListAsync());
+            return NotFound();
+           
         }
 
         // GET: QuanLyDanhMuc/Details/5
         public async Task<IActionResult> Details(string id)
         {
-            if (id == null)
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var phim = await _context.Phim
+                    .FirstOrDefaultAsync(m => m.IDPhim == id);
+                if (phim == null)
+                {
+                    return NotFound();
+                }
+
+                return View(phim);
             }
 
-            var phim = await _context.Phim
-                .FirstOrDefaultAsync(m => m.IDPhim == id);
-            if (phim == null)
-            {
-                return NotFound();
-            }
-
-            return View(phim);
+            return NotFound();
+         
         }
 
         // GET: QuanLyDanhMuc/Create
         public IActionResult Create()
         {
-            return View();
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
+            {
+                return View();
+            }
+
+            return NotFound();
         }
 
         // POST: QuanLyDanhMuc/Create
@@ -109,18 +138,28 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: QuanLyDanhMuc/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
-            if (id == null)
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var phim = await _context.Phim.FindAsync(id);
+                if (phim == null)
+                {
+                    return NotFound();
+                }
+
+                return View(phim);
             }
 
-            var phim = await _context.Phim.FindAsync(id);
-            if (phim == null)
-            {
-                return NotFound();
-            }
-
-            return View(phim);
+            return NotFound();
+         
         }
 
         // POST: QuanLyDanhMuc/Edit/5
@@ -162,20 +201,30 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: QuanLyDanhMuc/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
-            if (id == null)
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var phim = await _context.Phim
+                    .FirstOrDefaultAsync(m => m.IDPhim == id);
+
+                if (phim == null)
+                {
+                    return NotFound();
+                }
+
+                return View(phim);
             }
 
-            var phim = await _context.Phim
-                .FirstOrDefaultAsync(m => m.IDPhim == id);
-
-            if (phim == null)
-            {
-                return NotFound();
-            }
-
-            return View(phim);
+            return NotFound();
+          
         }
 
         // POST: QuanLyDanhMuc/Delete/5

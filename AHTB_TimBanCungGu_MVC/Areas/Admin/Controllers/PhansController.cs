@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -23,34 +24,63 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/Phans
         public async Task<IActionResult> Index()
         {
-            var dBAHTBContext = _context.Phan.Include(p => p.Phim);
-            return View(await dBAHTBContext.ToListAsync());
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
+            {
+                var dBAHTBContext = _context.Phan.Include(p => p.Phim);
+                return View(await dBAHTBContext.ToListAsync());
+            }
+
+            return NotFound();
+          
         }
 
         // GET: Admin/Phans/Details/5
         public async Task<IActionResult> Details(string id)
         {
-            if (id == null)
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var phan = await _context.Phan
+                    .Include(p => p.Phim)
+                    .FirstOrDefaultAsync(m => m.IDPhan == id);
+                if (phan == null)
+                {
+                    return NotFound();
+                }
+
+                return View(phan);
             }
 
-            var phan = await _context.Phan
-                .Include(p => p.Phim)
-                .FirstOrDefaultAsync(m => m.IDPhan == id);
-            if (phan == null)
-            {
-                return NotFound();
-            }
-
-            return View(phan);
+            return NotFound();
         }
 
         // GET: Admin/Phans/Create
         public IActionResult Create()
         {
-            ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim");
-            return View();
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
+            {
+                ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim");
+                return View();
+            }
+
+            return NotFound();
+           
         }
 
         // POST: Admin/Phans/Create
@@ -60,6 +90,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("SoPhan,NgayCongChieu,SoLuongTap,PhimId")] Phan phan)
         {
+
             if (ModelState.IsValid)
             {
                 // Kiểm tra xem phim đã có phần với số phần này chưa
@@ -178,20 +209,30 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/Phans/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
-            if (id == null)
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var phan = await _context.Phan
+                    .Include(p => p.Phim)
+                    .FirstOrDefaultAsync(m => m.IDPhan == id);
+                if (phan == null)
+                {
+                    return NotFound();
+                }
+
+                return View(phan);
             }
 
-            var phan = await _context.Phan
-                .Include(p => p.Phim)
-                .FirstOrDefaultAsync(m => m.IDPhan == id);
-            if (phan == null)
-            {
-                return NotFound();
-            }
-
-            return View(phan);
+            return NotFound();
+        
         }
 
         // POST: Admin/Phans/Delete/5

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AHTB_TimBanCungGu_API.Models;
 using AHTB_TimBanCungGu_API.ViewModels;
 using AHTB_TimBanCungGu_MVC.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -23,8 +24,18 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/Quyens
         public async Task<IActionResult> Index()
         {
-            var roles = await _httpClient.GetFromJsonAsync<IEnumerable<RoleVM>>(_apiUrl);
-            return View(roles); // Trả về danh sách RoleVM để hiển thị thông tin quyền
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
+            {
+                var roles = await _httpClient.GetFromJsonAsync<IEnumerable<RoleVM>>(_apiUrl);
+                return View(roles); // Trả về danh sách RoleVM để hiển thị thông tin quyền
+            }
+
+            return NotFound();
+          
         }
 
         // GET: Admin/Quyens/Create

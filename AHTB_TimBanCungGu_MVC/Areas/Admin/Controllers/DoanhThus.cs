@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Collections.Generic;
 using System;
+using Microsoft.AspNetCore.Http;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -20,56 +21,66 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         [Area("Admin")]
         public IActionResult Index()
         {
-            // Nhóm doanh thu theo tháng cho từng năm
-            var monthlyTotals = _context.HoaDon
-                .GroupBy(h => new { Year = h.NgayThanhToan.Year, Month = h.NgayThanhToan.Month })
-                .Select(g => new
-                {
-                    Year = g.Key.Year,
-                    Month = g.Key.Month,
-                    TotalTongTien = g.Sum(h => h.TongTien)
-                })
-                .OrderBy(g => g.Year)
-                .ThenBy(g => g.Month)
-                .ToList();
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
 
-            // Nhóm doanh thu theo năm
-            var yearlyTotals = _context.HoaDon
-                .GroupBy(h => h.NgayThanhToan.Year)
-                .Select(g => new
-                {
-                    Year = g.Key,
-                    TotalTongTien = g.Sum(h => h.TongTien)
-                })
-                .OrderBy(g => g.Year)
-                .ToList();
+            if (userType == "Admin" && token != null)
+            {
+                // Nhóm doanh thu theo tháng cho từng năm
+                var monthlyTotals = _context.HoaDon
+                    .GroupBy(h => new { Year = h.NgayThanhToan.Year, Month = h.NgayThanhToan.Month })
+                    .Select(g => new
+                    {
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        TotalTongTien = g.Sum(h => h.TongTien)
+                    })
+                    .OrderBy(g => g.Year)
+                    .ThenBy(g => g.Month)
+                    .ToList();
 
-            // Lấy danh sách các năm duy nhất
-            var years = _context.HoaDon
-                .Select(h => h.NgayThanhToan.Year)
-                .Distinct()
-                .OrderBy(year => year)
-                .ToList();
+                // Nhóm doanh thu theo năm
+                var yearlyTotals = _context.HoaDon
+                    .GroupBy(h => h.NgayThanhToan.Year)
+                    .Select(g => new
+                    {
+                        Year = g.Key,
+                        TotalTongTien = g.Sum(h => h.TongTien)
+                    })
+                    .OrderBy(g => g.Year)
+                    .ToList();
 
-            // Tìm năm gần nhất với năm hiện tại
-            var currentYear = DateTime.Now.Year;
-            var latestYear = years
-                .Where(y => y <= currentYear) // Lọc những năm không lớn hơn năm hiện tại
-                .OrderByDescending(y => y) // Sắp xếp theo thứ tự giảm dần
-                .FirstOrDefault(); // Lấy năm gần nhất
+                // Lấy danh sách các năm duy nhất
+                var years = _context.HoaDon
+                    .Select(h => h.NgayThanhToan.Year)
+                    .Distinct()
+                    .OrderBy(year => year)
+                    .ToList();
 
-            // Lọc ra các năm từ năm gần nhất về trước
-            var yearsToDisplay = years
-                .Where(y => y <= latestYear)
-                .OrderByDescending(y => y) // Sắp xếp theo thứ tự giảm dần
-                .ToList();
+                // Tìm năm gần nhất với năm hiện tại
+                var currentYear = DateTime.Now.Year;
+                var latestYear = years
+                    .Where(y => y <= currentYear) // Lọc những năm không lớn hơn năm hiện tại
+                    .OrderByDescending(y => y) // Sắp xếp theo thứ tự giảm dần
+                    .FirstOrDefault(); // Lấy năm gần nhất
 
-            // Truyền kết quả vào ViewBag để truy cập từ View
-            ViewBag.MonthlyTotals = monthlyTotals;
-            ViewBag.YearlyTotals = yearlyTotals;
-            ViewBag.Years = yearsToDisplay; // Truyền danh sách năm cần hiển thị vào ViewBag
+                // Lọc ra các năm từ năm gần nhất về trước
+                var yearsToDisplay = years
+                    .Where(y => y <= latestYear)
+                    .OrderByDescending(y => y) // Sắp xếp theo thứ tự giảm dần
+                    .ToList();
 
-            return View();
+                // Truyền kết quả vào ViewBag để truy cập từ View
+                ViewBag.MonthlyTotals = monthlyTotals;
+                ViewBag.YearlyTotals = yearlyTotals;
+                ViewBag.Years = yearsToDisplay; // Truyền danh sách năm cần hiển thị vào ViewBag
+
+                return View();
+            }
+
+            return NotFound();
+         
         }
     }
 }

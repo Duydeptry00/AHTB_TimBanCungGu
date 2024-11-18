@@ -25,42 +25,72 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/QuanLyPhims
         public async Task<IActionResult> Index()
         {
-            var dBAHTBContext = _context.Phim.Include(p => p.TheLoai).Include(p => p.User);
-            // Get all unique genres from the database
-            var genres = await _context.TheLoai.Select(t => t.TenTheLoai).Distinct().ToListAsync();
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
 
-            // Pass genres to ViewData
-            ViewData["Genres"] = genres;
-            return View(await dBAHTBContext.ToListAsync());
+            if (userType == "Admin" && token != null)
+            {
+                var dBAHTBContext = _context.Phim.Include(p => p.TheLoai).Include(p => p.User);
+                // Get all unique genres from the database
+                var genres = await _context.TheLoai.Select(t => t.TenTheLoai).Distinct().ToListAsync();
+
+                // Pass genres to ViewData
+                ViewData["Genres"] = genres;
+                return View(await dBAHTBContext.ToListAsync());
+            }
+
+            return NotFound();
+          
         }
 
         // GET: Admin/QuanLyPhims/Details/5
         public async Task<IActionResult> Details(string id)
         {
-            if (id == null)
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var phim = await _context.Phim
+                    .Include(p => p.TheLoai)
+                    .Include(p => p.User)
+                    .FirstOrDefaultAsync(m => m.IDPhim == id);
+                if (phim == null)
+                {
+                    return NotFound();
+                }
+
+                return View(phim);
             }
 
-            var phim = await _context.Phim
-                .Include(p => p.TheLoai)
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(m => m.IDPhim == id);
-            if (phim == null)
-            {
-                return NotFound();
-            }
-
-            return View(phim);
+            return NotFound();
+           
         }
 
         // GET: Admin/QuanLyPhims/Create
         public IActionResult Create()
         {
-            ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai");
-            ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID");
-            ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
-            return View();
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
+            {
+                ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai");
+                ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID");
+                ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
+                return View();
+            }
+
+            return NotFound();
+           
         }
 
         // POST: Admin/QuanLyPhims/Create
@@ -153,6 +183,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // Helper method to populate ViewData
         private void PopulateViewData(Phim phim)
         {
+
             ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
             ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID", phim.IDAdmin);
             ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
@@ -162,22 +193,32 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/QuanLyPhims/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
-            if (string.IsNullOrEmpty(id))
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                return NotFound();
+                if (string.IsNullOrEmpty(id))
+                {
+                    return NotFound();
+                }
+
+                var phim = await _context.Phim.FindAsync(id);
+                if (phim == null)
+                {
+                    return NotFound();
+                }
+
+                // Populate dropdowns for the form
+                ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
+                ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID", phim.IDAdmin);
+                ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
+                return View(phim);
             }
 
-            var phim = await _context.Phim.FindAsync(id);
-            if (phim == null)
-            {
-                return NotFound();
-            }
-
-            // Populate dropdowns for the form
-            ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
-            ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID", phim.IDAdmin);
-            ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
-            return View(phim);
+            return NotFound();
+          
         }
 
         // POST: Admin/QuanLyPhims/Edit/5
@@ -288,21 +329,31 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // GET: Admin/QuanLyPhims/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
-            if (id == null)
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var phim = await _context.Phim
+                    .Include(p => p.TheLoai)
+                    .Include(p => p.User)
+                    .FirstOrDefaultAsync(m => m.IDPhim == id);
+                if (phim == null)
+                {
+                    return NotFound();
+                }
+
+                return View(phim);
             }
 
-            var phim = await _context.Phim
-                .Include(p => p.TheLoai)
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(m => m.IDPhim == id);
-            if (phim == null)
-            {
-                return NotFound();
-            }
-
-            return View(phim);
+            return NotFound();
+          
         }
 
         // POST: Admin/QuanLyPhims/Delete/5

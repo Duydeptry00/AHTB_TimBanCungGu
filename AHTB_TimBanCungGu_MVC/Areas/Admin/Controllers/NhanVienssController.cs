@@ -176,53 +176,63 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         }
         public async Task<IActionResult> Authorize(int page = 1, int pageSize = 5)
         {
-            try
+            // Lấy token JWT và UserType từ session
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType == "Admin" && token != null)
             {
-                // Thêm các tham số phân trang vào URL API
-                var queryString = $"?page={page}&pageSize={pageSize}";
-
-                // Lấy danh sách người dùng từ API
-                var danhSachNguoiDung = await _httpClient.GetFromJsonAsync<List<NhanVienVM>>(ApiBaseUrl);
-                var danhSachNguoiDungGomUsername = danhSachNguoiDung.Select(u => u.UserName).ToList();
-
-                // Lấy danh sách phân quyền từ API với phân trang
-                var responsePhanQuyen = await _httpClient.GetFromJsonAsync<List<ListPhanQuyen>>(_apiUrl);
-
-                if (responsePhanQuyen == null)
+                try
                 {
-                    return View("Error", new { message = "Không thể tải danh sách phân quyền" });
+                    // Thêm các tham số phân trang vào URL API
+                    var queryString = $"?page={page}&pageSize={pageSize}";
+
+                    // Lấy danh sách người dùng từ API
+                    var danhSachNguoiDung = await _httpClient.GetFromJsonAsync<List<NhanVienVM>>(ApiBaseUrl);
+                    var danhSachNguoiDungGomUsername = danhSachNguoiDung.Select(u => u.UserName).ToList();
+
+                    // Lấy danh sách phân quyền từ API với phân trang
+                    var responsePhanQuyen = await _httpClient.GetFromJsonAsync<List<ListPhanQuyen>>(_apiUrl);
+
+                    if (responsePhanQuyen == null)
+                    {
+                        return View("Error", new { message = "Không thể tải danh sách phân quyền" });
+                    }
+
+                    // Lấy danh sách vai trò từ API
+                    var roles = await _httpClient.GetFromJsonAsync<List<RoleVM>>(_RoleapiUrl);
+                    if (roles == null)
+                    {
+                        return View("Error", new { message = "Không thể tải danh sách vai trò" });
+                    }
+
+                    var totalPhanQuyen = responsePhanQuyen.Count; // Tổng số phân quyền
+                    var totalPages = (int)Math.Ceiling((double)totalPhanQuyen / pageSize); // Tính tổng số trang
+
+                    // Phân trang dữ liệu phân quyền (Chỉ lấy dữ liệu cho trang hiện tại)
+                    var phanQuyen = responsePhanQuyen.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                    // Tạo model và trả về view
+                    var model = new ListUser_role
+                    {
+                        PhanQuyen = phanQuyen,
+                        Users = danhSachNguoiDungGomUsername.Select(u => new NhanVienVM { UserName = u }).ToList(),
+                        Roles = roles,
+                        RolesList = new List<User_role>(),
+                        PageNumber = page,
+                        TotalPages = totalPages,
+                        PageSize = pageSize
+                    };
+
+                    return View(model);
                 }
-
-                // Lấy danh sách vai trò từ API
-                var roles = await _httpClient.GetFromJsonAsync<List<RoleVM>>(_RoleapiUrl);
-                if (roles == null)
+                catch (Exception ex)
                 {
-                    return View("Error", new { message = "Không thể tải danh sách vai trò" });
+                    return View("Error", new { message = "Đã có lỗi xảy ra: " + ex.Message });
                 }
-
-                var totalPhanQuyen = responsePhanQuyen.Count; // Tổng số phân quyền
-                var totalPages = (int)Math.Ceiling((double)totalPhanQuyen / pageSize); // Tính tổng số trang
-
-                // Phân trang dữ liệu phân quyền (Chỉ lấy dữ liệu cho trang hiện tại)
-                var phanQuyen = responsePhanQuyen.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-                // Tạo model và trả về view
-                var model = new ListUser_role
-                {
-                    PhanQuyen = phanQuyen,
-                    Users = danhSachNguoiDungGomUsername.Select(u => new NhanVienVM { UserName = u }).ToList(),
-                    Roles = roles,
-                    RolesList = new List<User_role>(),
-                    PageNumber = page,
-                    TotalPages = totalPages,
-                    PageSize = pageSize
-                };
-
-                return View(model);
             }
-            catch (Exception ex)
-            {
-                return View("Error", new { message = "Đã có lỗi xảy ra: " + ex.Message });
-            }
+
+            return NotFound();
+           
         }
 
         // POST: Admin/NhanVienss/DeleteConfirmed/5
