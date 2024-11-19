@@ -280,7 +280,6 @@
         const cardContainers = document.querySelectorAll(".card-container");
         const detailsContainers = document.querySelectorAll(".details-container");
 
-        // Hàm gửi hành động swipe
         async function sendSwipeAction(userId2, action) {
             if (!userId2) {
                 console.error("Không tìm thấy ID người dùng.");
@@ -296,13 +295,25 @@
                 });
 
                 const result = await response.json();
-                if (!result.success) {
+                if (result.success) {
+                    // Nếu hành động thành công, ẩn thẻ người dùng
+                    hideCard(userId2);
+                } else {
                     console.error(result.message);
                 }
             } catch (error) {
                 console.error('Lỗi khi gọi API:', error);
             }
         }
+
+        // Hàm ẩn thẻ người dùng
+        function hideCard(userId2) {
+            const matchedCard = document.querySelector(`[data-userid="${userId2}"]`);
+            if (matchedCard) {
+                matchedCard.style.display = "none";  // Ẩn thẻ người dùng đã like hoặc dislike
+            }
+        }
+
 
         // Hàm xử lý swipe
         function swipeCard(index, direction, action) {
@@ -360,7 +371,6 @@
         });
     });
 </script>
-
 
 </html>
 
