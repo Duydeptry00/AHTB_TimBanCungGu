@@ -38,7 +38,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
         public async Task<IActionResult> TrangChu()
         {
-            // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
 
             if (!string.IsNullOrEmpty(token))
@@ -55,24 +54,19 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     return NotFound(new { success = false, message = "Người dùng không tồn tại." });
                 }
 
-                // Tìm kiếm các người dùng đã match với người hiện tại
-                var matchedUserNames = await _MatchNguoiDung
-                    .Find(x => x["User1"] == userName || x["User2"] == userName)
-                    .Project(x => new { User1 = x["User1"].ToString(), User2 = x["User2"].ToString() })
+                // Lọc những người dùng đã swipe
+                var swipedUsers = await _MatchNguoiDung
+                    .Find(x => x["User1"] == userName && x["SwipeAction"] != "Dislike")
                     .ToListAsync();
 
-                var matchedUserList = matchedUserNames.SelectMany(x => new[] { x.User1, x.User2 })
-                                                       .Distinct()
-                                                       .Where(u => u != userName) // Loại bỏ chính người dùng hiện tại
-                                                       .ToList();
+                var swipedUsernames = swipedUsers.Select(x => x["User2"].ToString()).ToList();
 
-                // Fetch users who haven't been matched
                 var dBAHTBContext = _context.ThongTinCN
                     .Include(t => t.User)
                     .Include(t => t.AnhCaNhan)
-                    .Where(t => !matchedUserList.Contains(t.User.UserName));
+                    .Where(t => !swipedUsernames.Contains(t.User.UserName))  // Lọc người đã swipe
+                    .AsQueryable();
 
-                // Chuyển dữ liệu thành danh sách ViewModel
                 var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
                 {
                     IDProfile = t.IDProfile,
@@ -89,17 +83,14 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
                 }).Where(x => x.UsID != nguoitimdoituong.UsID).ToListAsync();
 
-                // Trả về view và truyền dữ liệu qua ViewModel
                 return View(thongTinCaNhanViewModels);
             }
             else
             {
-                // Nếu không có token, có thể chuyển đến trang đăng nhập
                 ViewBag.Message = "Bạn chưa đăng nhập.";
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
-
 
 
         // GET: TimBanCungGu/Create
