@@ -259,32 +259,52 @@
         const cardContainers = document.querySelectorAll(".card-container");
         const detailsContainers = document.querySelectorAll(".details-container");
 
-       async function sendSwipeAction(userId2, action) {
-    if (!userId2) {
-        alert("Không tìm thấy ID người dùng.");
-        return;
-    }
-    try {
-        const response = await fetch('/TimBanCungGu/LuuSwipeAction', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ userId2, action })
-        });
+        // Tạo kết nối WebSocket
+        const socket = new WebSocket("http://localhost:60771/TimBanCungGu/ConnectWebSocket");  // Địa chỉ WebSocket của server
 
-        const result = await response.json();
-        if (!result.success) {
-            console.error(result.message);
-            alert("Lỗi: " + result.message);
+        // Khi nhận tin nhắn từ WebSocket
+        socket.onmessage = function (event) {
+            const message = JSON.parse(event.data);
+
+            // Kiểm tra nếu là thông báo match
+            if (message.type === "match") {
+                alert("Chúc mừng! Bạn đã matched với " + message.userName);
+
+                // Ẩn thẻ người dùng đã match
+                const matchedCard = document.querySelector(`[data-username="${message.userName}"]`);
+                if (matchedCard) {
+                    matchedCard.style.display = "none";  // Ẩn thẻ người dùng đã match
+                }
+            } else {
+                alert("Thông báo mới: " + message.text);
+            }
+        };
+
+        // Hàm gửi hành động swipe
+        async function sendSwipeAction(userId2, action) {
+            if (!userId2) {
+                console.error("Không tìm thấy ID người dùng.");
+                return;
+            }
+            try {
+                const response = await fetch('/TimBanCungGu/LuuSwipeAction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId2, action })
+                });
+
+                const result = await response.json();
+                if (!result.success) {
+                    console.error(result.message);
+                }
+            } catch (error) {
+                console.error('Lỗi khi gọi API:', error);
+            }
         }
-    } catch (error) {
-        console.error('Lỗi khi gọi API:', error);
-        alert("Đã xảy ra lỗi khi gửi hành động.");
-    }
-}
 
-
+        // Hàm xử lý swipe
         function swipeCard(index, direction, action) {
             const currentCard = cardContainers[index];
             const currentDetails = detailsContainers[index];
@@ -292,7 +312,10 @@
             // Lấy UserID từ dữ liệu của thẻ
             const userId2 = currentCard.dataset.userid;
 
-            sendSwipeAction(userId2, action);
+            // Gửi hành động swipe cho "Dislike", không gửi cho "Like"
+            if (action === "Dislike") {
+                sendSwipeAction(userId2, action);
+            }
 
             // Thêm animation
             currentCard.style.transform = `translateX(${direction}%)`;
@@ -306,6 +329,7 @@
             }, 500);
         }
 
+        // Hàm hiển thị thẻ tiếp theo
         function showNextCard(index) {
             const nextIndex = index + 1;
             if (nextIndex < cardContainers.length) {
@@ -316,12 +340,23 @@
             }
         }
 
+        // Xử lý sự kiện khi bấm nút Dislike
         dislikeButtons.forEach((button, index) => {
             button.addEventListener("click", () => swipeCard(index, -150, "Dislike"));
         });
 
+        // Xử lý sự kiện khi bấm nút Like
         likeButtons.forEach((button, index) => {
-            button.addEventListener("click", () => swipeCard(index, 150, "Like"));
+            button.addEventListener("click", () => {
+                swipeCard(index, 150, "Like");
+
+                // Sau khi gửi hành động like, kiểm tra xem có match không
+                const currentCard = cardContainers[index];
+                const userId2 = currentCard.dataset.userid;
+
+                // Gửi hành động "Like"
+                sendSwipeAction(userId2, "Like");
+            });
         });
     });
 </script>
