@@ -254,13 +254,8 @@
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const dislikeButtons = document.querySelectorAll(".dislike");
-        const likeButtons = document.querySelectorAll(".like");
-        const cardContainers = document.querySelectorAll(".card-container");
-        const detailsContainers = document.querySelectorAll(".details-container");
-
         // Tạo kết nối WebSocket
-        const socket = new WebSocket("http://localhost:60771/TimBanCungGu/ConnectWebSocket");  // Địa chỉ WebSocket của server
+        const socket = new WebSocket("http://localhost:60771/TimBanCungGu/ConnectWebSocket");
 
         // Khi nhận tin nhắn từ WebSocket
         socket.onmessage = function (event) {
@@ -279,6 +274,11 @@
                 alert("Thông báo mới: " + message.text);
             }
         };
+
+        const dislikeButtons = document.querySelectorAll(".dislike");
+        const likeButtons = document.querySelectorAll(".like");
+        const cardContainers = document.querySelectorAll(".card-container");
+        const detailsContainers = document.querySelectorAll(".details-container");
 
         // Hàm gửi hành động swipe
         async function sendSwipeAction(userId2, action) {
@@ -360,6 +360,7 @@
         });
     });
 </script>
+
 
 </html>
 
