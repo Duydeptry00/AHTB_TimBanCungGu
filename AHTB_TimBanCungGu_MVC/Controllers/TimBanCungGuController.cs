@@ -13,6 +13,7 @@ using System.Net.WebSockets;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -240,20 +241,32 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                     // Lưu thông báo cho người B
                     await _ThongBao.InsertOneAsync(thongBaoB);
-
                     // Gửi thông báo qua WebSocket cho người A (nếu người A đang online)
                     if (_userWebSockets.TryGetValue(nguoiTimDoiTuong.UserName, out var webSocketA))
                     {
-                        var messageA = Encoding.UTF8.GetBytes($"Bạn có thông báo mới từ {doiTuong.UserName}: Bạn đã matched với họ!");
-                        await webSocketA.SendAsync(new ArraySegment<byte>(messageA), WebSocketMessageType.Text, true, CancellationToken.None);
+                        var messageA = new
+                        {
+                            type = "match",
+                            userName = doiTuong.UserName,  // Gửi tên người dùng của người B (hoặc người A tùy theo logic)
+                        };
+                        var jsonMessage = JsonConvert.SerializeObject(messageA);  // Chuyển đối tượng thành JSON
+                        var bufferA = Encoding.UTF8.GetBytes(jsonMessage);
+                        await webSocketA.SendAsync(new ArraySegment<byte>(bufferA), WebSocketMessageType.Text, true, CancellationToken.None);
                     }
 
                     // Gửi thông báo qua WebSocket cho người B (nếu người B đang online)
                     if (_userWebSockets.TryGetValue(doiTuong.UserName, out var webSocketB))
                     {
-                        var messageB = Encoding.UTF8.GetBytes($"Bạn có thông báo mới từ {nguoiTimDoiTuong.UserName}: Bạn đã matched với họ!");
-                        await webSocketB.SendAsync(new ArraySegment<byte>(messageB), WebSocketMessageType.Text, true, CancellationToken.None);
+                        var messageB = new
+                        {
+                            type = "match",
+                            userName = nguoiTimDoiTuong.UserName,  // Gửi tên người dùng của người A
+                        };
+                        var jsonMessage = JsonConvert.SerializeObject(messageB);
+                        var bufferB = Encoding.UTF8.GetBytes(jsonMessage);
+                        await webSocketB.SendAsync(new ArraySegment<byte>(bufferB), WebSocketMessageType.Text, true, CancellationToken.None);
                     }
+
                 }
 
                 return Ok(new { success = true, message = "Đã lưu hành động swipe." });
