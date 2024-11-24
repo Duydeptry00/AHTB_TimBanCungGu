@@ -14,7 +14,7 @@ svg {
 /* Navbar */
 .navbar {
     background-color: black; /* Màu nền của navbar */
-    padding: 10px 20px; /* Padding cho navbar */
+    padding: 10px 10px; /* Padding cho navbar */
 }
 
 .navbar-brand {
@@ -22,9 +22,10 @@ svg {
     font-size: 40px; /* Kích thước chữ */
     font-weight: bold; /* Độ đậm của chữ */
 }
+
 .custom-dropdown-menu {
     min-width: 200px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);   
 }
 
 .custom-dropdown-item {
@@ -37,30 +38,32 @@ svg {
     }
 
 .navbar-nav {
-    margin: 0 auto; /* Giữa các mục */
     display: flex; /* Hiển thị dưới dạng flex */
+    justify-content: center; /* Căn giữa các mục ngang */   
+    margin: 0 auto; /* Đảm bảo các mục được căn giữa trong navbar */
+    flex-wrap: nowrap; /* Đảm bảo các mục không bị xuống hàng */
     flex-grow: 1; /* Cho phép navbar mở rộng */
 }
 
-.navbar-nav .nav-link {
-    color: white; /* Màu chữ của liên kết */
-    margin: 0 20px; /* Khoảng cách giữa các liên kết */
-    font-size: 23px; /* Kích thước chữ */
-    font-weight: 500; /* Độ đậm của chữ */
-    transition: color 0.3s; /* Hiệu ứng chuyển màu */
-    margin-left : 150px;
-}
+    .navbar-nav .nav-link {
+        color: white; /* Màu chữ của liên kết */
+        margin: 0 35px; /* Giảm khoảng cách giữa các liên kết để giữ chúng trên cùng một dòng */
+        font-size: 23px; /* Kích thước chữ */
+        font-weight: 500; /* Độ đậm của chữ */
+        transition: color 0.3s; /* Hiệu ứng chuyển màu */
+    }
 
-.nav-link.active,
-.navbar-nav .nav-link:hover {
-    color: #FF4500; /* Màu chữ khi active hoặc hover */
-}
+        .nav-link.active,
+        .navbar-nav .nav-link:hover {
+            color: #FF4500; /* Màu chữ khi active hoặc hover */
+        }
 
 .navbar-icons i {
     font-size: 38px; /* Kích thước biểu tượng */
     color: white; /* Màu biểu tượng */
     transition: color 0.3s; /* Hiệu ứng chuyển màu cho biểu tượng */
 }
+
 
 /* Slider */
 .slider {
@@ -247,3 +250,4 @@ svg {
     background-color: red !important; /* Màu nền cho nút bắt đầu */
     color: white; /* Màu chữ trắng */
 }
+

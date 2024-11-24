@@ -10,8 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh Sách Phim</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+ @*    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"> *@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
 
@@ -104,6 +104,31 @@
             margin-top: 20px;
             justify-content: center;
         }
+
+        .speech-recognition-btn button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px; /* Kích thước của nút */
+            height: 50px; /* Kích thước của nút */
+            color: white; /* Màu chữ trắng */
+            border-radius: 50%; /* Hình dạng tròn */
+            font-size: 28px; /* Kích thước biểu tượng micro */
+            border: none; /* Loại bỏ viền */
+            cursor: pointer; /* Con trỏ khi hover */
+            transition: background-color 0.3s, transform 0.2s; /* Hiệu ứng chuyển màu và phóng to khi hover */
+        }
+
+            .speech-recognition-btn button:hover {
+              
+                transform: scale(1.1); /* Phóng to nút khi hover */
+            }
+
+            .speech-recognition-btn button:active {
+                transform: scale(0.95); /* Nhỏ nút khi nhấn */
+            }
+
+
     </style>
 </head>
 <body>
@@ -113,8 +138,11 @@
                 <form id="searchForm" action="/Movies/Movies" method="get" onsubmit="return false;">
                     <div class="movies" style="display: flex">
                         <input style="margin-right:10px" type="text" id="searchBox" class="form-control" name="query" placeholder="Tìm kiếm phim..." value="@ViewBag.Search">
-                        <button style="border-radius:5px" type="button" onclick="startRecognition()">🎤</button>
+                        <div class="speech-recognition-btn">
+                            <button style="border-radius:5px;" type="button" onclick="startRecognition()">🎤</button>
+                        </div>
                     </div>
+
                 </form>
             </div>
             <div class="col-md-2">
@@ -238,7 +266,7 @@
             }
 
             // Gán sự kiện nhận diện giọng nói vào nút
-            $('button[type="button"]').click(startRecognition);
+            $('.speech-recognition-btn').click(startRecognition);
         });
     </script>
 </body>

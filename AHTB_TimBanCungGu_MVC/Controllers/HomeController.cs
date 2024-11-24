@@ -25,12 +25,17 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
         public async Task<IActionResult> Index(string username)
         {
+
             var phimList = await _context.Phim
                 .Include(p => p.TheLoai)  // Bao gồm thông tin của bảng TheLoai
                 .OrderByDescending(p => p.NgayCapNhat) // Sắp xếp phim theo ngày cập nhật mới nhất
                 .Take(6) // Lấy 6 phim mới nhất
                 .ToListAsync(); // Trả về danh sách
 
+            var PhimLe = _context.Phim.Include(p => p.TheLoai).Where(p =>p.DangPhim == "Phim lẻ").ToList();
+            ViewBag.PhimLe = PhimLe;
+            var PhimBo = _context.Phim.Include(p => p.TheLoai).Where(p => p.DangPhim == "Phim bộ").ToList();
+            ViewBag.PhimBo = PhimBo;
             return View(phimList);
         }
         public IActionResult GioiThieu()

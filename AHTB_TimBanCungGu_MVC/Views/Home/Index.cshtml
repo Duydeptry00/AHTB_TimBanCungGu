@@ -1,12 +1,143 @@
 ﻿@using System.Linq
 @model IEnumerable<AHTB_TimBanCungGu_API.Models.Phim>
+<style>
+ 
+    .carousel {
+        margin-top: 20px;
+    }
 
+    .carousel-inner .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        filter: invert(1);
+    }
+
+    .custom-carousel-control-prev,
+    .custom-carousel-control-next {
+        position: absolute;
+        top: 50%; /* Đưa nút lên giữa chiều cao carousel */
+        transform: translateY(-50%);
+        z-index: 2; /* Đảm bảo nút hiển thị phía trên carousel */
+        width: 5%; /* Điều chỉnh kích thước nút nếu cần */
+        height: 100%; /* Đặt chiều cao phù hợp để dễ nhấn */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    
+    }
+
+    /* Nút bên trái */
+    .custom-carousel-control-prev {
+        left: -50px; /* Đẩy nút ra khỏi hình ảnh */
+    }
+
+    /* Nút bên phải */
+    .custom-carousel-control-next {
+        right: -50px; /* Đẩy nút ra khỏi hình ảnh */
+    }
+
+    /* Tạo hiệu ứng khi hover vào thẻ card */
+    .card-hover {
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+        background-color: #343a40; /* Màu nền cho thẻ card */
+        color: #f8f9fa; /* Màu chữ cho thẻ card */
+        border-radius: 8px; /* Bo tròn các góc của thẻ */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng để thẻ nổi bật */
+    }
+
+        .card-hover img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover; /* Ảnh sẽ được cắt theo tỷ lệ và không bị biến dạng */
+            transition: filter 0.3s ease-in-out;
+        }
+
+        /* Khi hover vào ảnh, độ sáng giảm để tạo hiệu ứng nổi bật */
+        .card-hover:hover img {
+            filter: brightness(80%);
+        }
+
+        /* Phóng to nhẹ thẻ card khi hover để tạo hiệu ứng nổi bật */
+        .card-hover:hover {
+            transform: scale(1.05);
+        }
+
+    .card-body {
+        padding: 15px;
+        text-align: center;
+    }
+
+    /* Nút "Xem ngay" chỉ hiển thị khi hover vào thẻ card */
+    .btn-xem-ngay {
+        position: absolute;
+        transition: opacity 0.3s ease-in-out;
+        opacity: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center; /* Giúp biểu tượng và chữ nằm cùng hàng */
+        justify-content: center;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #dc3545;
+        border: none;
+        color: white;
+        padding: 12px 24px; 
+        border-radius: 50px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+        .btn-xem-ngay i {
+            font-size: 1em; /* Giảm kích thước icon để vừa với chữ */
+            margin-right: 8px; /* Khoảng cách giữa biểu tượng và chữ */
+            vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
+        }
+
+
+
+    /* Khi hover vào thẻ card, nút sẽ hiện lên */
+    .card-hover:hover .btn-xem-ngay {
+        opacity: 1;
+        pointer-events: auto; /* Cho phép click khi hover */
+    }
+
+    /* Tạo biểu tượng cho nút "Xem ngay" */
+    .card-hover .btn-xem-ngay i {
+        margin-right: 8px;
+    }
+
+    /* Điều chỉnh font và màu cho tiêu đề */
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #f8f9fa;
+    }
+
+    /* Căn chỉnh phân trang */
+    .pagination {
+        margin-top: 20px;
+        justify-content: center;
+    }
+</style>
 <div class="slider" style="margin: 0;">
     <div class="list">
         @foreach (var phim in Model)
         {
             <div class="item @(Model.First() == phim ? "active" : "")">
-                <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim">
+                <picture style=" width: 100%; height: 100%" >
+                    <source srcset="/images/@phim.HinhAnh" type="image/webp">
+                    <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim" class="card-img-top">
+                </picture>
+
                 <div class="content">
                     <h1>@phim.TenPhim</h1>
                     <div class="rating">
@@ -19,7 +150,9 @@
                             <i class="bi bi-plus"></i>
                         </button>
                         <button class="btn btn-success btn-icon btn-icon-start" title="Bắt đầu chạy phim">
-                            <i class="bi bi-play"></i>
+                            <a href="@Url.Action("ChiTietPhim", "Phim", new { id = @phim.IDPhim })" style="text-decoration: none; color: white;">
+                                <i class="bi bi-play"></i>
+                            </a>
                         </button>
                     </div>
                     <h4 style="margin-top: 5px;">@phim.MoTa</h4>
@@ -36,6 +169,85 @@
         </div>
     }
 </div>
+<div class="container my-5">
+    <h2 class="text-white text-center mb-4">Phim lẻ</h2>
+    <div id="carouselPhimLe" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            @for (var i = 0; i < ViewBag.PhimLe.Count; i += 4)
+            {
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <div class="row">
+                        @for (var j = i; j < i + 4 && j < ViewBag.PhimLe.Count; j++)
+                        {
+                            var phim = ViewBag.PhimLe[j];
+                            <div class="col-md-3">
+                                <div class="card-hover">
+                                    <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim" class="card-img-top">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">@phim.TenPhim</h5>
+                                        <button class="btn-xem-ngay">
+                                            <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" style="text-decoration: none; color: white;">
+                                                <i class="bi bi-play-fill"></i> Xem ngay
+                                            </a>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        <button class="carousel-control-prev custom-carousel-control-prev" type="button" data-bs-target="#carouselPhimLe" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next custom-carousel-control-next" type="button" data-bs-target="#carouselPhimLe" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+
+    </div>
+
+    <h2 class="text-white text-center mt-5 mb-4">Phim bộ</h2>
+    <div id="carouselPhimBo" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            @for (var i = 0; i < ViewBag.PhimBo.Count; i += 4)
+            {
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <div class="row">
+                        @for (var j = i; j < i + 4 && j < ViewBag.PhimBo.Count; j++)
+                        {
+                            var phim = ViewBag.PhimBo[j];
+                            <div class="col-md-3">
+                                <div class="card-hover">
+                                    <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim" class="card-img-top">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">@phim.TenPhim</h5>
+                                        <button class="btn-xem-ngay">
+                                            <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" style="text-decoration: none; color: white;">
+                                                <i class="bi bi-play-fill"></i> Xem ngay
+                                            </a>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        <button class="carousel-control-prev custom-carousel-control-prev" type="button" data-bs-target="#carouselPhimBo" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next custom-carousel-control-next" type="button" data-bs-target="#carouselPhimBo" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
 
 <script src="/js/app.js?v=1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
