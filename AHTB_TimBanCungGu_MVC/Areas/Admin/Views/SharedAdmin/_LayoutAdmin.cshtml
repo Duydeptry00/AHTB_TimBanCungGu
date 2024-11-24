@@ -138,49 +138,61 @@
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="NhanVienss" asp-action="index">
-                            <i class="fas fa-user-cog"></i>
+                            <i class="fas fa-users-cog"></i> <!-- Icon cho quản lý nhân viên -->
                             <span>Quản Lý Nhân Viên</span>
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" asp-area="Admin" asp-controller="thongtincanhans" asp-action="index">
+                            <i class="fas fa-users"></i> <!-- Icon lịch sử khóa -->
+                            <span>Thông Tin Người Dùng</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="QuanLyNguoiDungs" asp-action="index">
-                            <i class="fas fa-user-circle"></i>
+                            <i class="fas fa-history"></i> <!-- Icon lịch sử khóa -->
                             <span>Lịch Sử Khóa</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="BaoCaoNguoiDungs" asp-action="index">
-                            <i class="fas fa-user-circle"></i>
-                            <spanQuản Lý Báo Cáo</span>
+                            <i class="fas fa-clipboard-list"></i> <!-- Icon quản lý báo cáo -->
+                            <span>Quản Lý Báo Cáo</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="HoaDons" asp-action="index">
-                            <i class="fas fa-user-circle"></i>
-                            <spanQuản Lý Hóa Đơn</span>
+                            <i class="fas fa-file-invoice-dollar"></i> <!-- Icon quản lý hóa đơn -->
+                            <span>Quản Lý Hóa Đơn</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="QuanLyDanhMuc" asp-action="index">
-                            <i class="fas fa-th-list"></i>
+                            <i class="fas fa-list-alt"></i> <!-- Icon quản lý danh mục -->
                             <span>Quản Lý Danh Mục</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="QuanLyPhims" asp-action="index">
-                            <i class="fas fa-film"></i>
+                            <i class="fas fa-film"></i> <!-- Icon quản lý phim -->
                             <span>Quản Lý Phim</span>
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" asp-area="Admin" asp-controller="Phans" asp-action="index">
+                            <i class="fas fa-film"></i> <!-- Icon quản lý Phần -->
+                            <span>Quản Lý Phần</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="Quyenss" asp-action="index">
-                            <i class="fas fa-key"></i>
+                            <i class="fas fa-user-shield"></i> <!-- Icon quản lý phân quyền -->
                             <span>Quản Lý Phân Quyền</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="DoanhThus" asp-action="index">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-chart-bar"></i> <!-- Icon doanh thu -->
                             <span>Doanh Thu</span>
                         </a>
                     </li>
