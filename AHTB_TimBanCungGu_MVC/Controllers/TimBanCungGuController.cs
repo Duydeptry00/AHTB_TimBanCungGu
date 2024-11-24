@@ -214,7 +214,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 { "NguoiGui", nguoiTimDoiTuong.UserName },
                 { "NguoiNhan", doiTuong.UserName },
-                { "NoiDung", $"{nguoiTimDoiTuong.UserName} đã swipe like bạn và bạn cũng swipe like lại!" },
+                { "NoiDung", $"{nguoiTimDoiTuong.UserName} đã matched với bạn!" },
                 { "ThoiGian", DateTime.UtcNow }
             };
 
@@ -226,7 +226,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 { "NguoiGui", doiTuong.UserName },
                 { "NguoiNhan", nguoiTimDoiTuong.UserName },
-                { "NoiDung", $"{doiTuong.UserName} đã swipe like bạn và bạn cũng swipe like lại!" },
+                { "NoiDung", $"{doiTuong.UserName} đã matched với bạn!" },
                 { "ThoiGian", DateTime.UtcNow }
             };
 
@@ -272,6 +272,30 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         {
             public string UserId2 { get; set; }
             public string Action { get; set; }
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetNotifications()
+        {
+            var userName = HttpContext.Session.GetString("TempUserName");
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+            }
+
+            // Lấy tất cả thông báo từ MongoDB cho người dùng
+            var notifications = await _ThongBao
+                .Find(x => x["NguoiNhan"] == userName)
+                .SortByDescending(x => x["ThoiGian"])  // Sắp xếp theo thời gian (mới nhất trước)
+                .Limit(10)  // Giới hạn số lượng thông báo hiển thị
+                .ToListAsync();
+
+            var result = notifications.Select(x => new
+            {
+                text = x["NoiDung"].ToString(),
+                time = x["ThoiGian"].ToString()
+            }).ToList();
+
+            return Json(new { success = true, notifications = result });
         }
     }
 }
