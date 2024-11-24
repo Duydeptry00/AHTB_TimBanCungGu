@@ -10,7 +10,7 @@ namespace AHTB_TimBanCungGu_API.ViewModels
         public string Password { get; set; }
         public string Email { get; set; }
         public string TrangThai { get; set; }
-        public string Quyen { get; set; }
+        public string Tenrole { get; set; }
 
     }
     public class NhanVienListViewModel

@@ -12,6 +12,8 @@ namespace AHTB_TimBanCungGu_API.Models
         public string Update { get; set; }
         public string Delete { get; set; }
         public string ReviewDetails { get; set; }
+        public string TenRole { get; set; }
+
         public ICollection<User_Role> User_Role { get; set; }
     }
 }

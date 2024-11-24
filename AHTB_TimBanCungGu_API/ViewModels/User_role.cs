@@ -7,7 +7,8 @@ namespace AHTB_TimBanCungGu_API.ViewModels
     {
        public string Username { get; set; }
         public int Id_Role { get; set; }
-        public string Tenrole { get; set; }
+        public string TrangThai { get; set; }
+
     }
     public class ListUser_role {
         public List<User_role> RolesList { get; set; } = new List<User_role>(); // Danh sách các quyền truyền vào view
@@ -15,9 +16,8 @@ namespace AHTB_TimBanCungGu_API.ViewModels
         public List<RoleVM> Roles { get; set; } = new List<RoleVM>(); // Danh sách vai trò
         public int Role { get; set; } //Tên vai trò
         public List<string> User { get; set; } = new List<string>(); // Danh sách người dùng rỗng để xử lý
-        public string Tenrole { get; set; } //Vai trò người dùng
+        public int Id_Role { get; set; } //Vai trò người dùng
         public List<ListPhanQuyen> PhanQuyen { get; set; } = new List<ListPhanQuyen>(); // Danh sách vai trò
-                                                                                        // Thêm các thuộc tính phân trang
         public int PageNumber { get; set; }
         public int TotalPages { get; set; }
         public int PageSize { get; set; }

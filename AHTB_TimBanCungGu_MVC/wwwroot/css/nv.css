@@ -1,0 +1,94 @@
+﻿body {
+    font-family: 'Arial', sans-serif;
+    background-color: #1e1e1e; /* Dark background for the page, like The Matrix */
+    color: #00FF00; /* Neon green text for contrast */
+}
+
+h1 {
+    font-weight: bold;
+    color: #00FF00; /* Green heading for Matrix effect */
+}
+
+.btn-primary, .btn-secondary, .btn-success, .btn-danger {
+    border-radius: 5px;
+    padding: 8px 12px;
+    color: #fff;
+    background-color: #00FF00; /* Neon green buttons */
+    border: none;
+}
+
+    .btn-primary:hover, .btn-secondary:hover, .btn-success:hover, .btn-danger:hover {
+        background-color: #00cc00; /* Darker green when hovering */
+    }
+
+.badge {
+    font-size: 0.9rem;
+    padding: 5px 10px;
+    border-radius: 3px;
+    color: black;
+}
+
+    .badge.bg-success {
+        background-color: #00FF00; /* Neon green for active status */
+    }
+
+    .badge.bg-warning {
+        background-color: #FFCC00; /* Yellow for suspended status */
+    }
+
+    .badge.bg-danger {
+        background-color: #FF0000; /* Red for deactivated status */
+    }
+
+.modal-content {
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #333; /* Dark background for modal */
+    color: #00FF00; /* Green text in the modal */
+}
+
+/* Styling for table */
+.table th, .table td {
+    vertical-align: middle;
+    color: #00FF00; /* Neon green text for table content */
+}
+
+.table thead th {
+    background-color: #111; /* Very dark background for table headers */
+}
+
+.table tbody tr {
+    background-color: #222; /* Dark gray background for table rows */
+}
+
+    .table tbody tr:hover {
+        background-color: #333; /* Slightly lighter gray when hovering */
+    }
+
+.table-bordered {
+    border: 1px solid #444; /* Dark border around the table */
+}
+
+.table td, .table th {
+    padding: 12px;
+    text-align: center;
+}
+
+/* Animation effect for "The Matrix" like scrolling text */
+@keyframes matrixEffect {
+    0% {
+        color: #00FF00;
+    }
+
+    50% {
+        color: #00CC00;
+    }
+
+    100% {
+        color: #00FF00;
+    }
+}
+
+.matrix-effect {
+    animation: matrixEffect 1s infinite;
+}

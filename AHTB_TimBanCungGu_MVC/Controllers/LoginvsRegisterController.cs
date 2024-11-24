@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using AHTB_TimBanCungGu_API.ViewModels;
 using System.Reflection.Metadata;
+using static AHTB_TimBanCungGu_MVC.Controllers.LoginvsRegisterController;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -103,6 +104,14 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Lấy token từ phản hồi nếu có
+                    var responseData = await response.Content.ReadFromJsonAsync<ResponseData>(); // Thay bằng lớp tương ứng để parse phản hồi
+                    if (responseData != null && !string.IsNullOrEmpty(responseData.Token))
+                    {
+                        // Lưu token vào session
+                        HttpContext.Session.SetString("TokenResgister", responseData.Token);
+                    }
+
                     ViewBag.Message = "OTP đã được gửi qua email. Vui lòng kiểm tra và xác nhận.";
                     return RedirectToAction("VerifyOtp", new { email });
                 }
@@ -119,21 +128,30 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             return View();
         }
+        public class ResponseData
+        {
+            public string Token { get; set; }
+        }
 
         public IActionResult VerifyOtp(string email)
         {
-            if (string.IsNullOrEmpty(email))
+            var token = HttpContext.Session.GetString("TokenResgister");
+            if(token != null)
             {
-                return RedirectToAction("Login");
+                if (string.IsNullOrEmpty(email))
+                {
+                    return RedirectToAction("Login");
+                }
+
+                // Lưu thời gian hiện tại vào Session khi người dùng yêu cầu OTP
+                DateTime currentTime = DateTime.Now;
+                // Lưu thời gian bắt đầu đếm ngược vào Session
+                HttpContext.Session.SetString("otpStartTime", currentTime.ToString());
+
+                ViewBag.Email = email;
+                return View();
             }
-
-            // Lưu thời gian hiện tại vào Session khi người dùng yêu cầu OTP
-            DateTime currentTime = DateTime.Now;
-            // Lưu thời gian bắt đầu đếm ngược vào Session
-            HttpContext.Session.SetString("otpStartTime", currentTime.ToString());
-
-            ViewBag.Email = email;
-            return View();
+            return NotFound();
         }
 
 
@@ -172,6 +190,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     if (registerResponse.IsSuccessStatusCode)
                     {
                         // Đăng ký thành công, xóa thông tin tạm thời
+                        HttpContext.Session.Remove("TokenResgister");
                         HttpContext.Session.Remove("TempUserName");
                         HttpContext.Session.Remove("TempPassword");
                         HttpContext.Session.Remove("TempEmail");
@@ -225,14 +244,16 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                ViewBag.Message = "Đường link đặt lại mật khẩu đã được gửi đến email của bạn.";
+                return Json(new { message = "Đường link đặt lại mật khẩu đã được gửi đến email của bạn." });
             }
             else
             {
-                ModelState.AddModelError(string.Empty, "Có lỗi xảy ra. Vui lòng thử lại.");
+                // Nếu thất bại, có thể là do email không tồn tại hoặc lỗi khác từ API
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                // Có thể trả về lỗi chi tiết từ API (nếu có)
+                ViewBag.Message = errorMessage;
+                return Json(new { message = ViewBag.Message });
             }
-
-            return View();
         }
         [HttpGet]
         public async Task<IActionResult> DoiMatKhau(string token, string email)

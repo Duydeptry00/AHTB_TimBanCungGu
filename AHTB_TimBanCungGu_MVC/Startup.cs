@@ -39,6 +39,7 @@ namespace AHTB_TimBanCungGu_MVC
                 options.Cookie.HttpOnly = true; // Ch? truy c?p ???c session qua HTTP, b?o m?t h?n b?ng cách ng?n JavaScript truy c?p cookie
                 options.Cookie.IsEssential = true; // Cookie này là c?n thi?t và không b? ?nh h??ng b?i các tùy ch?n v? quy?n riêng t?
             });
+            services.AddHttpContextAccessor();
             services.AddHttpClient(); // ??ng ký HttpClient
             services.AddControllersWithViews();
             services.AddDbContext<DBAHTBContext>(options =>

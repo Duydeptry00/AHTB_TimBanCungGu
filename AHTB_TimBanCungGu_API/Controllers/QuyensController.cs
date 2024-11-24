@@ -35,11 +35,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
             var roleVMs = roles.Select(role => new RoleVM
             {
                 IDRole = role.IDRole,
-                Module = role.Module,
-                Add = role.Add,
-                Update = role.Update,
-                Delete = role.Delete,
-                ReviewDetails = role.ReviewDetails,
+                TenRole = role.TenRole,
                 User = role.User_Role.Any()
                     ? string.Join(", ", role.User_Role.Select(ur => ur.User.UserName)) // Nếu có người dùng, lấy tên của họ
                     : "Chưa có nhân viên nào nhận quyền" // Nếu không có, hiển thị thông báo
@@ -71,9 +67,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 Update = role.Update,
                 Delete = role.Delete,
                 ReviewDetails = role.ReviewDetails,
-                User = role.User_Role.Any()
-                    ? string.Join(", ", role.User_Role.Select(ur => ur.User.UserName)) // Nếu có người dùng, lấy tên của họ
-                    : "Chưa có nhân viên nào nhận quyền" // Nếu không có, hiển thị thông báo
+                TenRole = role.TenRole,
             };
 
             return Ok(roleVM); // Trả về thông tin quyền
@@ -88,17 +82,14 @@ namespace AHTB_TimBanCungGu_API.Controllers
             {
                 return BadRequest("Quyền đang rỗng.");
             }
+            // Kiểm tra nếu TenRole đã tồn tại trong cơ sở dữ liệu
+            var existingRole = await _context.Quyen
+                                              .FirstOrDefaultAsync(r => r.TenRole == roleVM.TenRole);
 
-            // Kiểm tra quyền có trùng lặp không dựa trên Module và các chức năng
-            if (_context.Quyen.Any(r => r.Module == roleVM.Module &&
-                                         r.Add == roleVM.Add &&
-                                         r.Update == roleVM.Update &&
-                                         r.Delete == roleVM.Delete &&
-                                         r.ReviewDetails == roleVM.ReviewDetails))
+            if (existingRole != null)
             {
-                return Conflict("Quyền với module và chức năng này đã tồn tại.");
+                return Conflict("Tên quyền này đã tồn tại."); // Trả về lỗi nếu TenRole đã tồn tại
             }
-
             // Tạo đối tượng Role mới từ RoleVM
             var quyen = new Role
             {
@@ -106,7 +97,8 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 Add = roleVM.Add,
                 Update = roleVM.Update,
                 Delete = roleVM.Delete,
-                ReviewDetails = roleVM.ReviewDetails
+                ReviewDetails = roleVM.ReviewDetails,
+                TenRole = roleVM.TenRole,
             };
 
             // Thêm quyền mới vào cơ sở dữ liệu
@@ -132,10 +124,10 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 return NotFound("Không tìm thấy quyền.");
             }
 
-            // Kiểm tra trùng lặp module trong cơ sở dữ liệu khi cập nhật
-            if (_context.Quyen.Any(r => r.Module == roleVM.Module && r.IDRole != id))
+            // Kiểm tra trùng lặp TenRole trong cơ sở dữ liệu khi cập nhật
+            if (_context.Quyen.Any(r => r.TenRole == roleVM.TenRole && r.IDRole != id))
             {
-                return Conflict("Quyền với module này đã tồn tại.");
+                return Conflict("Tên quyền này đã tồn tại.");
             }
 
             // Cập nhật các thuộc tính của đối tượng Role từ RoleVM
@@ -144,6 +136,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
             existingRole.Update = roleVM.Update;
             existingRole.Delete = roleVM.Delete;
             existingRole.ReviewDetails = roleVM.ReviewDetails;
+            existingRole.TenRole = roleVM.TenRole;
 
             try
             {

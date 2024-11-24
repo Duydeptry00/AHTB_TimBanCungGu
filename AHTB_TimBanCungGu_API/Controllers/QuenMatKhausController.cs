@@ -33,7 +33,14 @@ namespace YourNamespace.Controllers
             {
                 return BadRequest("Email không hợp lệ.");
             }
+            // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.ThongTinCN.Email == request.Email); // Giả sử bảng người dùng có trường Email
 
+            if (user == null)
+            {
+                return BadRequest("Email không tồn tại trong hệ thống.");
+            }
             // Giả sử email đã được xác thực là tồn tại trong cơ sở dữ liệu
             string token = Guid.NewGuid().ToString(); // Tạo token
             TokenStorage[token] = DateTime.UtcNow; // Lưu token với thời gian tạo
