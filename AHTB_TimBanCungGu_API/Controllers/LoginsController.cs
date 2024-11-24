@@ -27,7 +27,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
         }
 
         // User Registration
-        [Authorize]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterRequest request)
         {

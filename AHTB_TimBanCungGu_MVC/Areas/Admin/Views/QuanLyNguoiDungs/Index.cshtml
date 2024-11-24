@@ -1,52 +1,125 @@
 ﻿@model IEnumerable<AHTB_TimBanCungGu_API.Models.QuanLyNguoiDung>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Quản lý Người Dùng";
     Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Thao tác</th>
-            <th>Thời gian khóa</th>
-            <th>Thời gian mở</th>
-            <th>Lý do khóa</th>
-            <th>Admin</th>
-            <th>User</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ThaoTac)
-                </td>
-                <td>
-                    @if (item.ThaoTac == "Khóa tài khoản")
-                    {
-                        @Html.DisplayFor(modelItem => item.MocThoiGian)
-                    }
-                    else
-                    {
-                        <span></span> 
-                    }
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.LichSuMoKhoa)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.LichSuLyDoKhoa)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AdminUser.UserName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.NguoiDungUser.UserName)
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="background-dark">
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th class="table-header"><i class="fas fa-cogs"></i> Thao tác</th>
+                    <th class="table-header"><i class="fas fa-lock"></i> Thời gian khóa</th>
+                    <th class="table-header"><i class="fas fa-unlock"></i> Thời gian mở</th>
+                    <th class="table-header"><i class="fas fa-exclamation-circle"></i> Lý do khóa</th>
+                    <th class="table-header"><i class="fas fa-user-shield"></i> Admin</th>
+                    <th class="table-header"><i class="fas fa-user"></i> User</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.ThaoTac)</td>
+                        <td>
+                            @if (item.ThaoTac == "Khóa tài khoản")
+                            {
+                                @Html.DisplayFor(modelItem => item.MocThoiGian)
+                            }
+                            else
+                            {
+                                <span></span>
+                            }
+                        </td>
+                        <td>@Html.DisplayFor(modelItem => item.LichSuMoKhoa)</td>
+                        <td>@Html.DisplayFor(modelItem => item.LichSuLyDoKhoa)</td>
+                        <td>@Html.DisplayFor(modelItem => item.AdminUser.UserName)</td>
+                        <td>@Html.DisplayFor(modelItem => item.NguoiDungUser.UserName)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
+<style>
+    /* Nền tối cho toàn bộ vùng chứa */
+    .background-dark {
+        background-color: #0d2636; /* Nền tối xanh thẫm */
+        padding: 20px;
+        margin: 15px;
+        border-radius: 5px;
+    }
+
+    /* Tiêu đề trang */
+    h1 {
+        color: #fff;
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+
+    /* Bảng */
+    .table-dark {
+        background-color: #1f2a38; /* Màu nền bảng tối xanh thẫm */
+        color: #fff; /* Chữ trắng */
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    /* Tiêu đề bảng nổi bật với viền trên/bottom */
+    .table-header {
+        background-color: #333333; /* Nền tiêu đề màu xám đen */
+        color: #fff; /* Màu chữ trắng */
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-align: center;
+        padding: 12px;
+        border-top: 2px solid #fff; /* Viền trên của tiêu đề */
+        border-bottom: 2px solid #fff; /* Viền dưới của tiêu đề */
+    }
+
+    /* Dữ liệu trong bảng */
+    .table-dark td {
+        padding: 12px;
+        text-align: center;
+        border-right: 2px solid #333; /* Viền phải cho mỗi ô */
+        border-bottom: 2px solid #333; /* Viền dưới cho mỗi ô */
+    }
+
+        .table-dark td:last-child {
+            border-right: none; /* Bỏ viền phải cho cột cuối */
+        }
+
+    /* Các dòng dữ liệu */
+    .table-dark tbody tr:nth-child(even) {
+        background-color: #2a3b4b; /* Màu nền cho dòng chẵn */
+    }
+
+    .table-dark tbody tr:nth-child(odd) {
+        background-color: #1f2a38; /* Màu nền cho dòng lẻ */
+    }
+
+    .table-dark tbody tr:hover {
+        background-color: #354a60 !important; /* Màu nền khi hover */
+        cursor: pointer;
+        transition: background-color 0.3s ease; /* Hiệu ứng chuyển màu mượt mà khi hover */
+    }
+
+    /* Liên kết hành động */
+    .action-link {
+        color: #fff; /* Màu chữ trắng */
+        text-decoration: none;
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 3px;
+        transition: all 0.2s ease;
+    }
+
+        .action-link:hover {
+            background-color: #ff6f61; /* Màu nền khi hover */
+            color: white;
+            text-decoration: none;
+        }
+</style>

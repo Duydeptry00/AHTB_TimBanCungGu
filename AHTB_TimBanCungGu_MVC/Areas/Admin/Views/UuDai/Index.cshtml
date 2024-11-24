@@ -2,79 +2,156 @@
 
 @{
     ViewData["Title"] = "Danh sách ưu đãi";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
 
-<h1 style="color: #d32f2f; text-align: center; margin-bottom: 20px;">Danh sách ưu đãi</h1>
+<div class="background-dark">
+    <p class="text-center">
+        <a asp-action="Create" class="btn btn-custom">Tạo mới</a>
+    </p>
 
-<p class="text-center">
-    <a asp-action="Create" class="btn btn-custom">Tạo mới</a>
-</p>
-
-<table class="table table-striped table-dark table-bordered" style="border-color: #444;">
-    <thead style="background-color: #333; color: #fff;">
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.TenUuDai)</th>
-            <th>@Html.DisplayNameFor(model => model.NgayUuDai)</th>
-            <th>@Html.DisplayNameFor(model => model.PhanTram)</th>
-            <th>@Html.DisplayNameFor(model => model.Hinh)</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@Html.DisplayFor(modelItem => item.TenUuDai)</td>
-                <td>@Html.DisplayFor(modelItem => item.NgayUuDai)</td>
-                <td>@Html.DisplayFor(modelItem => item.PhanTram) %</td>
-                <td>
-                    <img src="@item.Hinh" alt="Image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" />
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.IdUuDai" class="action-link">Sửa</a> 
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
+    <div class="table-responsive">
+        <table class="table table-striped table-dark table-bordered">
+            <thead>
+                <tr>
+                    <th class="table-header"><i class="fas fa-gift"></i> Tên Ưu Đãi</th>
+                    <th class="table-header"><i class="fas fa-calendar-day"></i> Ngày Ưu Đãi</th>
+                    <th class="table-header"><i class="fas fa-percent"></i> Phần Trăm</th>
+                    <th class="table-header"><i class="fas fa-image"></i> Hình Ảnh</th>
+                    <th class="table-header"><i class="fas fa-cogs"></i></th> <!-- Thêm icon cogs cho cột "Sửa" -->
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.TenUuDai)</td>
+                        <td>@Html.DisplayFor(modelItem => item.NgayUuDai)</td>
+                        <td>@Html.DisplayFor(modelItem => item.PhanTram) %</td>
+                        <td>
+                            <img src="@item.Hinh" alt="Ảnh ưu đãi" class="table-image" />
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.IdUuDai" class="action-link" title="Chỉnh sửa ưu đãi">
+                                <i class="fas fa-edit"></i> <!-- Thay thế "Sửa" bằng icon edit -->
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <style>
-    /* Button Custom Styling */
+    /* Nền đen cho toàn bộ vùng chứa */
+    .background-dark {
+        background-color: #0d1b2a;
+        padding: 20px;
+        margin: 15px;
+        border-radius: 5px;
+    }
+
+    /* Nút Tạo Mới */
     .btn-custom {
-        background-color: #d32f2f;
+        background: linear-gradient(45deg, #d32f2f, #ff5252);
         color: #fff;
         padding: 10px 20px;
         font-weight: bold;
         border-radius: 5px;
-        transition: background-color 0.3s ease;
+        transition: all 0.3s ease;
         text-decoration: none;
+        border: none;
     }
 
         .btn-custom:hover {
-            background-color: #b71c1c;
+            background: linear-gradient(45deg, #b71c1c, #ff1744);
+            box-shadow: 0 4px 10px rgba(255, 23, 68, 0.5);
             color: #fff;
         }
 
-    /* Table Row Hover Effect */
-    .table-dark tbody tr:hover {
-        background-color: #444 !important;
+    /* Bảng */
+    .table-dark {
+        background-color: #1f1f1f;
+        border-color: #333;
+        color: #e0e0e0;
+        border-collapse: collapse; /* Đảm bảo viền không bị trùng lặp */
     }
 
-    /* Action Links Styling */
+    /* Tiêu đề bảng nổi bật với icon và viền dưới */
+    .table-header {
+        background-color: #333;
+        color: #ff5252;
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-align: center;
+        padding: 10px;
+        border-right: 2px solid #ff5252; /* Viền phải giữa các tiêu đề */
+        border-bottom: 2px solid #ff5252; /* Viền dưới giữa tiêu đề và dữ liệu */
+    }
+
+        .table-header:last-child {
+            border-right: none; /* Bỏ viền phải của tiêu đề cuối cùng */
+        }
+
+        .table-header i {
+            margin-right: 8px;
+        }
+
+    /* Các dòng dữ liệu */
+    .table-dark tbody tr:nth-child(even) {
+        background-color: #262626;
+    }
+
+    .table-dark tbody tr:nth-child(odd) {
+        background-color: #1f1f1f;
+    }
+
+    .table-dark tbody tr:hover {
+        background-color: #444 !important;
+        cursor: pointer;
+    }
+
+    /* Dữ liệu trong bảng */
+    .table-dark td {
+        padding: 10px;
+        text-align: center;
+        border-right: 2px solid #333; /* Viền phải của dữ liệu */
+        border-bottom: 2px solid #333; /* Viền dưới giữa các dòng dữ liệu */
+    }
+
+        .table-dark td:last-child {
+            border-right: none; /* Bỏ viền phải của ô cuối cùng */
+        }
+
+    /* Hình ảnh trong bảng */
+    .table-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 2px solid #555;
+        transition: transform 0.3s ease, border 0.3s ease;
+    }
+
+        .table-image:hover {
+            transform: scale(1.1);
+            border-color: #d32f2f;
+        }
+
+    /* Link hành động */
     .action-link {
-        color: #d32f2f;
+        color: #ff5252;
         text-decoration: none;
         font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 3px;
+        transition: all 0.2s ease;
     }
 
         .action-link:hover {
-            color: #b71c1c;
-            text-decoration: underline;
+            background-color: #b71c1c;
+            color: white;
+            text-decoration: none;
         }
 </style>

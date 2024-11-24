@@ -1,6 +1,7 @@
 ﻿@model AHTB_TimBanCungGu_API.Models.UuDai
 
 @{
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
     ViewData["Title"] = "Tạo mới ưu đãi";
 }
 
@@ -57,11 +58,6 @@
     </div>
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
 
 <style>
     /* Styling for input fields */

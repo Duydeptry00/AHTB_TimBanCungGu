@@ -38,7 +38,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             // Tạo token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("AHTB_DATN"); // Thay bằng khóa bí mật của bạn
+            var key = Encoding.ASCII.GetBytes("AHTB_DATN1234567"); // Thay bằng khóa bí mật của bạn từ cấu hình
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -58,17 +58,85 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
                     Port = 587,
-                    Credentials = new NetworkCredential("sukanephan@gmail.com", "ndth xcmu baef vozo"), // Lưu ý bảo mật mật khẩu
+                    Credentials = new NetworkCredential("sukanephan@gmail.com", "ndth xcmu baef vozo"), // Sử dụng mật khẩu ứng dụng Gmail
                     EnableSsl = true,
                 };
 
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress("gamekhang990@gmail.com"),
-                    Subject = "Mã OTP và Token của bạn",
-                    Body = $"Mã OTP của bạn là: {otp}. Mã này sẽ hết hạn sau 5 phút.\n\nToken của bạn là: {jwtToken}",
-                    IsBodyHtml = false,
+                    Subject = "Mã OTP của bạn",
+                    Body = $@"
+        <html>
+        <head>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    color: #333333;
+                }}
+                .otp-container {{
+                    background-color: #f0f0f0;
+                    padding: 15px;
+                    font-size: 18px;
+                    font-weight: bold;
+                    display: inline-block;
+                    border-radius: 5px;
+                    margin: 15px 0;
+                }}
+                .footer {{
+                    margin-top: 20px;
+                    font-size: 12px;
+                    color: #888888;
+                }}
+                .footer i {{
+                    font-style: italic;
+                }}
+                hr {{
+                    border: 1px solid #dddddd;
+                    margin-top: 20px;
+                    margin-bottom: 20px;
+                }}
+            </style>
+        </head>
+        <body>
+            <p>Chào bạn,</p>
+
+            <p>
+                Bạn vừa thực hiện yêu cầu nhận mã OTP để bảo vệ tài khoản của mình.
+                Dưới đây là mã OTP của bạn:
+            </p>
+
+            <div class='otp-container'>
+                {otp}
+            </div>
+
+            <p>
+                Mã này sẽ hết hạn sau 5 phút kể từ khi bạn nhận được email này.
+                Hãy nhanh chóng sử dụng mã này để hoàn tất thao tác.
+            </p>
+
+            <p>
+                Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.
+            </p>
+
+            <hr>
+
+            <p>
+                Trân trọng,<br>
+                Bộ phận hỗ trợ của chúng tôi.
+            </p>
+
+            <hr>
+
+            <div class='footer'>
+                <i>Lưu ý: Đây là email tự động, vui lòng không trả lời trực tiếp.</i>
+            </div>
+        </body>
+        </html>
+    ",
+                    IsBodyHtml = true,
                 };
+
                 mailMessage.To.Add(email);
 
                 await smtpClient.SendMailAsync(mailMessage);
@@ -77,9 +145,11 @@ namespace AHTB_TimBanCungGu_API.Controllers
             }
             catch (Exception ex)
             {
+                // Log lỗi chi tiết để dễ dàng xử lý sau
                 return StatusCode(500, $"Lỗi khi gửi email: {ex.Message}");
             }
         }
+
 
         [HttpPost("verify-otp")]
         public IActionResult VerifyOtp([FromBody] OtpVerificationRequest request)
