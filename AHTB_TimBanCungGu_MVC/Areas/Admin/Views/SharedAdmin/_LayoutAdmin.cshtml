@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -123,6 +125,7 @@
         .nav-item.mt-auto {
             margin-top: auto;
         }
+
     </style>
 </head>
 
@@ -136,13 +139,25 @@
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="NhanVienss" asp-action="index">
                             <i class="fas fa-user-cog"></i>
-                            <span>Quản lý nhân viên</span>
+                            <span>Quản Lý Nhân Viên</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="ThongTinCaNhans" asp-action="index">
+                        <a class="nav-link" asp-area="Admin" asp-controller="QuanLyNguoiDungs" asp-action="index">
                             <i class="fas fa-user-circle"></i>
-                            <span>Thông tin người dùng</span>
+                            <span>Lịch Sử Khóa</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="Admin" asp-controller="BaoCaoNguoiDungs" asp-action="index">
+                            <i class="fas fa-user-circle"></i>
+                            <spanQuản Lý Báo Cáo</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="Admin" asp-controller="HoaDons" asp-action="index">
+                            <i class="fas fa-user-circle"></i>
+                            <spanQuản Lý Hóa Đơn</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -166,7 +181,7 @@
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="DoanhThus" asp-action="index">
                             <i class="fas fa-chart-line"></i>
-                            <span>Doanh thu</span>
+                            <span>Doanh Thu</span>
                         </a>
                     </li>
                 </ul>
@@ -175,10 +190,11 @@
                 <li class="nav-item mt-auto">
                     <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Logout">
                         <i class="fas fa-sign-out-alt"></i>
-                        <span>Đăng xuất</span>
+                        <span>Đăng Xuất</span>
                     </a>
                 </li>
             </ul>
+
         </nav>
 
         <!-- Main content area -->
@@ -209,12 +225,17 @@
                     <!-- Avatar Image -->
                     <div class="dropdown">
                         <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="path_to_your_avatar_image.jpg" alt="User Avatar" class="rounded-circle" style="width: 30px; height: 30px;">
+                           Xin Chào! @HttpContextAccessor.HttpContext.Session.GetString("TempUserName")
+                            <img src="@Url.Content($"~/images/{HttpContextAccessor.HttpContext.Session.GetString("TempUserName") ?? "defaultAvatar"}.jpg")"
+                                 alt="Avatar"
+                                 class="rounded-circle"
+                                 style="width: 30px; height: 30px;"
+                                 onerror="this.onerror=null; this.src='@Url.Content("~/images/defaultAvatar.jpg")';">
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="#">Tài khoản</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Đăng xuất</a></li>
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Logout">Đăng xuất</a></li>
                         </ul>
                     </div>
                 </div>

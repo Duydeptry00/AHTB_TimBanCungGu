@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AHTB_TimBanCungGu_API.Controllers
 {
@@ -26,6 +27,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
         }
 
         // User Registration
+        [Authorize]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterRequest request)
         {
@@ -96,11 +98,11 @@ namespace AHTB_TimBanCungGu_API.Controllers
             // Kiểm tra xem người dùng có vai trò "nhanvien" hoặc "Admin" trong bảng User_Role hay không
             var userRole = await _context.Role
                 .Include(ur => ur.Role) // Bao gồm thông tin bảng Role nếu cần
-                .FirstOrDefaultAsync(ur => ur.UsID == user.UsID && ur.TenRole == "Admin" || ur.TenRole == "Nhân Viên");
+                .FirstOrDefaultAsync(u => u.UsID == user.UsID && u.Role.TenRole == "Admin" || u.Role.TenRole == "Nhân Viên");
 
             if (userRole != null)
             {
-                request.UserType = userRole.TenRole; // Thiết lập UserType theo vai trò tìm thấy
+                request.UserType = userRole.Role.TenRole; // Thiết lập UserType theo vai trò tìm thấy
             }
 
             // Tạo JWT token nếu người dùng hợp lệ

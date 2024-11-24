@@ -149,6 +149,10 @@
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
         }
 
+    .badge.bg-light-blue {
+        background-color: #add8e6; /* Màu xanh nhạt */
+        color: #000; /* Chữ màu đen */
+    }
 </style>
 
 
@@ -201,7 +205,7 @@
                         <th><i class="fas fa-hashtag"></i> STT</th>
                         <th><i class="fas fa-user"></i> Tên Tài Khoản</th>
                         <th><i class="fas fa-envelope"></i> Email</th>
-                        <th><i class="fas fa-user-cog"></i> Quyền</th>
+                        <th><i class="fas fa-user-cog"></i> Vai Trò</th>
                         <th><i class="fas fa-info-circle"></i> Trạng Thái</th>
                         <th></th>
                     </tr>
@@ -214,12 +218,17 @@
                             <td>@item.UserName</td>
                             <td>@item.Email</td>
                             <td>
-                                <span class="@(string.IsNullOrWhiteSpace(item.Quyen) || item.Quyen == "Chưa cấp quyền cho nhân viên" ? "badge bg-secondary" : "badge bg-primary")">
-                                    @item.Quyen
-                                </span>
+                                @if (item.Tenrole == "Nhân Viên Hiện Chưa Được Cấp Quyền")
+                                {
+                                    <span class="badge bg-secondary text-white">@item.Tenrole</span>  <!-- Màu nền xám và chữ tối -->
+                                }
+                                else
+                                {
+                                    <span class="badge badge bg-light-blue text-dark">@item.Tenrole</span>  <!-- Ví dụ khác, có thể thay đổi màu sắc theo yêu cầu -->
+                                }
                             </td>
                             <td>
-                                @if (item.TrangThai == "Hoạt Động")
+                                @if (item.TrangThai == "Đang Làm Việc")
                                 {
                                     <span class="badge bg-success">@item.TrangThai</span>
                                 }
@@ -335,7 +344,6 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // Lắng nghe sự kiện thay đổi của dropdown PageSize và tự động gửi form

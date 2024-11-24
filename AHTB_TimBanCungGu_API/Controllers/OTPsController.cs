@@ -5,6 +5,10 @@ using System.Net.Mail;
 using System.Net;
 using System.Threading.Tasks;
 using System;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace AHTB_TimBanCungGu_API.Controllers
 {
@@ -19,7 +23,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
             _cache = cache;
         }
 
-        // Gửi OTP qua email
         [HttpPost("send-otp")]
         public async Task<IActionResult> SendOtp([FromBody] string email)
         {
@@ -29,43 +32,55 @@ namespace AHTB_TimBanCungGu_API.Controllers
             // Tạo OTP ngẫu nhiên (gồm 6 số)
             var otp = new Random().Next(100000, 999999).ToString();
 
-            // Lưu OTP vào cache với thời gian hết hạn 5 phút
+            // Lưu OTP vào cache với thời gian hết hạn 5 phút (sử dụng _cache hoặc cách lưu trữ khác)
             var expirationTime = DateTimeOffset.Now.AddMinutes(5);
             _cache.Set(email, otp, expirationTime);
+
+            // Tạo token JWT
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes("AHTB_DATN"); // Thay bằng khóa bí mật của bạn
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+            new Claim("email", email),
+            new Claim("otp", otp) // Bao gồm OTP trong payload
+        }),
+                Expires = DateTime.UtcNow.AddMinutes(5), // Token có thời hạn 5 phút
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var jwtToken = tokenHandler.WriteToken(token);
 
             // Gửi OTP qua email
             try
             {
-                // Sử dụng SMTP client với thông tin của Gmail hoặc dịch vụ email của bạn
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
-                    Port = 587, // Gmail SMTP port cho TLS
-                    Credentials = new NetworkCredential("sukanephan@gmail.com", "ndth xcmu baef vozo"), // Sử dụng mật khẩu ứng dụng Gmail
-                    EnableSsl = true, // Bật SSL cho bảo mật
+                    Port = 587,
+                    Credentials = new NetworkCredential("sukanephan@gmail.com", "ndth xcmu baef vozo"), // Lưu ý bảo mật mật khẩu
+                    EnableSsl = true,
                 };
 
                 var mailMessage = new MailMessage
                 {
-                    From = new MailAddress("gamekhang990@gmail.com"), // Thay bằng địa chỉ email gửi
-                    Subject = "Mã OTP của bạn",
-                    Body = $"Mã OTP của bạn là: {otp}. Mã này sẽ hết hạn sau 5 phút.",
-                    IsBodyHtml = false, // Bạn có thể set là true nếu muốn gửi email dạng HTML
+                    From = new MailAddress("gamekhang990@gmail.com"),
+                    Subject = "Mã OTP và Token của bạn",
+                    Body = $"Mã OTP của bạn là: {otp}. Mã này sẽ hết hạn sau 5 phút.\n\nToken của bạn là: {jwtToken}",
+                    IsBodyHtml = false,
                 };
-                mailMessage.To.Add(email); // Thêm email người nhận
+                mailMessage.To.Add(email);
 
-                // Gửi email không đồng bộ
                 await smtpClient.SendMailAsync(mailMessage);
 
-                return Ok("OTP đã được gửi qua email.");
+                return Ok(new { Message = "OTP đã được gửi qua email.", Token = jwtToken });
             }
             catch (Exception ex)
             {
-                // Bắt lỗi và trả về trạng thái HTTP 500 nếu có lỗi xảy ra
                 return StatusCode(500, $"Lỗi khi gửi email: {ex.Message}");
             }
         }
 
-        // Xác nhận OTP
         [HttpPost("verify-otp")]
         public IActionResult VerifyOtp([FromBody] OtpVerificationRequest request)
         {
@@ -77,7 +92,11 @@ namespace AHTB_TimBanCungGu_API.Controllers
             {
                 if (savedOtp == request.Otp)
                 {
-                    // OTP khớp
+                    // OTP khớp, xóa token và email khỏi cache
+                    _cache.Remove(request.Email);
+                    _cache.Remove(request.Otp);
+
+                    // Xác nhận OTP thành công
                     return Ok("OTP xác nhận thành công.");
                 }
                 else
@@ -90,6 +109,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
             // OTP hết hạn hoặc không tồn tại
             return BadRequest("OTP đã hết hạn hoặc không tồn tại.");
         }
+
     }
 
     // Lớp dùng cho việc xác thực OTP

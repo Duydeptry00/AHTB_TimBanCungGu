@@ -276,10 +276,9 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             {
                 // Tạo đối tượng dữ liệu để gửi lên API
                 var userRoleRequest = new User_role
-                {
-                    Tenrole = userRole.Tenrole,  // Tên vai trò
+                {                         
                     Username = username,  // Dùng Username từ danh sách User
-                    Id_Role = userRole.Role,    // Dùng Id_Role từ vai trò
+                    Id_Role = userRole.Id_Role,    // Dùng Id_Role từ vai trò
                 };
 
                 // Gửi yêu cầu tới API để gán quyền

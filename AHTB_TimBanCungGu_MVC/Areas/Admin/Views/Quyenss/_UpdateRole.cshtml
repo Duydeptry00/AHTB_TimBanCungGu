@@ -1,49 +1,213 @@
-﻿@model AHTB_TimBanCungGu_API.ViewModels.RoleVM
+﻿@model AHTB_TimBanCungGu_API.ViewModels.RoleVMUpdate
 
 <div class="modal-header">
     <h5 class="modal-title" id="roleModalLabel">Cập Nhật Quyền</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
+
 <div class="modal-body">
-    <form asp-action="Edit" asp-route-id="@Model.IDRole" method="post" id="editRoleForm">
+    <form asp-action="Edit" method="post" id="editRoleForm">
         <div class="mb-3">
-            <label asp-for="Module" class="form-label">Module</label>
-            @Html.DropDownListFor(
-                     model => model.Module,
-                     new SelectList(new[]
-                     {
+            <label asp-for="TenRole" class="form-label">Vai Trò</label>
+            <input asp-for="TenRole" class="form-control" required />
+
+            <label class="form-label">Danh Sách Quyền</label>
+            <div id="rolesContainer">
+                @for (int i = 0; i < Model.Module.Count; i++)
+                {
+                    <div class="role-entry mb-3 position-relative" data-index="@i">
+                        <!-- Dropdown Modules -->
+                        <select asp-for="Module[i]" class="form-control module-select" data-selected="@Model.Module[i]">
+                            <!-- Các option sẽ được đổ vào đây -->
+                        </select>
+                        <i class="fas fa-times remove-role position-absolute top-0 end-0 p-2 cursor-pointer"></i>
+                        <!-- Toggle Buttons for Permissions -->
+                        <div class="row mt-2">
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn @(Model.Add[i] == "true"  ? "btn-success" : "btn-danger")">
+                                    Thêm
+                                </button>
+                                <input type="hidden" asp-for="Add[i]" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn @(Model.Update[i] == "true" ? "btn-success" : "btn-danger")">
+                                    Cập Nhật
+                                </button>
+                                <input type="hidden" asp-for="Update[i]" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn @(Model.Delete[i] == "true" ? "btn-success" : "btn-danger")">
+                                    Xóa
+                                </button>
+                                <input type="hidden" asp-for="Delete[i]" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn @(Model.ReviewDetails[i] == "" ? "btn-success" : "btn-danger")">
+                                    Xem Chi Tiết
+                                </button>
+                                <input type="hidden" asp-for="ReviewDetails[i]" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <button type="button" class="btn btn-secondary mt-3" id="addRoleButton">Thêm Quyền</button>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Define availableModules here in JavaScript
+        const availableModules = [
             "Quản Lý Ưu Đãi",
             "Quản Lý Người Dùng",
             "Thông Tin Người Dùng",
             "Quản Lý Phim",
             "Quản Lý Phân Quyền"
-            }, Model.Module),
-                     "Chọn quyền",
-                     new { @class = "form-control" })
-            <span asp-validation-for="Module" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Quyền</label>
-            <div class="form-check">
-                <input asp-for="Add" class="form-check-input" type="checkbox" />
-                <label asp-for="Add" class="form-check-label">Thêm</label>
-            </div>
-            <div class="form-check">
-                <input asp-for="Update" class="form-check-input" type="checkbox" />
-                <label asp-for="Update" class="form-check-label">Cập Nhật</label>
-            </div>
-            <div class="form-check">
-                <input asp-for="Delete" class="form-check-input" type="checkbox" />
-                <label asp-for="Delete" class="form-check-label">Xóa</label>
-            </div>
-            <div class="form-check">
-                <input asp-for="ReviewDetails" class="form-check-input" type="checkbox" />
-                <label asp-for="ReviewDetails" class="form-check-label">Xem Chi Tiết</label>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-            <button type="submit" class="btn btn-primary">Lưu</button>
-        </div>
-    </form>
-</div>
+        ];
+
+        // Cập nhật lại các tùy chọn module khi có sự thay đổi
+        function updateModuleOptions() {
+            const usedModules = Array.from(document.querySelectorAll('.module-select'))
+                .map(select => select.value)
+                .filter(value => value !== ''); // Bỏ qua các dropdown chưa chọn module
+
+            document.querySelectorAll('.module-select').forEach(select => {
+                Array.from(select.options).forEach(option => {
+                    if (usedModules.includes(option.value) && option.value !== select.value) {
+                        option.style.display = 'none'; // Ẩn option nếu đã được chọn
+                    } else {
+                        option.style.display = ''; // Hiển thị nếu chưa được chọn
+                    }
+                });
+            });
+        }
+
+        // Đổ dữ liệu module vào dropdown khi tải
+        function populateModules(selectElement, selectedValue = '') {
+            selectElement.innerHTML = '';
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '--- Chọn quyền ---';
+            selectElement.appendChild(defaultOption);
+
+            availableModules.forEach(module => {
+                const option = document.createElement('option');
+                option.value = module;
+                option.textContent = module;
+                if (module === selectedValue) {
+                    option.selected = true;
+                }
+                selectElement.appendChild(option);
+            });
+        }
+
+        // Đổ dữ liệu vào dropdown ban đầu
+        document.querySelectorAll('.module-select').forEach(select => {
+            const selectedValue = select.getAttribute('data-selected');
+            populateModules(select, selectedValue);
+        });
+
+        // Thêm quyền mới
+        $('#addRoleButton').on('click', function () {
+
+            const rolesContainer = $('#rolesContainer');
+            const newIndex = rolesContainer.children().length;
+
+            const newRoleEntry = `
+                    <div class="role-entry mb-3 position-relative" data-index="${newIndex}">
+                            <select name="Module[${newIndex}]" class="form-control module-select">
+                            <!-- Các option sẽ được đổ vào đây -->
+                        </select>
+                        <i class="fas fa-times remove-role position-absolute top-0 end-0 p-2 cursor-pointer"></i>
+                        <div class="row mt-2">
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-danger">Thêm</button>
+                                    <input type="hidden" name="Add[${newIndex}]" value="false" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-danger">Cập Nhật</button>
+                                    <input type="hidden" name="Update[${newIndex}]" value="false" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-danger">Xóa</button>
+                                    <input type="hidden" name="Delete[${newIndex}]" value="false" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-danger">Xem Chi Tiết</button>
+                                    <input type="hidden" name="ReviewDetails[${newIndex}]" value="false" />
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            rolesContainer.append(newRoleEntry);
+            const newSelect = rolesContainer.find('.role-entry:last .module-select')[0];
+            populateModules(newSelect); // Đổ dữ liệu vào dropdown mới
+            updateModuleOptions();
+        });
+
+        // Sự kiện ủy quyền cho nút toggle quyền
+        $('#rolesContainer').on('click', '.permission-toggle', function () {
+            const hiddenInput = $(this).next('input[type="hidden"]');
+            if (hiddenInput.val() === "false") {
+                hiddenInput.val("true");
+                $(this).removeClass('btn-danger').addClass('btn-success');
+            } else {
+                hiddenInput.val("false");
+                $(this).removeClass('btn-success').addClass('btn-danger');
+            }
+        });
+
+        // Sự kiện thay đổi dropdown module
+        $('#rolesContainer').on('change', '.module-select', function () {
+            updateModuleOptions();
+        });
+
+        // Khởi tạo ban đầu
+        updateModuleOptions();
+    });
+</script>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+<style>
+    .btn-danger {
+        background-color: red;
+        color: white;
+    }
+
+    .btn-success {
+        background-color: green;
+        color: white;
+    }
+
+    .btn-warning {
+        background-color: orange;
+        color: white;
+    }
+
+    .position-relative {
+        position: relative;
+    }
+
+    .remove-role {
+        top: -8px;
+        right: -8px;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .remove-role:hover {
+        color: red;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>

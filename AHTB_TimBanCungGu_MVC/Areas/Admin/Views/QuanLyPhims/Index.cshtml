@@ -6,6 +6,102 @@
 }
 
 <style>
+    /* Nền tổng thể tối */
+    .dark-background {
+        margin: 15px;
+        background-color: #0d1b2a; /* Màu xanh tối dịu mắt */
+        color: #ffffff; /* Chữ sáng */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6); /* Hiệu ứng đổ bóng nhẹ */
+    }
+
+    /* Bảng */
+    .table-dark {
+        border-collapse: collapse;
+        width: 100%;
+        color: #ffffff; /* Chữ bảng */
+        background-color: #1a2b3c; /* Nền bảng xanh đậm */
+    }
+
+        .table-dark th {
+            background-color: #2c3e50; /* Nền tiêu đề bảng tối hơn */
+            color: #ffffff;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 2px solid #3b4f63; /* Viền tiêu đề bảng */
+        }
+
+        .table-dark td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #3b4f63; /* Viền giữa các ô */
+            background-color: #243447; /* Tông nền xen kẽ dịu mắt */
+        }
+
+        .table-dark tr:nth-child(even) td {
+            background-color: #1c2833; /* Xen kẽ màu tối hơn */
+        }
+
+    /* Nút thêm mới */
+    #addNewBtn {
+        background-color: #198754; /* Màu xanh lá đậm */
+        color: #ffffff;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+        #addNewBtn:hover {
+            background-color: #157347; /* Màu hover */
+            color: #ffffff;
+        }
+
+    /* Trường tìm kiếm */
+    #searchInput {
+        background-color: #243447; /* Nền tối hơn */
+        color: #ffffff; /* Chữ sáng */
+        border: 1px solid #3b4f63; /* Viền */
+        border-radius: 5px;
+        padding: 0.5em;
+    }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #66e; /* Hiệu ứng khi focus */
+            box-shadow: 0 0 5px rgba(102, 140, 255, 0.7);
+        }
+
+
+    /* Cuộn bảng */
+    .table-wrapper {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #3b4f63;
+        border-radius: 5px;
+    }
+
+    /* Hiệu ứng khi di chuột lên hàng */
+    .table-dark tr:hover {
+        background-color: #345678; /* Tông sáng hơn */
+    }
+
+    /* Checkbox */
+    .genre-checkbox {
+        accent-color: #66e; /* Màu chọn */
+    }
+
+
+    .filter-section {
+        background-color: #1e1e1e;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    #searchInput {
+        background-color: #1e1e1e;
+        color: #fff;
+        border: 1px solid #555;
+    }
     .container {
         position: relative;
         display: block;
@@ -129,138 +225,136 @@
     }
 </style>
 
-<h1>Quản Lý Phim</h1>
-
-<div class="row mb-3">
-    <!-- Filter Section -->
-    <div class="col-md-7">
-        <details open>
-            <summary><strong>Lọc phim</strong></summary>
-            <div class="folder mt-3">
-                <div class="filter-section">
-                    <!-- Dạng Phim Filter -->
-                    <div class="filter-item">
-                        <h5 class="form-label text-light">Dạng Phim</h5>
-                        <div id="typeFilter" class="btn-group d-flex flex-column">
-                            <a href="javascript:void(0);" onclick="setTypeFilter('')" class="btn btn-outline-light">Tất Cả Dạng Phim</a>
-                            <div class="btn-group d-flex">
-                                <a href="javascript:void(0);" onclick="setTypeFilter('Phim Bộ')" class="btn btn-outline-light me-2">Phim Bộ</a>
-                                <a href="javascript:void(0);" onclick="setTypeFilter('Phim Lẻ')" class="btn btn-outline-light">Phim Lẻ</a>
+<div class="dark-background">
+    <div class="row mb-3">
+        <!-- Filter Section -->
+        <div class="col-md-7">
+            <details open>
+                <summary><strong>Lọc phim</strong></summary>
+                <div class="folder mt-3">
+                    <div class="filter-section">
+                        <!-- Dạng Phim Filter -->
+                        <div class="filter-item">
+                            <h5 class="form-label text-light">Dạng Phim</h5>
+                            <div id="typeFilter" class="btn-group d-flex flex-column">
+                                <a href="javascript:void(0);" onclick="setTypeFilter('')" class="btn btn-outline-light">Tất Cả Dạng Phim</a>
+                                <div class="btn-group d-flex">
+                                    <a href="javascript:void(0);" onclick="setTypeFilter('Phim Bộ')" class="btn btn-outline-light me-2">Phim Bộ</a>
+                                    <a href="javascript:void(0);" onclick="setTypeFilter('Phim Lẻ')" class="btn btn-outline-light">Phim Lẻ</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Thể Loại Filter -->
-                    <div class="filter-item">
-                        <h5 class="form-label text-light">Thể Loại</h5>
-                        <div id="genreFilter" class="btn-group d-flex flex-column">
-                            <a href="javascript:void(0);" onclick="setGenreFilter('')" class="btn btn-outline-light">Tất Cả Thể Loại</a>
+                        <!-- Thể Loại Filter -->
+                        <div class="filter-item">
+                            <h5 class="form-label text-light">Thể Loại</h5>
+                            <div id="genreFilter" class="btn-group d-flex flex-column">
+                                <a href="javascript:void(0);" onclick="setGenreFilter('')" class="btn btn-outline-light">Tất Cả Thể Loại</a>
 
-                            <!-- Displaying the first 3 genres initially -->
-                            <div id="initialGenres" class="initial-genres">
-                                @foreach (var genre in (ViewData["Genres"] as List<string>).Take(3))
-                                {
-                                    <label class="btn btn-outline-light">
-                                        <input type="checkbox" class="genre-checkbox" value="@genre" onchange="filterTable()" />
-                                        @genre
-                                    </label>
-                                }
+                                <!-- Displaying the first 3 genres initially -->
+                                <div id="initialGenres" class="initial-genres">
+                                    @foreach (var genre in (ViewData["Genres"] as List<string>).Take(3))
+                                    {
+                                        <label class="btn btn-outline-light">
+                                            <input type="checkbox" class="genre-checkbox" value="@genre" onchange="filterTable()" />
+                                            @genre
+                                        </label>
+                                    }
+                                </div>
+
+                                <!-- The "Xem thêm" link that will show more genres -->
+                                <div id="moreGenres" class="more-genres" style="display: none;">
+                                    @foreach (var genre in (ViewData["Genres"] as List<string>).Skip(3))
+                                    {
+                                        <label class="btn btn-outline-light">
+                                            <input type="checkbox" class="genre-checkbox" value="@genre" onchange="filterTable()" />
+                                            @genre
+                                        </label>
+                                    }
+                                </div>
+
+                                <!-- Toggle visibility for more genres -->
+                                <a href="javascript:void(0);" class="btn btn-outline-light" id="showMoreGenres" onclick="toggleGenres()">Xem Thêm</a>
                             </div>
-
-                            <!-- The "Xem thêm" link that will show more genres -->
-                            <div id="moreGenres" class="more-genres" style="display: none;">
-                                @foreach (var genre in (ViewData["Genres"] as List<string>).Skip(3))
-                                {
-                                    <label class="btn btn-outline-light">
-                                        <input type="checkbox" class="genre-checkbox" value="@genre" onchange="filterTable()" />
-                                        @genre
-                                    </label>
-                                }
-                            </div>
-
-                            <!-- Toggle visibility for more genres -->
-                            <a href="javascript:void(0);" class="btn btn-outline-light" id="showMoreGenres" onclick="toggleGenres()">Xem Thêm</a>
                         </div>
-                    </div>
 
-                    <!-- Premium Filter -->
-                    <div class="filter-item">
-                        <h5 class="form-label text-light">Premium</h5>
-                        <div id="premiumFilter" class="btn-group d-flex flex-column">
-                            <a href="javascript:void(0);" onclick="setPremiumFilter('Premium')" class="btn btn-outline-light">Premium</a>
+                        <!-- Premium Filter -->
+                        <div class="filter-item">
+                            <h5 class="form-label text-light">Premium</h5>
+                            <div id="premiumFilter" class="btn-group d-flex flex-column">
+                                <a href="javascript:void(0);" onclick="setPremiumFilter('Premium')" class="btn btn-outline-light">Premium</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </details>
+            </details>
+        </div>
+
+        <div class="col-md-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm phim theo tên..." onkeyup="filterTable()" />
+        </div>
+
+        <!-- Nút Thêm Mới nằm ở ngoài -->
+        <div class="col-md-2 text-end" id="addNewBtnContainer">
+            <a asp-action="Create" class="btn btn-success" id="addNewBtn">
+                <i class="fas fa-plus"></i> Thêm Mới
+            </a>
+        </div>
     </div>
 
-    <div class="col-md-3">
-        <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm phim theo tên..." onkeyup="filterTable()" />
-    </div>
-
-    <!-- Nút Thêm Mới nằm ở ngoài -->
-    <div class="col-md-2 text-end" id="addNewBtnContainer">
-        <a asp-action="Create" class="btn btn-success" id="addNewBtn">
-            <i class="fas fa-plus"></i> Thêm Mới
-        </a>
-    </div>
-</div>
-
-
-
-<!-- Scrollable Table Wrapper -->
-<div class="table-wrapper">
-    <table class="table table-striped table-hover table-bordered text-center align-middle table-dark text-light" id="movieTable">
-        <thead>
-            <tr>
-                <th><i class="fas fa-film"></i> Tên Phim</th>
-                <th><i class="fas fa-user"></i> Diễn Viên</th>
-                <th><i class="fas fa-list"></i> Thể Loại</th>
-                <th><i class="fas fa-calendar-alt"></i> Ngày Cập Nhật</th>
-                <th><i class="fas fa-video"></i> Dạng Phim</th>
-                <th><i class="fas fa-image"></i> Hình Ảnh Phim</th>
-                <th><i class="fas fa-eye"></i> Premium</th>
-                <th><i class="fas fa-cogs"></i> Thao Tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    <!-- Scrollable Table Wrapper -->
+    <div class="table-wrapper">
+        <table class="table table-striped table-hover table-bordered text-center align-middle table-dark text-light" id="movieTable">
+            <thead>
                 <tr>
-                    <td>@Html.DisplayFor(modelItem => item.TenPhim)</td>
-                    <td>@Html.DisplayFor(modelItem => item.DienVien)</td>
-                    <td>@Html.DisplayFor(modelItem => item.TheLoai.TenTheLoai)</td>
-                    <td>@item.NgayPhatHanh.ToString("dd/MM/yyyy")</td>
-                    <td>@Html.DisplayFor(modelItem => item.DangPhim)</td>
-                    <td>
-                        <img src="~/Uploads/@item.HinhAnh" alt="Movie Image" class="rounded" style="width: 100px; height: auto;" />
-                    </td>
-                    <td>
-                        @if (item.NoiDungPremium == true)
-                        {
-                            <span class="badge bg-warning text-dark">Premium</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Không</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.IDPhim" class="btn btn-primary btn-sm me-1">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a asp-action="Details" asp-route-id="@item.IDPhim" class="btn btn-info btn-sm me-1">
-                            <i class="fas fa-info-circle"></i>
-                        </a>
-                        <a asp-action="Delete" asp-route-id="@item.IDPhim" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa phim này?');">
-                            <i class="fas fa-trash-alt"></i>
-                        </a>
-                    </td>
+                    <th><i class="fas fa-film"></i> Tên Phim</th>
+                    <th><i class="fas fa-user"></i> Diễn Viên</th>
+                    <th><i class="fas fa-list"></i> Thể Loại</th>
+                    <th><i class="fas fa-calendar-alt"></i> Ngày Cập Nhật</th>
+                    <th><i class="fas fa-video"></i> Dạng Phim</th>
+                    <th><i class="fas fa-image"></i> Hình Ảnh Phim</th>
+                    <th><i class="fas fa-eye"></i> Premium</th>
+                    <th><i class="fas fa-cogs"></i> Thao Tác</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.TenPhim)</td>
+                        <td>@Html.DisplayFor(modelItem => item.DienVien)</td>
+                        <td>@Html.DisplayFor(modelItem => item.TheLoai.TenTheLoai)</td>
+                        <td>@item.NgayPhatHanh.ToString("dd/MM/yyyy")</td>
+                        <td>@Html.DisplayFor(modelItem => item.DangPhim)</td>
+                        <td>
+                            <img src="~/Uploads/@item.HinhAnh" alt="Movie Image" class="rounded" style="width: 100px; height: auto;" />
+                        </td>
+                        <td>
+                            @if (item.NoiDungPremium == true)
+                            {
+                                <span class="badge bg-warning text-dark">Premium</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Không</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.IDPhim" class="btn btn-primary btn-sm me-1">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a asp-action="Details" asp-route-id="@item.IDPhim" class="btn btn-info btn-sm me-1">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.IDPhim" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa phim này?');">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>

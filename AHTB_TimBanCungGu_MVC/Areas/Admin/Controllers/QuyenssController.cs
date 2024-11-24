@@ -7,6 +7,8 @@ using AHTB_TimBanCungGu_API.Models;
 using AHTB_TimBanCungGu_API.ViewModels;
 using AHTB_TimBanCungGu_MVC.Models;
 using Microsoft.AspNetCore.Http;
+using System.Linq;
+using System;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -50,48 +52,102 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RoleListVM roleListVM)
         {
+            if (roleListVM == null || roleListVM.Roles == null || !roleListVM.Roles.Any())
+            {
+                ModelState.AddModelError(string.Empty, "Dữ liệu quyền bị rỗng.");
+                return PartialView("Index", roleListVM);
+            }
 
-                foreach (var roleVM in roleListVM.Roles)
-                {
-                    // Gửi từng roleVM đến API
-                    var response = await _httpClient.PostAsJsonAsync(_apiUrl, roleVM);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        ModelState.AddModelError(string.Empty, "Lỗi khi tạo quyền mới cho module " + roleVM);
-                        return PartialView("_CreateRole", roleListVM); // Trả lại PartialView nếu có lỗi
-                    }
-                }
+            // Lọc các quyền có Module không rỗng
+            var validRoles = roleListVM.Roles.Where(role => !string.IsNullOrEmpty(role.Module)).ToList();
 
-                return RedirectToAction(nameof(Index)); // Nếu tất cả thành công, chuyển đến trang Index // Trả lại PartialView nếu ModelState không hợp lệ
+            // Gộp dữ liệu cho tất cả các quyền (cả quyền có Module rỗng và có Module không rỗng)
+            var payload = new
+            {
+                TenRole = roleListVM.TenRole,
+                Module = string.Join(", ", roleListVM.Roles.Select(role => role.Module)), // Gộp tất cả Module (bao gồm cả Module rỗng)
+                Add = string.Join(", ", roleListVM.Roles.Select(role => role.Add)),       // Gộp tất cả Add
+                Update = string.Join(", ", roleListVM.Roles.Select(role => role.Update)), // Gộp tất cả Update
+                Delete = string.Join(", ", roleListVM.Roles.Select(role => role.Delete)), // Gộp tất cả Delete
+                ReviewDetails = string.Join(", ", roleListVM.Roles.Select(role => role.ReviewDetails)) // Gộp tất cả ReviewDetails
+            };
+
+            // Gửi dữ liệu gộp đến API
+            var response = await _httpClient.PostAsJsonAsync(_apiUrl, payload);
+
+            // Kiểm tra phản hồi từ API
+            if (!response.IsSuccessStatusCode)
+            {
+                ModelState.AddModelError(string.Empty, "Lỗi khi tạo quyền mới.");
+                return PartialView("Index", roleListVM); // Trả lại PartialView nếu có lỗi
+            }
+
+            // Nếu thành công, chuyển hướng đến trang Index
+            return RedirectToAction(nameof(Index));
         }
 
-
-        // GET: Admin/Quyens/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var role = await _httpClient.GetFromJsonAsync<RoleVM>($"{_apiUrl}/{id}"); // Change to RoleVM if your API returns it
+            var role = await _httpClient.GetFromJsonAsync<RoleVM>($"{_apiUrl}/{id}");
             if (role == null)
             {
                 return NotFound();
             }
-            return PartialView("_UpdateRole", role); // Return partial view for Update
+
+            // Chuyển đổi dữ liệu cho RoleVMUpdate
+            var roleUpdate = new RoleVMUpdate
+            {
+                IDRole = role.IDRole,
+                TenRole = role.TenRole,
+                Module = role.Module?.Split(", ")?.ToList(),
+                Add = role.Add?.Split(", ")?.ToList(),
+                Update = role.Update?.Split(", ")?.ToList(),
+                Delete = role.Delete?.Split(", ")?.ToList(),
+                ReviewDetails = role.ReviewDetails?.Split(", ")?.ToList()
+            };
+
+            // Trả về PartialView với dữ liệu đã chuyển đổi
+            return PartialView("_UpdateRole", roleUpdate);
+
         }
 
-        // POST: Admin/Quyens/Edit/5
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, RoleVM roleVM)
+        public async Task<IActionResult> Edit(int id, RoleVMUpdate roleVM)
         {
+            // Filter roles where the Module is not empty
+            var validRoles = roleVM.Module
+                .Where(module => !string.IsNullOrEmpty(module))
+                .ToList();
+            // Combine the values in the lists into comma-separated strings
+            var payload = new
+            {
+                TenRole = roleVM.TenRole,
+                Module = string.Join(", ", roleVM.Module), // Join the list of modules into a single comma-separated string
+                Add = string.Join(", ", roleVM.Add),        // Join the list of "Add" actions into a single comma-separated string
+                Update = string.Join(", ", roleVM.Update),  // Join the list of "Update" actions
+                Delete = string.Join(", ", roleVM.Delete),  // Join the list of "Delete" actions
+                ReviewDetails = string.Join(", ", roleVM.ReviewDetails) // Join the list of "ReviewDetails" actions
+            };
+
             if (ModelState.IsValid)
             {
-                var response = await _httpClient.PutAsJsonAsync($"{_apiUrl}/{id}", roleVM);
+                // Send the payload to your API
+                var response = await _httpClient.PutAsJsonAsync($"{_apiUrl}/{id}", payload);
+
                 if (response.IsSuccessStatusCode)
                 {
+                    // Redirect to the Index action if the update is successful
                     return RedirectToAction(nameof(Index));
                 }
-                ModelState.AddModelError(string.Empty, "Lỗi khi cập nhật quyền.");
+                else
+                {
+                    // Add an error to the model state if the request fails
+                    ModelState.AddModelError(string.Empty, "Lỗi khi cập nhật quyền.");
+                }
             }
-            return PartialView("_UpdateRole", roleVM); // Return partial view if invalid
+            return RedirectToAction(nameof(Index));
         }
 
 

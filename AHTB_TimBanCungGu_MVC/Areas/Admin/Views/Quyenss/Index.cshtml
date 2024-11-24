@@ -1,122 +1,19 @@
 ﻿@model IEnumerable<AHTB_TimBanCungGu_API.ViewModels.RoleVM>
-
-<style>
-    /* Container for the table with a dark surrounding background */
-    .table-container {
-        background-color: #1b2735; /* Darker background surrounding the table */
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Adds a subtle shadow for depth */
-        margin-top: 20px;
-        margin: 10px;
-    }
-
-    /* Table styling */
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 0;
-        background-color: #2f3e4f; /* Darker background for table rows */
-        border-radius: 5px;
-        overflow: hidden; /* Ensures rounded corners */
-    }
-
-        /* Table header */
-        .table th {
-            background-color: #1c2531;
-            color: #ffffff;
-            font-weight: 700;
-            padding: 12px;
-            border: 1px solid #394a5a;
-            text-align: center;
-        }
-
-        /* Table body cells */
-        .table td {
-            padding: 10px;
-            text-align: center;
-            border: 1px solid #394a5a;
-            vertical-align: middle;
-            transition: background-color 0.3s ease;
-        }
-
-            /* Hover effect for data cells only (Module, Thêm, Cập Nhật, Xóa, Xem Chi Tiết) */
-            .table td:hover {
-                background-color: #3c4e63; /* Hover background color */
-                transform: scale(1.01); /* Slight scale-up effect */
-                transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-            }
-
-            /* Remove hover effect from action buttons (Edit, Delete) */
-            .table td .btn {
-                transition: none; /* No hover effect for buttons */
-            }
-
-        /* Alternating row colors */
-        .table tbody tr:nth-child(even) {
-            background-color: #233342;
-        }
-
-    /* Badge styling */
-    .badge {
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.85em;
-        display: inline-block;
-        min-width: 30px;
-        text-align: center;
-    }
-
-        .badge.bg-success {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .badge.bg-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .badge.bg-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-
-    /* Button styling */
-    .btn {
-        padding: 5px 10px;
-        font-size: 0.9rem;
-        margin-right: 5px;
-    }
-
-    /* Tooltip styling */
-    [data-bs-toggle="tooltip"] {
-        cursor: pointer;
-    }
-
-    /* Special styles for User Column */
-    .user-info {
-        background-color: #f0f0f0;
-        padding: 5px;
-        border-radius: 5px;
-    }
-
-        .user-info.no-user {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .user-info.has-user {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-    /* Special Styles for Action Buttons */
-    .btn .fas {
-        margin-right: 5px;
-    }
-</style>
-
+<!-- SweetAlert2 CDN -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.6/dist/sweetalert2.min.css" rel="stylesheet">
+<link href="~/css/indexQuyen.css" rel="stylesheet" />
+<!-- Toast Notification -->
+@* <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <div id="deleteSuccessToast" class="toast align-items-center text-bg-dark border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center">
+                <i class="fas fa-check-circle me-2 text-success" style="font-size: 1.5rem;"></i>
+                <span>Xóa thành công!</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div> *@
 <div class="table-container">
     <p class="text-end mb-3">
         <button class="btn btn-success" id="createRoleBtn">
@@ -126,11 +23,7 @@
     <table class="table text-light">
         <thead>
             <tr>
-                <th><i class="fas fa-user-cog"></i> Module</th>
-                <th><i class="fas fa-plus"></i> Thêm</th>
-                <th><i class="fas fa-edit"></i> Cập Nhật</th>
-                <th><i class="fas fa-trash-alt"></i> Xóa</th>
-                <th><i class="fas fa-info-circle"></i> Xem Chi Tiết</th>
+                <th><i class="fas fa-user-cog"></i> Vai Trò</th>
                 <th><i class="fas fa-user"></i> User Đang Quản Lý</th>
                 <th></th>
             </tr>
@@ -139,37 +32,7 @@
             @foreach (var item in Model)
             {
                 <tr>
-                    <td>@item.Module</td>
-                    <td>
-                        <span class="@(item.Add == "true" ? "bg-success text-light" : "bg-danger text-light")"
-                              style="border-radius: 5px; padding: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;"
-                              data-bs-toggle="tooltip"
-                              data-bs-placement="top"
-                              title="@(item.Add == "true" ? "Có quyền thêm" : "Không có quyền thêm")">
-                            <i class="@(item.Add == "true" ? "fas fa-check" : "fas fa-times")"></i>
-                        </span>
-                    </td>
-                    <td>
-                        <span class="@(item.Update == "true" ? "bg-success text-light" : "bg-danger text-light")"
-                              style="border-radius: 5px; padding: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;"
-                              title="@(item.Update == "true" ? "Có quyền cập nhật" : "Không có quyền cập nhật")">
-                            <i class="@(item.Update == "true" ? "fas fa-check" : "fas fa-times")"></i>
-                        </span>
-                    </td>
-                    <td>
-                        <span class="@(item.Delete == "true" ? "bg-success text-light" : "bg-danger text-light")"
-                              style="border-radius: 5px; padding: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;"
-                              title="@(item.Delete == "true" ? "Có quyền xóa" : "Không có quyền xóa")">
-                            <i class="@(item.Delete == "true" ? "fas fa-check" : "fas fa-times")"></i>
-                        </span>
-                    </td>
-                    <td>
-                        <span class="@(item.ReviewDetails == "true" ? "bg-success text-light" : "bg-danger text-light")"
-                              style="border-radius: 5px; padding: 5px; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;"
-                              title="@(item.ReviewDetails == "true" ? "Có quyền xem chi tiết" : "Không có quyền xem chi tiết")">
-                            <i class="@(item.ReviewDetails == "true" ? "fas fa-check" : "fas fa-times")"></i>
-                        </span>
-                    </td>
+                    <td>@item.TenRole</td>
                     <td>
                         <span class="user-info @(item.User == "Chưa có nhân viên nào nhận quyền" ? "no-user" : "has-user")">
                             @item.User
@@ -180,8 +43,8 @@
                             <button class="btn btn-primary me-2 editRoleBtn" data-id="@item.IDRole">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <form asp-action="Delete" asp-route-id="@item.IDRole" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa không?');">
-                                <button type="submit" class="btn btn-danger">
+                            <form asp-action="Delete" asp-route-id="@item.IDRole" method="post" class="delete-form">
+                                <button type="submit" id="" class="btn btn-danger">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
@@ -204,9 +67,10 @@
 
 <!-- Thêm thư viện jQuery và Bootstrap -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.6/dist/sweetalert2.all.min.js"></script>
 
 <script>
+
     $(document).ready(function () {
         // Tải form thêm mới vào modal
         $('#createRoleBtn').click(function () {
@@ -220,5 +84,46 @@
             $('#roleModal').modal('show');
             $('#roleModalContent').load(`/Admin/Quyenss/Edit/${id}`);
         });
+
+        $(document).ready(function () {
+            // Xử lý sự kiện submit chỉ cho form xóa
+            $(document).on('submit', 'form.delete-form', function (event) {
+                event.preventDefault(); // Ngừng hành động submit mặc định
+
+                const form = $(this); // Lấy form xóa cần xử lý
+
+                Swal.fire({
+                    title: 'Bạn có chắc chắn muốn xóa không?',
+                    text: "Hành động này không thể hoàn tác!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Thực hiện submit nếu người dùng xác nhận
+                        $.post(form.attr('action'), form.serialize(), function () {
+                            // Hiển thị thông báo thành công
+                            const toast = new bootstrap.Toast($('#deleteSuccessToast'));
+                            toast.show();
+
+                            // Tải lại trang sau khi hiển thị thông báo
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1000); // Chờ 1 giây trước khi tải lại trang
+                        }).fail(function () {
+                            Swal.fire(
+                                'Thất bại!',
+                                'Không thể xóa. Vui lòng thử lại.',
+                                'error'
+                            );
+                        });
+                    }
+                });
+            });
+        });
+
     });
 </script>

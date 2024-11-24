@@ -18,6 +18,6 @@ namespace AHTB_TimBanCungGu_API.Models
         public int IDRole { get; set; }
         public Role Role { get; set; }  
 
-        public string TenRole { get; set; }
+        public string TrangThai { get; set; }
     }
 }

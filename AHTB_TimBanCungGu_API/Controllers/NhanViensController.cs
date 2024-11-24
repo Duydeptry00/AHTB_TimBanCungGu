@@ -35,16 +35,17 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 .ToListAsync();
 
             // Map to NhanVienVM
-            var userViewModels = users.Select((user, index) => new NhanVienVM
+            var userViewModels = users
+                .Where(user => user.TrangThai == "Chờ Xác Thực" || user.TrangThai == "Đang Làm Việc" || user.TrangThai == "Đình Chỉ")
+                .Select((user, index) => new NhanVienVM
             {
                 STT = index + 1,  // Số thứ tự, bắt đầu từ 1
                 IdNhanVien = user.UsID,
                 UserName = user.UserName,
                 Email = user.ThongTinCN?.Email, // Kiểm tra null cho an toàn
                 TrangThai = user.TrangThai,
-                Quyen = user.User_Role != null && user.User_Role.Any()
-                    ? string.Join(", ", user.User_Role.Select(ur => ur.Role.Module)) // Lấy tên quyền từ Role
-                    : "Chưa cấp quyền cho nhân viên" // Hiển thị thông báo nếu không có quyền
+                // Lấy TenRole nếu có, nếu không có thì gán "Nhân Viên Hiện Chưa Được Cấp Quyền"
+                Tenrole = user.User_Role?.FirstOrDefault()?.Role?.TenRole ?? "Nhân Viên Hiện Chưa Được Cấp Quyền"
             }).ToList();
 
             return Ok(userViewModels); // Trả về danh sách view model đã ánh xạ
@@ -72,16 +73,15 @@ namespace AHTB_TimBanCungGu_API.Controllers
             }
 
             // Map to NhanVienVM
-            var userViewModels = users.Select((user, index) => new NhanVienVM
+            var userViewModels = users
+                .Where(user => user.TrangThai == "Chờ Xác Thực" || user.TrangThai == "Đang Làm Việc" || user.TrangThai == "Đình Chỉ")
+                .Select((user, index) => new NhanVienVM
             {
                 STT = index + 1,  // Số thứ tự, bắt đầu từ 1
                 IdNhanVien = user.UsID,
                 UserName = user.UserName,
                 Email = user.ThongTinCN.Email, // Kiểm tra null cho an toàn
                 TrangThai = user.TrangThai,
-                Quyen = user.User_Role != null && user.User_Role.Any()
-                    ? string.Join(", ", user.User_Role.Select(ur => ur.Role.Module)) // Lấy tên quyền từ Role
-                    : "Chưa cấp quyền cho nhân viên" // Hiển thị thông báo nếu không có quyền
             }).ToList();
 
             return userViewModels;
@@ -129,7 +129,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 UsID = userId,
                 UserName = nhanVien.UserName,
                 Password = nhanVien.Password,
-                TrangThai = "Hoạt Động" // Trạng thái
+                TrangThai = "Chờ Xác Thực" // Trạng thái
             };
 
             // Thêm người dùng vào cơ sở dữ liệu
@@ -149,7 +149,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 IsPremium = false,
                 MoTa = "",
                 NgayTao = DateTime.Now,
-                TrangThai = "Hoạt Động"
+                TrangThai = "Chờ Xác Thực"
             };
 
             // Thêm thông tin cá nhân vào DbContext
@@ -264,8 +264,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 return StatusCode(500, $"Lỗi khi xóa nhân viên: {ex.Message}");
             }
         }
-
-
 
         private bool NhanVienExists(string id)
         {

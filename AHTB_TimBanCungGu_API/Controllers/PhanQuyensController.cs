@@ -30,12 +30,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 return BadRequest("Người dùng không hợp lệ.");
             }
 
-            // Kiểm tra xem vai trò có tồn tại trong cơ sở dữ liệu hay không
-            var roleExists = await _context.Quyen.AnyAsync(r => r.IDRole == userRole.Id_Role);
-            if (!roleExists)
-            {
-                return BadRequest("Vai trò không hợp lệ.");
-            }
             // Kiểm tra xem nhân viên đó đã được cấp quyền đó trong cơ sở dữ liệu hay không
             var User_roleExists = await _context.Role.AnyAsync(r => r.IDRole == userRole.Id_Role && r.UsID == user.UsID);
 
@@ -49,8 +43,8 @@ namespace AHTB_TimBanCungGu_API.Controllers
             var newUserRole = new User_Role
             {
                 IDRole = userRole.Id_Role,          // Gán ID vai trò từ request
-                UsID = user.UsID,                    // Lấy UsID từ đối tượng User tìm được
-                TenRole = userRole.Tenrole          // Tên vai trò từ request
+                UsID = user.UsID,               // Lấy UsID từ đối tượng User tìm được
+                TrangThai = userRole.TrangThai,
             };
 
             // Thêm đối tượng vào bảng User_Role
@@ -75,7 +69,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 Delete = PQ.Role.Delete,
                 ReviewDetails = PQ.Role.ReviewDetails,
                 Username = PQ.User.UserName,
-                Tenrole = PQ.TenRole,
+                Tenrole = PQ.Role.TenRole,
             });
             return Ok(PhanQuyen);
         }

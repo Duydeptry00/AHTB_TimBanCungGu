@@ -291,31 +291,16 @@ table th.sortable.desc::after {
         <form method="post" asp-controller="NhanVienss" asp-action="Authorize" id="authorizeForm">
             <!-- Container for Flex Alignment -->
             <div class="form-row" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
-                <!-- Vai Trò ID -->
-                <div class="select-container" style="flex: 1;">
-                    <label for="id-role">Vai Trò (ID):</label>
-                    <select id="id-role" asp-for="Role" name="Role" required>
-                        @foreach (var role in Model.Roles)
-                        {
-                            <option value="@role.IDRole">
-                                @role.Module
-                                (
-                                @(role.Add == "true" ? "Thêm" : "Không thêm"),
-                                @(role.Update == "true" ? "Cập nhật" : "Không cập nhật"),
-                                @(role.Delete == "true" ? "Xóa" : "Không xóa"),
-                                @(role.ReviewDetails == "true" ? "Xem chi tiết" : "Không xem chi tiết")
-                                )
-                            </option>
-                        }
-                    </select>
-                </div>
-
                 <!-- Tên Vai Trò -->
                 <div class="select-container" style="flex: 1;">
                     <label for="ten-vai-tro">Vai Trò (Tên):</label>
-                    <select id="ten-vai-tro" asp-for="Tenrole" name="Tenrole" required>
-                        <option value="Admin">Admin</option>
-                        <option value="Nhân Viên">Nhân Viên</option>
+                    <select id="ten-vai-tro" asp-for="Id_Role" name="Id_Role" required>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.IDRole">
+                                @role.TenRole
+                            </option>
+                        }
                     </select>
                 </div>
 
