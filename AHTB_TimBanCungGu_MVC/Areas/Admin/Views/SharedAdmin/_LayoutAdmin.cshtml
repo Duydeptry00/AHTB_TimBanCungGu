@@ -126,6 +126,9 @@
             margin-top: auto;
         }
 
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 
@@ -136,67 +139,105 @@
             <h1>Anh Hùng Tranh Bá</h1>
             <div class="sidebar-sticky">
                 <ul class="nav flex-column">
+                    <!-- Nhân Viên và Phân Quyền -->
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="NhanVienss" asp-action="index">
-                            <i class="fas fa-users-cog"></i> <!-- Icon cho quản lý nhân viên -->
-                            <span>Quản Lý Nhân Viên</span>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#employeeManagement">
+                            <i class="fas fa-users-cog"></i>
+                            <span>Quản Lý Nhân Sự</span>
+                            <i class="fas fa-plus float-end toggle-icon"></i>
                         </a>
+                        <ul id="employeeManagement" class="collapse">
+                            <li>
+                                <a class="nav-link" asp-area="Admin" asp-controller="NhanVienss" asp-action="index">
+                                    <i class="fas fa-users-cog"></i> Quản Lý Nhân Viên
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link" asp-area="Admin" asp-controller="Quyenss" asp-action="index">
+                                    <i class="fas fa-user-shield"></i> Quản Lý Phân Quyền
+                                </a>
+                            </li>
+                        </ul>
                     </li>
+
+                    <!-- Quản Lý Người Dùng -->
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="thongtincanhans" asp-action="index">
-                            <i class="fas fa-users"></i> <!-- Icon lịch sử khóa -->
-                            <span>Thông Tin Người Dùng</span>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#userManagement">
+                            <i class="fas fa-users"></i>
+                            <span>Quản Lý Người Dùng</span>
+                            <i class="fas fa-plus float-end toggle-icon"></i>
                         </a>
+                        <ul id="userManagement" class="collapse">
+                            <li>
+                                <a class="nav-link" asp-area="Admin" asp-controller="thongtincanhans" asp-action="index">
+                                    <i class="fas fa-user"></i> Thông Tin Người Dùng
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link" asp-area="Admin" asp-controller="QuanLyNguoiDungs" asp-action="index">
+                                    <i class="fas fa-history"></i> Lịch Sử Khóa
+                                </a>
+                            </li>
+                        </ul>
                     </li>
+
+                    <!-- Quản Lý Báo Cáo và Hóa Đơn -->
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="QuanLyNguoiDungs" asp-action="index">
-                            <i class="fas fa-history"></i> <!-- Icon lịch sử khóa -->
-                            <span>Lịch Sử Khóa</span>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#reportManagement">
+                            <i class="fas fa-clipboard"></i>
+                            <span>Quản Lý Báo Cáo & Hóa Đơn</span>
+                            <i class="fas fa-plus float-end toggle-icon"></i>
                         </a>
+                        <ul id="reportManagement" class="collapse">
+                            <li>
+                                <a class="nav-link" asp-area="Admin" asp-controller="BaoCaoNguoiDungs" asp-action="index">
+                                    <i class="fas fa-clipboard-list"></i> Quản Lý Báo Cáo
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link" asp-area="Admin" asp-controller="HoaDons" asp-action="index">
+                                    <i class="fas fa-file-invoice-dollar"></i> Quản Lý Hóa Đơn
+                                </a>
+                            </li>
+                        </ul>
                     </li>
+
+                    <!-- Quản Lý Nội Dung -->
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="BaoCaoNguoiDungs" asp-action="index">
-                            <i class="fas fa-clipboard-list"></i> <!-- Icon quản lý báo cáo -->
-                            <span>Quản Lý Báo Cáo</span>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#contentManagement">
+                            <i class="fas fa-film"></i>
+                            <span>Quản Lý Nội Dung</span>
+                            <i class="fas fa-plus float-end toggle-icon"></i>
                         </a>
+                        <ul id="contentManagement" class="collapse">
+                            <li>
+                                <a class="nav-link" asp-area="Admin" asp-controller="QuanLyPhims" asp-action="index">
+                                    <i class="fas fa-film"></i> Quản Lý Phim
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link" asp-area="Admin" asp-controller="Phans" asp-action="index">
+                                    <i class="fas fa-layer-group"></i> Quản Lý Phần
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="HoaDons" asp-action="index">
-                            <i class="fas fa-file-invoice-dollar"></i> <!-- Icon quản lý hóa đơn -->
-                            <span>Quản Lý Hóa Đơn</span>
-                        </a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="QuanLyDanhMuc" asp-action="index">
-                            <i class="fas fa-list-alt"></i> <!-- Icon quản lý danh mục -->
+                            <i class="fas fa-list-alt"></i>
                             <span>Quản Lý Danh Mục</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="QuanLyPhims" asp-action="index">
-                            <i class="fas fa-film"></i> <!-- Icon quản lý phim -->
-                            <span>Quản Lý Phim</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="Phans" asp-action="index">
-                            <i class="fas fa-film"></i> <!-- Icon quản lý Phần -->
-                            <span>Quản Lý Phần</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="Quyenss" asp-action="index">
-                            <i class="fas fa-user-shield"></i> <!-- Icon quản lý phân quyền -->
-                            <span>Quản Lý Phân Quyền</span>
-                        </a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Admin" asp-controller="DoanhThus" asp-action="index">
-                            <i class="fas fa-chart-bar"></i> <!-- Icon doanh thu -->
+                            <i class="fas fa-chart-bar"></i>
                             <span>Doanh Thu</span>
                         </a>
                     </li>
                 </ul>
+
             </div>
             <ul class="nav flex-column">
                 <li class="nav-item mt-auto">
@@ -263,6 +304,28 @@
 
     <!-- JavaScript -->
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const toggleLinks = document.querySelectorAll('[data-bs-toggle="collapse"]');
+
+            toggleLinks.forEach(link => {
+                const icon = link.querySelector('.toggle-icon');
+
+                link.addEventListener('click', (e) => {
+                    const targetId = link.getAttribute('data-bs-target');
+                    const target = document.querySelector(targetId);
+
+                    target.addEventListener('shown.bs.collapse', () => {
+                        icon.classList.remove('fa-plus');
+                        icon.classList.add('fa-minus');
+                    });
+
+                    target.addEventListener('hidden.bs.collapse', () => {
+                        icon.classList.remove('fa-minus');
+                        icon.classList.add('fa-plus');
+                    });
+                });
+            });
+        });
         const toggleSidebarButton = document.getElementById('toggleSidebar');
         const sidebar = document.getElementById('sidebar');
         const contentWrapper = document.getElementById('content-wrapper');
