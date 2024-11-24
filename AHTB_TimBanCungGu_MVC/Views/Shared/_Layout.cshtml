@@ -37,11 +37,11 @@
                 </ul>
                 <div class="navbar-icons d-flex align-items-center">
                     <div class="dropdown">
-                        <i class="bi bi-bell-fill bell-icon" id="dropdownNotification" role="button" data-bs-toggle="dropdown" aria-expanded="false"></i>
-                        <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownNotification">
-                            <li><a class="dropdown-item" href="#">Thông báo 1: Bạn có một tin nhắn mới</a></li>
-                            <li><a class="dropdown-item" href="#">Thông báo 2: Đã có một sự kiện mới</a></li>
-                            <li><a class="dropdown-item" href="#">Thông báo 3: Cập nhật từ hệ thống</a></li>
+                        <i class="bi bi-bell-fill bell-icon" id="dropdownNotification" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span id="notificationBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none;"></span>
+                        </i>
+                        <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownNotification" id="notificationList">
+                            <li class="dropdown-item text-center text-muted" id="noNotification">Không có thông báo mới</li>
                         </ul>
                     </div>
                     <div class="dropdown">
@@ -98,6 +98,131 @@
         socket.onerror = function (error) {
             console.log("WebSocket error:", error);
         };
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const socketSwipe = new WebSocket("http://localhost:60771/TimBanCungGu/ConnectWebSocket");
+
+            // Khi WebSocket mở kết nối
+            socketSwipe.onopen = function () {
+                console.log("WebSocket for swipe is open.");
+            };
+
+            const notificationList = document.querySelector("#notificationList");
+            const notificationBadge = document.querySelector("#notificationBadge");
+            let notificationCount = 0; // Số lượng thông báo chưa đọc
+
+            // Lấy danh sách thông báo từ server khi trang tải
+            fetch('/TimBanCungGu/GetNotifications')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.notifications.length > 0) {
+                        data.notifications.forEach(function (message) {
+                            const newNotification = document.createElement("li");
+                            newNotification.className = "dropdown-item";
+
+                            // Kiểm tra trạng thái đã đọc của thông báo từ localStorage
+                            const isRead = localStorage.getItem(message.text) === "read";
+
+                            if (isRead) {
+                                newNotification.classList.add("read"); // Nếu đã đọc, thêm class "read"
+                            } else {
+                                notificationCount++; // Tăng số lượng thông báo chưa đọc
+                            }
+
+                            // Hiển thị nội dung thông báo
+                            newNotification.innerHTML = `<a href="#" data-id="${message.text}">${message.text}</a>`;
+                            notificationList.prepend(newNotification);
+                        });
+
+                        // Cập nhật số lượng thông báo chưa đọc
+                        if (notificationCount > 0) {
+                            notificationBadge.textContent = notificationCount;
+                            notificationBadge.style.display = "inline"; // Hiển thị badge nếu có thông báo chưa đọc
+                        } else {
+                            notificationBadge.style.display = "none"; // Ẩn badge nếu không có thông báo chưa đọc
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi khi lấy thông báo từ MongoDB:", error);
+                });
+
+            // Khi nhận được tin nhắn mới từ WebSocket
+            socketSwipe.onmessage = function (event) {
+                try {
+                    const message = JSON.parse(event.data);
+
+                    // Tạo thông báo mới
+                    const newNotification = document.createElement("li");
+                    newNotification.className = "dropdown-item";
+                    newNotification.innerHTML = `<a href="#" data-id="${message.userName}">${message.userName} đã matched với bạn!</a>`;
+
+                    // Thêm thông báo mới vào đầu danh sách
+                    notificationList.prepend(newNotification);
+
+                    // Tăng số lượng thông báo chưa đọc
+                    notificationCount++;
+                    notificationBadge.textContent = notificationCount; // Cập nhật số thông báo
+                    notificationBadge.style.display = "inline"; // Hiển thị badge nếu có thông báo chưa đọc
+
+                } catch (error) {
+                    console.error("Lỗi xử lý tin nhắn:", error);
+                }
+            };
+
+            // Khi người dùng bấm vào thông báo
+            notificationList.addEventListener("click", function (e) {
+                if (e.target && e.target.tagName === "A") {
+                    const notificationText = e.target.getAttribute("data-id");
+
+                    // Đánh dấu thông báo này là đã đọc và lưu vào localStorage
+                    localStorage.setItem(notificationText, "read");
+
+                    // Cập nhật lại badge
+                    notificationCount--;
+                    notificationBadge.textContent = notificationCount;
+                    if (notificationCount === 0) {
+                        notificationBadge.style.display = "none"; // Ẩn badge nếu không còn thông báo chưa đọc
+                    }
+
+                    // Thêm class "read" cho thông báo đã được đọc
+                    e.target.parentElement.classList.add("read");
+                }
+            });
+
+            // Khi WebSocket bị đóng
+            socketSwipe.onclose = function () {
+                console.log("WebSocket for swipe closed.");
+            };
+
+            // Khi có lỗi xảy ra
+            socketSwipe.onerror = function (error) {
+                console.log("WebSocket for swipe error:", error);
+            };
+
+            // Đặt sự kiện click cho dropdown notification để reset số thông báo
+            document.querySelector("#dropdownNotification").addEventListener("click", () => {
+                // Reset số thông báo về 0
+                notificationCount = 0;
+                notificationBadge.textContent = ""; // Xóa số hiển thị
+                notificationBadge.style.display = "none"; // Ẩn badge
+
+                // Xóa thông báo "Không có thông báo mới" nếu có
+                const noNotification = document.querySelector("#noNotification");
+                if (noNotification) {
+                    noNotification.remove();
+                }
+
+                // Đánh dấu tất cả thông báo là đã đọc trong localStorage
+                const allNotifications = notificationList.querySelectorAll("a");
+                allNotifications.forEach(notification => {
+                    const notificationText = notification.getAttribute("data-id");
+                    localStorage.setItem(notificationText, "read"); // Đánh dấu là đã đọc
+                    notification.parentElement.classList.add("read"); // Thêm class "read"
+                });
+            });
+        });
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -254,27 +254,6 @@
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Tạo kết nối WebSocket
-        const socket = new WebSocket("http://localhost:60771/TimBanCungGu/ConnectWebSocket");
-
-        // Khi nhận tin nhắn từ WebSocket
-        socket.onmessage = function (event) {
-            const message = JSON.parse(event.data);
-
-            // Kiểm tra nếu là thông báo match
-            if (message.type === "match") {
-                alert("Chúc mừng! Bạn đã matched với " + message.userName);
-
-                // Ẩn thẻ người dùng đã match
-                const matchedCard = document.querySelector(`[data-username="${message.userName}"]`);
-                if (matchedCard) {
-                    matchedCard.style.display = "none";  // Ẩn thẻ người dùng đã match
-                }
-            } else {
-                alert("Thông báo mới: " + message.text);
-            }
-        };
-
         const dislikeButtons = document.querySelectorAll(".dislike");
         const likeButtons = document.querySelectorAll(".like");
         const cardContainers = document.querySelectorAll(".card-container");
@@ -310,10 +289,9 @@
         function hideCard(userId2) {
             const matchedCard = document.querySelector(`[data-userid="${userId2}"]`);
             if (matchedCard) {
-                matchedCard.style.display = "none";  // Ẩn thẻ người dùng đã like hoặc dislike
+                matchedCard.style.display = "none"; // Ẩn thẻ người dùng đã like hoặc dislike
             }
         }
-
 
         // Hàm xử lý swipe
         function swipeCard(index, direction, action) {
@@ -371,6 +349,7 @@
         });
     });
 </script>
+
 
 </html>
 
