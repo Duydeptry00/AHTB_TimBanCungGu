@@ -89,9 +89,85 @@ namespace YourNamespace.Controllers
             {
                 From = new MailAddress("sukanephan@gmail.com"), // Địa chỉ email người gửi
                 Subject = "Đặt lại mật khẩu",
-                Body = $"Vui lòng nhấp vào đường link dưới đây để đặt lại mật khẩu của bạn:<br/><a href='{callbackUrl}'>Đặt lại mật khẩu</a><br/>Nếu bạn không yêu cầu đặt lại mật khẩu, bạn có thể bỏ qua email này.",
+                Body = $@"
+        <html>
+        <head>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    color: #333333;
+                }}
+                .container {{
+                    width: 100%;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background-color: #f9f9f9;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                }}
+                .header {{
+                    text-align: center;
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #4CAF50;
+                    margin-bottom: 20px;
+                }}
+                .content {{
+                    font-size: 16px;
+                    line-height: 1.5;
+                    margin-bottom: 20px;
+                }}
+                .link {{
+                    display: inline-block;
+                    margin-top: 20px;
+                    padding: 12px 20px;
+                    font-size: 16px;
+                    background-color: #4CAF50;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    text-align: center;
+                }}
+                .link:hover {{
+                    background-color: #45a049;
+                }}
+                .footer {{
+                    font-size: 12px;
+                    color: #888888;
+                    text-align: center;
+                    margin-top: 30px;
+                }}
+                .footer i {{
+                    font-style: italic;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    Đặt lại mật khẩu
+                </div>
+                <div class='content'>
+                    <p>Chào bạn,</p>
+                    <p>
+                        Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản của mình. Vui lòng nhấp vào đường link dưới đây để hoàn tất quá trình đặt lại mật khẩu:
+                    </p>
+                    <a href='{callbackUrl}' class='link'>Đặt lại mật khẩu</a>
+                    <p>
+                        Nếu bạn không yêu cầu đặt lại mật khẩu, bạn có thể bỏ qua email này và không cần thực hiện bất kỳ thao tác nào.
+                    </p>
+                </div>
+                <div class='footer'>
+                    <i>Lưu ý: Đây là email tự động, vui lòng không trả lời trực tiếp.</i>
+                </div>
+            </div>
+        </body>
+        </html>
+    ",
                 IsBodyHtml = true
             };
+
 
             message.To.Add(email); // Địa chỉ email người nhận
 

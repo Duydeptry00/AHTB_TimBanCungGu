@@ -40,7 +40,10 @@ namespace AHTB_TimBanCungGu_API.Controllers
                                            u.ThongTinCN.Email == request.Email);
 
             if (existingUser != null)
+            {
                 return BadRequest("Username hoặc email đã tồn tại");
+            }
+                
 
             // Mã hóa mật khẩu
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
