@@ -64,8 +64,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 var dBAHTBContext = _context.ThongTinCN
                     .Include(t => t.User)
                     .Include(t => t.AnhCaNhan)
-                    .Where(t => !swipedUsernames.Contains(t.User.UserName))  // Lọc người đã swipe
-                    .AsQueryable();
+                    .Where(t =>
+                        (t.TrangThai == "Hoạt Động" || t.TrangThai == "Không Hoạt Động") // Lọc theo trạng thái
+                        && !swipedUsernames.Contains(t.User.UserName)) // Lọc những người đã swipe
+            .AsQueryable();
 
                 var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
                 {
