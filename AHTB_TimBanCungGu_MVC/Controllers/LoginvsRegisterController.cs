@@ -38,34 +38,57 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             try
             {
-                var request = new { UserName = userName, Password = password };
-                var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/Logins/login", request);
+                // Gửi yêu cầu kiểm tra thông tin tài khoản
+                var checkRequest = new { UserName = userName, Password = password };
+                var checkResponse = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/Logins/check-login", checkRequest);
 
-                if (response.IsSuccessStatusCode)
+                if (checkResponse.IsSuccessStatusCode)
                 {
-                    // Giả sử API trả về token nếu đăng nhập thành công
-                    var responseData = await response.Content.ReadAsStringAsync();
-                    var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseData);
+                    var checkData = await checkResponse.Content.ReadAsStringAsync();
+                    var checkResult = JsonSerializer.Deserialize<CheckLoginResponse>(checkData);
 
-                    // Lưu JWT token vào Session hoặc Cookie (Session trong trường hợp này)
-                    HttpContext.Session.SetString("JwtToken", tokenResponse.Token);
-                    HttpContext.Session.SetString("UserType", tokenResponse.UserType);
-                    HttpContext.Session.SetString("TempUserName", userName);
-                    ViewBag.ShowSuccessModal = true;
-                    if (tokenResponse.UserType == "Admin") 
+                    if (checkResult.isValid)
                     {
-                        ViewBag.ShowInterface = "Admin";
+                        // Nếu thông tin hợp lệ, gọi API đăng nhập để lấy token
+                        var loginResponse = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/Logins/login", checkRequest);
+
+                        if (loginResponse.IsSuccessStatusCode)
+                        {
+                            var loginData = await loginResponse.Content.ReadAsStringAsync();
+                            var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(loginData);
+
+                            // Lưu JWT token vào Session hoặc Cookie
+                            HttpContext.Session.SetString("JwtToken", tokenResponse.Token);
+                            HttpContext.Session.SetString("UserType", tokenResponse.UserType);
+                            HttpContext.Session.SetString("TempUserName", userName);
+
+                            ViewBag.ShowSuccessModal = true;
+
+                            // Hiển thị giao diện phù hợp với loại người dùng
+                            if (tokenResponse.UserType == "Admin")
+                            {
+                                ViewBag.ShowInterface = "Admin";
+                            }
+                            else if (tokenResponse.UserType == "Nhân Viên")
+                            {
+                                ViewBag.ShowInterface = "Nhân Viên";
+                            }
+
+                            return View();
+                        }
+                        else
+                        {
+                            ViewBag.Message = checkResult.message;
+                        }
                     }
-                    else if (tokenResponse.UserType == "Nhân Viên")
+                    else
                     {
-                        ViewBag.ShowInterface = "Nhân Viên";
+                        ViewBag.Message = checkResult.message; // Hiển thị thông báo lỗi từ API kiểm tra
                     }
-                    return View();
                 }
                 else
                 {
-                    var errorMessage = await response.Content.ReadAsStringAsync();
-                    ViewBag.Message = "Tên đăng nhập hoặc mật khẩu không đúng.";
+                    ViewBag.Message = "Không thể kết nối đến server để kiểm tra thông tin.";
                 }
             }
             catch (Exception ex)
@@ -75,6 +98,12 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             return View();
         }
+        public class CheckLoginResponse
+        {
+            public bool isValid { get; set; }
+            public string message { get; set; }
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Register(string userName, string password, string email)

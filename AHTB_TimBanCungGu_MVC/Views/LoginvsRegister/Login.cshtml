@@ -20,7 +20,6 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                 <h1>Đăng nhập</h1>
                 <div class="social-container">
-                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
                 </div>
                 <span>hoặc sử dụng tài khoản của bạn</span>
@@ -34,6 +33,11 @@
                 </div>
                 <button type="submit">Đăng nhập</button>
                 <a asp-action="QuenMatKhau" class="forgot-password-link">Quên mật khẩu?</a>
+                <!-- Thông báo lỗi -->
+                @if (!string.IsNullOrEmpty(ViewBag.Message))
+                {
+                    <span id="errorMessage" class="error-message">@ViewBag.Message</span>
+                }
             </form>
         </div>
 
@@ -43,7 +47,6 @@
             <form id="signUpForm" asp-action="Register" method="post">
                 <h1>Tạo tài khoản</h1>
                 <div class="social-container">
-                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
                 </div>
                 <span>Vui lòng nhập thông tin của bạn tại đây</span>
@@ -56,7 +59,7 @@
                     <label></label>
                 </div>
                 <div class="infield">
-                    <input type="password" asp-for="Password" placeholder="Password" name="Password" required />
+                    <input type="password" asp-for="Password" placeholder="Password" name="Password" required minlength="6" pattern="^(?=.*[a-zA-Z])(?=.*\d).+$" title="Mật khẩu phải chứa ít nhất 6 ký tự, bao gồm cả chữ và số." />
                     <label></label>
                 </div>
                 <button type="submit">Đăng ký</button>
@@ -152,6 +155,13 @@
     </script>
 
     <style>
+        .error-message {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: red; /* Màu đỏ để hiển thị lỗi */
+            text-align: center;
+        }
         .modal {
             display: none;
             position: fixed;
