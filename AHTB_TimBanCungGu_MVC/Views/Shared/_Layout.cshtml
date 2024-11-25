@@ -41,7 +41,7 @@
                             <span id="notificationBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none;"></span>
                         </i>
                         <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownNotification" id="notificationList">
-                            <li class="dropdown-item text-center text-muted" id="noNotification">Không có thông báo mới</li>
+
                         </ul>
                     </div>
                     <div class="dropdown">
@@ -131,7 +131,7 @@
                             }
 
                             // Hiển thị nội dung thông báo
-                            newNotification.innerHTML = `<a href="#" data-id="${message.text}">${message.text}</a>`;
+                            newNotification.innerHTML = `<li href="#" data-id="${message.text}">${message.text}</li>`;
                             notificationList.prepend(newNotification);
                         });
 
@@ -156,7 +156,7 @@
                     // Tạo thông báo mới
                     const newNotification = document.createElement("li");
                     newNotification.className = "dropdown-item";
-                    newNotification.innerHTML = `<a href="#" data-id="${message.userName}">${message.userName} đã matched với bạn!</a>`;
+                    newNotification.innerHTML = `<li href="#" data-id="${message.userName}">${message.userName} đã matched với bạn!</li>`;
 
                     // Thêm thông báo mới vào đầu danh sách
                     notificationList.prepend(newNotification);
