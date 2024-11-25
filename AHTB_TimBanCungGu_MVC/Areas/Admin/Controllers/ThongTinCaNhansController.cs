@@ -31,7 +31,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             var connectionString = "mongodb://localhost:27017"; // URI của MongoDB
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase("AHTBdb"); // Tên database của bạn
-            _notifications = database.GetCollection<BsonDocument>("AHTBCollection"); // Tên collection của bạn
+            _notifications = database.GetCollection<BsonDocument>("Thongbao"); // Tên collection của bạn
         }
 
         // GET: Admin/ThongTinCaNhans
@@ -43,9 +43,11 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             if (userType == "Admin" && token != null)
             {
-                var dBAHTBContext = _context.ThongTinCN.Include(t => t.User);
+                var dBAHTBContext = _context.ThongTinCN
+                    .Include(t => t.User)
+                    .Where(t => t.TrangThai == "Hoạt Động" || t.TrangThai == "Không Hoạt Động"); // Lọc trạng thái
 
-                // Lấy danh sách tất cả thông tin cá nhân
+                // Lấy danh sách tất cả thông tin cá nhân đã lọc
                 var thongTinCaNhanList = await dBAHTBContext.ToListAsync();
 
                 // Lấy danh sách người dùng có ngày mở khóa đã đến hoặc đã qua
@@ -57,7 +59,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 // Cập nhật trạng thái cho từng người dùng và thông tin cá nhân
                 foreach (var user in usersToUpdate)
                 {
-                    user.TrangThai = "Hoạt động"; // Đặt trạng thái thành "Hoạt động"
+                    user.TrangThai = "Hoạt Động"; // Đặt trạng thái thành "Hoạt động"
                     user.NgayMoKhoa = DateTime.Now; // Cập nhật ngày mở khóa thành ngày hiện tại
 
                     // Cập nhật trạng thái của người dùng
@@ -67,7 +69,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     var thongTinCN = thongTinCaNhanList.FirstOrDefault(t => t.UsID == user.UsID);
                     if (thongTinCN != null)
                     {
-                        thongTinCN.TrangThai = "Hoạt động"; // Đặt lại trạng thái thành "Hoạt động"
+                        thongTinCN.TrangThai = "Hoạt Động"; // Đặt lại trạng thái thành "Hoạt động"
                         _context.ThongTinCN.Update(thongTinCN);
                     }
                 }
@@ -78,7 +80,6 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             }
 
             return NotFound();
-       
         }
 
 
@@ -128,12 +129,13 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Người dùng không tồn tại trong bảng User." });
             }
 
-            var newStatus = thongTinCN.TrangThai == "Hoạt động" ? "Không hoạt động" : "Hoạt động";
+            var newStatus = thongTinCN.TrangThai == "Hoạt Động" ? "Không Hoạt Động" : "Hoạt Động";
             thongTinCN.TrangThai = newStatus;
 
-            string notificationMessage = ""; 
-
-            if (newStatus == "Không hoạt động")
+            string notificationMessage = "";
+            var userAdmin = _context.Users.FirstOrDefault(p => p.UserName == HttpContext.Session.GetString("TempUserName"));
+            string userID = userAdmin.UsID;
+            if (newStatus == "Không Hoạt Động")
             {
                 var mocThoiGian = DateTime.Now.AddDays(days).AddMonths(months).AddYears(years);
                 user.NgayMoKhoa = mocThoiGian;
@@ -157,11 +159,11 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     { "NgayMoKhoa", mocThoiGian } // Thêm ngày mở khóa vào document
                 };
                 await _notifications.InsertOneAsync(notification);
-
+              
                 // Tạo một đối tượng quản lý người dùng
                 var quanLyNguoiDung = new QuanLyNguoiDung
                 {
-                    AdminID = HttpContext.Session.GetString("AdminId"),
+                    AdminID = userID,
                     NguoiDungID = thongTinCN.UsID,
                     ThaoTac = "Khóa tài khoản",
                     MocThoiGian = DateTime.Now,
@@ -178,7 +180,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
                 var quanLyNguoiDung = new QuanLyNguoiDung
                 {
-                    AdminID = HttpContext.Session.GetString("AdminId"),
+                    AdminID = userID,
                     NguoiDungID = thongTinCN.UsID,
                     ThaoTac = "Mở tài khoản",
                     LichSuMoKhoa = DateTime.Now,
@@ -192,35 +194,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            // Trả về thông báo thành công chỉ khi đã cập nhật
-            HttpContext.Session.Clear();
 
             return Json(new { success = true, status = newStatus, redirectToLogin = "/LoginvsRegister/Login" });
-        }
-
-        public IActionResult TestLogin()
-        {
-            // Tạo thông tin người dùng tạm thời cho admin
-            var userId = "1"; // ID của admin trong cơ sở dữ liệu
-            var userName = "admin"; // Tên người dùng
-            var password = "123"; // Mật khẩu
-
-            // Kiểm tra xem người dùng có tồn tại trong cơ sở dữ liệu không
-            var user = _context.Users.FirstOrDefault(u => u.UsID == userId && u.UserName == userName && u.Password == password);
-            if (user != null)
-            {
-                // Lưu thông tin người dùng vào session (hoặc cookie) để giả lập việc đăng nhập
-                HttpContext.Session.SetString("UserId", user.UsID);
-                HttpContext.Session.SetString("UserName", user.UserName);
-
-                // Lưu ID admin vào session
-                HttpContext.Session.SetString("AdminId", user.UsID); // Sử dụng user.UsID của admin
-
-                // Chuyển hướng đến trang quản trị
-                return RedirectToAction("Index", "ThongTinCaNhans", new { area = "Admin" });
-            }
-
-            return Content("Đăng nhập không thành công. Vui lòng kiểm tra thông tin tài khoản.");
         }
         [HttpGet]
         public async Task<IActionResult> ConnectWebSocket()
