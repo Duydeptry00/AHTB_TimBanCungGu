@@ -367,5 +367,62 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return BadRequest(new { success = false, message = "Không có thông báo nào cần cập nhật." });
             }
         }
+        public async Task<IActionResult> DanhSachNguoiThich()
+        {
+            // Lấy JWT token từ Session
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
+
+            // Lấy tên người dùng hiện tại từ Session
+            var userName = HttpContext.Session.GetString("TempUserName");
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+            }
+
+            // Truy vấn MongoDB: Tìm tất cả những ai đã "Like" người dùng hiện tại
+            var likedUsers = await _MatchNguoiDung
+                .Find(x => x["User2"] == userName && x["SwipeAction"] == "Like")
+                .ToListAsync();
+
+            if (likedUsers.Count == 0)
+            {
+                ViewBag.Message = "Không có người nào thích bạn.";
+                return View(new List<InfoNguoiDung>()); // Trả về view trống
+            }
+
+            // Lấy danh sách tên người dùng đã thích
+            var userNames = likedUsers.Select(x => x["User1"].ToString()).ToList();
+
+            // Truy vấn danh sách thông tin người dùng từ SQL Server
+            var likedUserDetails = await _context.ThongTinCN
+                .Include(t => t.User)
+                .Include(t => t.AnhCaNhan)
+                .Where(t => userNames.Contains(t.User.UserName))
+                .Select(t => new InfoNguoiDung
+                {
+                    IDProfile = t.IDProfile,
+                    UsID = t.UsID,
+                    HoTen = t.HoTen,
+                    Email = t.Email,
+                    GioiTinh = t.GioiTinh,
+                    NgaySinh = t.NgaySinh,
+                    SoDienThoai = t.SoDienThoai,
+                    IsPremium = t.IsPremium,
+                    MoTa = t.MoTa,
+                    NgayTao = t.NgayTao,
+                    TrangThai = t.TrangThai,
+                    HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
+                })
+                .ToListAsync();
+
+            return View(likedUserDetails); // Trả về view với danh sách thông tin người đã thích bạn
+        }
+
     }
 }

@@ -1,0 +1,78 @@
+﻿@model List<AHTB_TimBanCungGu_API.ViewModels.InfoNguoiDung>
+
+@{
+    ViewBag.Title = "Danh sách người đã thích bạn";
+}
+
+<h1 class="text-center my-4">Danh sách người đã thích bạn</h1>
+
+@if (Model.Any())
+{
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        @foreach (var user in Model)
+        {
+            <div class="col">
+                <div class="card h-100 custom-card">
+                    @if (user.HinhAnh != null && user.HinhAnh.Any())
+                    {
+                        <img src="@Url.Content("~/uploads/" + user.HinhAnh.First())" class="card-img-top custom-img" alt="Ảnh cá nhân">
+                    }
+                    else
+                    {
+                        <img src="@Url.Content("~/images/default-avatar.png")" class="card-img-top custom-img" alt="Ảnh mặc định">
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title text-center">@user.HoTen</h5>
+                        <p class="card-text"><strong>Giới tính:</strong> @user.GioiTinh</p>
+                        <p class="card-text"><strong>Ngày sinh:</strong> @user.NgaySinh.ToString("dd/MM/yyyy")</p>
+                    </div>
+                    <div class="card-footer bg-white text-center">
+                        <button class="btn btn-outline-danger me-2">Dislike</button>
+                        <button class="btn btn-outline-success">Like</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p class="text-center">Không có người nào thích bạn.</p>
+}
+
+<style>
+    /* Custom card styles with unique class names to avoid conflicts */
+    .custom-card {
+        max-width: 350px; /* Fixed card width for uniformity */
+        margin: 0 auto; /* Center card in its column */
+        border-radius: 15px; /* Rounded corners */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Smooth shadow */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .custom-card:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+        }
+
+    .custom-img {
+        height: 300px; /* Set uniform height for images */
+        object-fit: cover; /* Ensure image is fully visible within frame */
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+
+    .custom-card .card-body {
+        padding: 15px;
+        text-align: center; /* Center-align text in body */
+    }
+
+    .custom-card .card-footer {
+        padding: 10px 15px;
+        background-color: #f8f9fa; /* Light gray background */
+    }
+
+    .custom-card .btn {
+        width: 45%; /* Ensure buttons are consistent in size */
+    }
+</style>
