@@ -177,7 +177,7 @@
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const socketSwipe = new WebSocket("http://localhost:60771/TimBanCungGu/ConnectWebSocket");
+            const socketSwipe = new WebSocket("ws://localhost:60771/TimBanCungGu/ConnectWebSocket");
 
             // Khi WebSocket mở kết nối
             socketSwipe.onopen = function () {
@@ -196,7 +196,7 @@
                         data.notifications.forEach(function (message) {
                             const newNotification = document.createElement("li");
                             newNotification.className = "dropdown-item";
-                            newNotification.innerHTML = `<li href="#" data-id="${message.text}">${message.text}</li>`;
+                            newNotification.innerHTML = `${message.sender} ${message.text}`;
                             notificationList.prepend(newNotification);
                         });
 
@@ -219,21 +219,21 @@
                 try {
                     const message = JSON.parse(event.data);
 
-                    // Tạo thông báo mới
-                    const newNotification = document.createElement("li");
-                    newNotification.className = "dropdown-item";
-                    newNotification.innerHTML = `<li href="#" data-id="${message.userName}">${message.userName} đã matched với bạn!</li>`;
+                    if (message.type === "match") {
+                        const newNotification = document.createElement("li");
+                        newNotification.className = "dropdown-item";
+                        newNotification.innerHTML = `${message.hoTen} đã matched với bạn!`;
 
-                    // Thêm thông báo mới vào đầu danh sách
-                    notificationList.prepend(newNotification);
+                        // Thêm thông báo vào đầu danh sách
+                        notificationList.prepend(newNotification);
 
-                    // Tăng số lượng thông báo chưa đọc
-                    notificationCount++;
-                    notificationBadge.textContent = notificationCount; // Cập nhật số thông báo
-                    notificationBadge.style.display = "inline"; // Hiển thị badge nếu có thông báo chưa đọc
-
+                        // Tăng số lượng thông báo chưa đọc
+                        notificationCount++;
+                        notificationBadge.textContent = notificationCount; // Cập nhật số lượng
+                        notificationBadge.style.display = "inline"; // Hiển thị biểu tượng thông báo
+                    }
                 } catch (error) {
-                    console.error("Lỗi xử lý tin nhắn:", error);
+                    console.error("Error handling message:", error);
                 }
             };
 
@@ -255,9 +255,9 @@
                                 notificationCount = 0;
 
                                 // Cập nhật giao diện các thông báo là đã đọc
-                                const allNotifications = notificationList.querySelectorAll("a");
+                                const allNotifications = notificationList.querySelectorAll("li");
                                 allNotifications.forEach(notification => {
-                                    notification.parentElement.classList.add("read"); // Thêm class "read"
+                                    notification.classList.add("read"); // Thêm class "read"
                                 });
                             }
                         })

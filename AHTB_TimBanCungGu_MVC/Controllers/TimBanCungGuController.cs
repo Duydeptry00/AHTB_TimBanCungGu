@@ -227,6 +227,15 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 var matchReverse = await _MatchNguoiDung
                     .Find(x => x["User1"] == doiTuong.UserName && x["User2"] == nguoiTimDoiTuong.UserName && x["SwipeAction"] == "Like")
                     .FirstOrDefaultAsync();
+                var hoTenNguoiGui = await _context.ThongTinCN
+    .Where(x => x.UsID == nguoiTimDoiTuong.UsID)
+    .Select(x => x.HoTen)
+    .FirstOrDefaultAsync();
+
+                var hoTenNguoiNhan = await _context.ThongTinCN
+                    .Where(x => x.UsID == doiTuong.UsID)
+                    .Select(x => x.HoTen)
+                    .FirstOrDefaultAsync();
 
                 if (matchReverse != null)
                 {
@@ -237,7 +246,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 { "NguoiGui", nguoiTimDoiTuong.UserName },
                 { "NguoiNhan", doiTuong.UserName },
-                { "NoiDung", $"{nguoiTimDoiTuong.UserName} đã matched với bạn!" },
+                { "NoiDung", $" đã matched với bạn!" },
                 { "ThoiGian", DateTime.UtcNow },
                  {"Read", false }
             };
@@ -250,7 +259,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 { "NguoiGui", doiTuong.UserName },
                 { "NguoiNhan", nguoiTimDoiTuong.UserName },
-                { "NoiDung", $"{doiTuong.UserName} đã matched với bạn!" },
+                { "NoiDung", $" đã matched với bạn!" },
                 { "ThoiGian", DateTime.UtcNow },
                 {"Read", false }
             };
@@ -263,9 +272,9 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         var messageA = new
                         {
                             type = "match",
-                            userName = doiTuong.UserName,  // Gửi tên người dùng của người B (hoặc người A tùy theo logic)
+                            hoTen = hoTenNguoiGui,  // Gửi tên đầy đủ của người A
                         };
-                        var jsonMessage = JsonConvert.SerializeObject(messageA);  // Chuyển đối tượng thành JSON
+                        var jsonMessage = JsonConvert.SerializeObject(messageA);
                         var bufferA = Encoding.UTF8.GetBytes(jsonMessage);
                         await webSocketA.SendAsync(new ArraySegment<byte>(bufferA), WebSocketMessageType.Text, true, CancellationToken.None);
                     }
@@ -276,7 +285,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         var messageB = new
                         {
                             type = "match",
-                            userName = nguoiTimDoiTuong.UserName,  // Gửi tên người dùng của người A
+                            hoTen = hoTenNguoiNhan,  // Gửi tên đầy đủ của người B
                         };
                         var jsonMessage = JsonConvert.SerializeObject(messageB);
                         var bufferB = Encoding.UTF8.GetBytes(jsonMessage);
@@ -307,27 +316,54 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
             }
 
-            // Lấy tất cả thông báo từ MongoDB cho người dùng
+            // Lấy thông tin UsID của người dùng hiện tại
+            var currentUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            if (currentUser == null)
+            {
+                return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+            }
+
+            var userId = currentUser.UsID;
+
+            // Lấy thông báo
             var notifications = await _ThongBao
                 .Find(x => x["NguoiNhan"] == userName)
-                .SortByDescending(x => x["ThoiGian"])  // Sắp xếp theo thời gian (mới nhất trước)
-                .Limit(10)  // Giới hạn số lượng thông báo hiển thị
+                .SortByDescending(x => x["ThoiGian"])
                 .ToListAsync();
 
-            // Đếm số lượng thông báo chưa đọc
-            var unreadCount = notifications.Count(x => x["Read"] == null || x["Read"].ToBoolean() == false);
+            // Lấy danh sách UsID của NguoiGui từ thông báo
+            var senderIds = notifications.Select(x => x["NguoiGui"].ToString()).ToList();
 
-            // Trả về danh sách thông báo và số lượng chưa đọc mà không thay đổi trạng thái "Read"
+            var senders = await _context.Users
+     .Where(t => senderIds.Contains(t.UserName))
+     .Select(t => t.ThongTinCN)
+     .ToListAsync();
+
+            var senderNames = senders
+                .Where(t => t != null)
+                .Select(t => t.HoTen)
+                .ToList();
+
+
+
+            // Đếm thông báo chưa đọc
+            var unreadCount = notifications.Count(x => x["Read"].ToBoolean() == false);
+
+            // Chuẩn bị kết quả trả về
             var result = notifications.Select(x => new
             {
                 id = x["_id"].ToString(),
+                sender = senderNames,
                 text = x["NoiDung"].ToString(),
-                time = x["ThoiGian"].ToString(),
+                time = x["ThoiGian"].ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
                 read = x["Read"]?.ToBoolean() ?? false
             }).ToList();
 
             return Json(new { success = true, notifications = result, unreadCount });
         }
+
 
         [HttpPost]
         public async Task<IActionResult> MarkAllNotificationsAsRead()
