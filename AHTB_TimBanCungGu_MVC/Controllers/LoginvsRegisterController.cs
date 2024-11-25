@@ -82,13 +82,13 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(email))
             {
                 ViewBag.Message = "Vui lòng nhập tên đăng nhập, mật khẩu và email.";
-                return View();
+                return RedirectToAction("Login");
             }
 
             if (!IsValidEmail(email))
             {
                 ViewBag.Message = "Vui lòng nhập email hợp lệ.";
-                return View();
+                return RedirectToAction("Login");
             }
 
             // Lưu thông tin đăng ký tạm thời vào session
@@ -98,9 +98,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             try
             {
-                var request = new { Email = email };
-                string esmail = request.Email;
-                var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/OTPs/send-otp", esmail);
+                var request = new { Email = email, Username = userName };
+                var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/OTPs/send-otp", request);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -126,7 +125,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 ViewBag.Message = $"Đã có lỗi xảy ra: {ex.Message}";
             }
 
-            return View();
+            return RedirectToAction("Login");
         }
         public class ResponseData
         {
@@ -190,7 +189,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     if (registerResponse.IsSuccessStatusCode)
                     {
                         // Đăng ký thành công, xóa thông tin tạm thời
-                        HttpContext.Session.Remove("TokenResgister");
+                        HttpContext.Session.Remove("otpStartTime");
+                       HttpContext.Session.Remove("TokenResgister");
                         HttpContext.Session.Remove("TempUserName");
                         HttpContext.Session.Remove("TempPassword");
                         HttpContext.Session.Remove("TempEmail");

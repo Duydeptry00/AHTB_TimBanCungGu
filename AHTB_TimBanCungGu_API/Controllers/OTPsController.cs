@@ -9,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AHTB_TimBanCungGu_API.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace AHTB_TimBanCungGu_API.Controllers
 {
@@ -17,24 +19,38 @@ namespace AHTB_TimBanCungGu_API.Controllers
     public class OTPsController : ControllerBase
     {
         private readonly IMemoryCache _cache;
+        private readonly DBAHTBContext _context;
 
-        public OTPsController(IMemoryCache cache)
+        public OTPsController(IMemoryCache cache, DBAHTBContext context)
         {
             _cache = cache;
+            _context = context;
         }
 
         [HttpPost("send-otp")]
-        public async Task<IActionResult> SendOtp([FromBody] string email)
+        public async Task<IActionResult> SendOtp([FromBody] Request request)
         {
-            if (string.IsNullOrEmpty(email))
+            // Kiểm tra nếu người dùng đã tồn tại
+            var existingUser = await _context.Users
+                .Include(u => u.ThongTinCN)
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName||
+                                           u.ThongTinCN.Email == request.Email);
+            if (existingUser != null)
+            {
+                return BadRequest("Username hoặc email đã tồn tại");
+            }
+            if (string.IsNullOrEmpty(request.Email))
+            {
                 return BadRequest("Email không được để trống.");
+            }
+
 
             // Tạo OTP ngẫu nhiên (gồm 6 số)
             var otp = new Random().Next(100000, 999999).ToString();
 
             // Lưu OTP vào cache với thời gian hết hạn 5 phút (sử dụng _cache hoặc cách lưu trữ khác)
             var expirationTime = DateTimeOffset.Now.AddMinutes(5);
-            _cache.Set(email, otp, expirationTime);
+            _cache.Set(request.Email, otp, expirationTime);
 
             // Tạo token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -43,7 +59,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-            new Claim("email", email),
+            new Claim("email", request.Email),
             new Claim("otp", otp) // Bao gồm OTP trong payload
         }),
                 Expires = DateTime.UtcNow.AddMinutes(5), // Token có thời hạn 5 phút
@@ -137,7 +153,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                     IsBodyHtml = true,
                 };
 
-                mailMessage.To.Add(email);
+                mailMessage.To.Add(request.Email);
 
                 await smtpClient.SendMailAsync(mailMessage);
 
@@ -187,5 +203,11 @@ namespace AHTB_TimBanCungGu_API.Controllers
     {
         public string Email { get; set; }
         public string Otp { get; set; }
+    }
+    public class Request
+    {
+        public string Email { get; set; }
+        public string UserName { get; set; }
+
     }
 }
