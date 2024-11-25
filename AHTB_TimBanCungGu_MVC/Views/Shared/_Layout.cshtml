@@ -112,7 +112,7 @@
             const notificationBadge = document.querySelector("#notificationBadge");
             let notificationCount = 0; // Số lượng thông báo chưa đọc
 
-            // Lấy danh sách thông báo từ server khi trang tải
+            // Lấy danh sách thông báo và số lượng thông báo chưa đọc
             fetch('/TimBanCungGu/GetNotifications')
                 .then(response => response.json())
                 .then(data => {
@@ -120,23 +120,13 @@
                         data.notifications.forEach(function (message) {
                             const newNotification = document.createElement("li");
                             newNotification.className = "dropdown-item";
-
-                            // Kiểm tra trạng thái đã đọc của thông báo từ localStorage
-                            const isRead = localStorage.getItem(message.text) === "read";
-
-                            if (isRead) {
-                                newNotification.classList.add("read"); // Nếu đã đọc, thêm class "read"
-                            } else {
-                                notificationCount++; // Tăng số lượng thông báo chưa đọc
-                            }
-
-                            // Hiển thị nội dung thông báo
                             newNotification.innerHTML = `<li href="#" data-id="${message.text}">${message.text}</li>`;
                             notificationList.prepend(newNotification);
                         });
 
                         // Cập nhật số lượng thông báo chưa đọc
-                        if (notificationCount > 0) {
+                        if (data.unreadCount > 0) {
+                            notificationCount = data.unreadCount;
                             notificationBadge.textContent = notificationCount;
                             notificationBadge.style.display = "inline"; // Hiển thị badge nếu có thông báo chưa đọc
                         } else {
@@ -171,23 +161,31 @@
                 }
             };
 
-            // Khi người dùng bấm vào thông báo
-            notificationList.addEventListener("click", function (e) {
-                if (e.target && e.target.tagName === "A") {
-                    const notificationText = e.target.getAttribute("data-id");
+            // Khi người dùng bấm vào chuông để xem thông báo
+            document.querySelector("#dropdownNotification").addEventListener("click", () => {
+                if (notificationCount > 0) {
+                    // Đặt tất cả thông báo là đã đọc khi bấm vào chuông
+                    fetch('/TimBanCungGu/MarkAllNotificationsAsRead', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.success) {
+                                notificationBadge.textContent = ""; // Xóa số hiển thị
+                                notificationBadge.style.display = "none"; // Ẩn badge
+                                notificationCount = 0;
 
-                    // Đánh dấu thông báo này là đã đọc và lưu vào localStorage
-                    localStorage.setItem(notificationText, "read");
-
-                    // Cập nhật lại badge
-                    notificationCount--;
-                    notificationBadge.textContent = notificationCount;
-                    if (notificationCount === 0) {
-                        notificationBadge.style.display = "none"; // Ẩn badge nếu không còn thông báo chưa đọc
-                    }
-
-                    // Thêm class "read" cho thông báo đã được đọc
-                    e.target.parentElement.classList.add("read");
+                                // Cập nhật giao diện các thông báo là đã đọc
+                                const allNotifications = notificationList.querySelectorAll("a");
+                                allNotifications.forEach(notification => {
+                                    notification.parentElement.classList.add("read"); // Thêm class "read"
+                                });
+                            }
+                        })
+                        .catch(error => console.error("Lỗi khi đánh dấu tất cả thông báo là đã đọc:", error));
                 }
             });
 
@@ -200,30 +198,9 @@
             socketSwipe.onerror = function (error) {
                 console.log("WebSocket for swipe error:", error);
             };
-
-            // Đặt sự kiện click cho dropdown notification để reset số thông báo
-            document.querySelector("#dropdownNotification").addEventListener("click", () => {
-                // Reset số thông báo về 0
-                notificationCount = 0;
-                notificationBadge.textContent = ""; // Xóa số hiển thị
-                notificationBadge.style.display = "none"; // Ẩn badge
-
-                // Xóa thông báo "Không có thông báo mới" nếu có
-                const noNotification = document.querySelector("#noNotification");
-                if (noNotification) {
-                    noNotification.remove();
-                }
-
-                // Đánh dấu tất cả thông báo là đã đọc trong localStorage
-                const allNotifications = notificationList.querySelectorAll("a");
-                allNotifications.forEach(notification => {
-                    const notificationText = notification.getAttribute("data-id");
-                    localStorage.setItem(notificationText, "read"); // Đánh dấu là đã đọc
-                    notification.parentElement.classList.add("read"); // Thêm class "read"
-                });
-            });
         });
     </script>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

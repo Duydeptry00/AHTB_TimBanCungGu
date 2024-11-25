@@ -236,7 +236,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 { "NguoiGui", nguoiTimDoiTuong.UserName },
                 { "NguoiNhan", doiTuong.UserName },
                 { "NoiDung", $"{nguoiTimDoiTuong.UserName} đã matched với bạn!" },
-                { "ThoiGian", DateTime.UtcNow }
+                { "ThoiGian", DateTime.UtcNow },
+                 {"Read", false }
             };
 
                     // Lưu thông báo cho người A
@@ -248,7 +249,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 { "NguoiGui", doiTuong.UserName },
                 { "NguoiNhan", nguoiTimDoiTuong.UserName },
                 { "NoiDung", $"{doiTuong.UserName} đã matched với bạn!" },
-                { "ThoiGian", DateTime.UtcNow }
+                { "ThoiGian", DateTime.UtcNow },
+                {"Read", false }
             };
 
                     // Lưu thông báo cho người B
@@ -310,13 +312,43 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 .Limit(10)  // Giới hạn số lượng thông báo hiển thị
                 .ToListAsync();
 
+            // Đếm số lượng thông báo chưa đọc
+            var unreadCount = notifications.Count(x => x["Read"] == null || x["Read"].ToBoolean() == false);
+
+            // Trả về danh sách thông báo và số lượng chưa đọc mà không thay đổi trạng thái "Read"
             var result = notifications.Select(x => new
             {
+                id = x["_id"].ToString(),
                 text = x["NoiDung"].ToString(),
-                time = x["ThoiGian"].ToString()
+                time = x["ThoiGian"].ToString(),
+                read = x["Read"]?.ToBoolean() ?? false
             }).ToList();
 
-            return Json(new { success = true, notifications = result });
+            return Json(new { success = true, notifications = result, unreadCount });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MarkAllNotificationsAsRead()
+        {
+            var userName = HttpContext.Session.GetString("TempUserName");
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+            }
+
+            var filter = Builders<BsonDocument>.Filter.Eq("NguoiNhan", userName);
+            var update = Builders<BsonDocument>.Update.Set("Read", true);
+
+            var result = await _ThongBao.UpdateManyAsync(filter, update);
+
+            if (result.ModifiedCount > 0)
+            {
+                return Ok(new { success = true, message = "Tất cả thông báo đã được đánh dấu là đã đọc." });
+            }
+            else
+            {
+                return BadRequest(new { success = false, message = "Không có thông báo nào cần cập nhật." });
+            }
         }
     }
 }
