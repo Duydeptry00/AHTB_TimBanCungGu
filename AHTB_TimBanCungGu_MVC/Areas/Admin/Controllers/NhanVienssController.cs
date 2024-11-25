@@ -1,6 +1,7 @@
 ﻿using AHTB_TimBanCungGu_API.Models;
 using AHTB_TimBanCungGu_API.ViewModels;
 using AHTB_TimBanCungGu_MVC.Models;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -19,6 +21,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
     public class NhanVienssController : Controller
     {
         private readonly HttpClient _httpClient;
+        private const string _ApiBaseUrl = "http://localhost:15172/api";
         private const string ApiBaseUrl = "http://localhost:15172/api/NhanViens";
         private readonly string _apiUrl = "http://localhost:15172/api/PhanQuyens";
         private readonly string _RoleapiUrl = "http://localhost:15172/api/Quyens";// API để quản lý User_Role
@@ -118,6 +121,16 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 var response = await _httpClient.PostAsync($"{ApiBaseUrl}", content);
                 if (response.IsSuccessStatusCode)
                 {
+                    // Lấy giá trị của Local từ GlobalSettings
+                    string local = GlobalSettings.MvcBaseUrl;
+                    string email = nhanVien.Email;
+                    var content2 = new StringContent(
+                        System.Text.Json.JsonSerializer.Serialize(new { email, local }),
+                        Encoding.UTF8,
+                        "application/json"); ;
+
+                    // Gửi yêu cầu POST tới API
+                    var respons = await _httpClient.PostAsync($"{_ApiBaseUrl}/Account/SendEmployeeInvite", content2);
                     TempData["SuccessMessage"] = "Thêm nhân viên thành công!";
                     return RedirectToAction(nameof(Index)); // Chuyển hướng về danh sách người dùng
                 }
@@ -189,7 +202,10 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
                     // Lấy danh sách người dùng từ API
                     var danhSachNguoiDung = await _httpClient.GetFromJsonAsync<List<NhanVienVM>>(ApiBaseUrl);
-                    var danhSachNguoiDungGomUsername = danhSachNguoiDung.Select(u => u.UserName).ToList();
+                    var danhSachNguoiDungGomUsername = danhSachNguoiDung
+                        .Where(u => u.TrangThai == "Đang Làm Việc")  // Lọc người dùng có trạng thái "Đang Làm Việc"
+                        .Select(u => u.UserName)  // Chỉ lấy tên người dùng
+                        .ToList();
 
                     // Lấy danh sách phân quyền từ API với phân trang
                     var responsePhanQuyen = await _httpClient.GetFromJsonAsync<List<ListPhanQuyen>>(_apiUrl);

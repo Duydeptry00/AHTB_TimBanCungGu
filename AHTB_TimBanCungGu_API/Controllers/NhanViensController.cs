@@ -8,7 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net.Mail;
+using System.Net;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using Amazon.Runtime.Internal;
 
 namespace AHTB_TimBanCungGu_API.Controllers
 {
@@ -17,7 +21,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
     public class NhanViensController : ControllerBase
     {
         private readonly DBAHTBContext _context;
-
+        private static readonly ConcurrentDictionary<string, DateTime> TokenStorage = new();
         public NhanViensController(DBAHTBContext context)
         {
             _context = context;
@@ -113,7 +117,15 @@ namespace AHTB_TimBanCungGu_API.Controllers
             {
                 return BadRequest(ModelState);
             }
-
+            // Kiểm tra nếu người dùng đã tồn tại
+            var existingUser = await _context.Users
+            .Include(u => u.ThongTinCN)
+                .FirstOrDefaultAsync(u => u.UserName == nhanVien.UserName ||
+                                           u.ThongTinCN.Email == nhanVien.Email);
+            if (existingUser != null)
+            {
+                return BadRequest("Username hoặc email đã tồn tại");
+            }
             // Mã hóa mật khẩu nếu nó không rỗng
             if (!string.IsNullOrEmpty(nhanVien.Password))
             {
@@ -269,5 +281,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
         {
             return _context.Users.Any(e => e.UsID == id);
         }
+
     }
 }

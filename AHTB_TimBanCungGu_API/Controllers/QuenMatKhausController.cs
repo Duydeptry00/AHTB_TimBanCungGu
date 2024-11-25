@@ -90,83 +90,84 @@ namespace YourNamespace.Controllers
                 From = new MailAddress("sukanephan@gmail.com"), // Địa chỉ email người gửi
                 Subject = "Đặt lại mật khẩu",
                 Body = $@"
-        <html>
-        <head>
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    color: #333333;
-                }}
-                .container {{
-                    width: 100%;
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                    background-color: #f9f9f9;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                }}
-                .header {{
-                    text-align: center;
-                    font-size: 24px;
-                    font-weight: bold;
-                    color: #4CAF50;
-                    margin-bottom: 20px;
-                }}
-                .content {{
-                    font-size: 16px;
-                    line-height: 1.5;
-                    margin-bottom: 20px;
-                }}
-                .link {{
-                    display: inline-block;
-                    margin-top: 20px;
-                    padding: 12px 20px;
-                    font-size: 16px;
-                    background-color: #4CAF50;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                    text-align: center;
-                }}
-                .link:hover {{
-                    background-color: #45a049;
-                }}
-                .footer {{
-                    font-size: 12px;
-                    color: #888888;
-                    text-align: center;
-                    margin-top: 30px;
-                }}
-                .footer i {{
-                    font-style: italic;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class='container'>
-                <div class='header'>
-                    Đặt lại mật khẩu
-                </div>
-                <div class='content'>
-                    <p>Chào bạn,</p>
-                    <p>
-                        Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản của mình. Vui lòng nhấp vào đường link dưới đây để hoàn tất quá trình đặt lại mật khẩu:
-                    </p>
-                    <a href='{callbackUrl}' class='link'>Đặt lại mật khẩu</a>
-                    <p>
-                        Nếu bạn không yêu cầu đặt lại mật khẩu, bạn có thể bỏ qua email này và không cần thực hiện bất kỳ thao tác nào.
-                    </p>
-                </div>
-                <div class='footer'>
-                    <i>Lưu ý: Đây là email tự động, vui lòng không trả lời trực tiếp.</i>
-                </div>
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                color: #333333;
+            }}
+            .container {{
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f9f9f9;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                text-align: center;
+                font-size: 24px;
+                font-weight: bold;
+                color: #FF0000; /* Màu đỏ */
+                margin-bottom: 20px;
+            }}
+            .content {{
+                font-size: 16px;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }}
+            .link {{
+                display: inline-block;
+                margin-top: 20px;
+                padding: 12px 20px;
+                font-size: 16px;
+                background-color: #FF0000; /* Nền đỏ */
+                color: white; /* Chữ trắng */
+                text-decoration: none;
+                border-radius: 5px;
+                text-align: center;
+            }}
+            .link:hover {{
+                background-color: #CC0000; /* Màu đỏ đậm hơn khi hover */
+            }}
+            .footer {{
+                font-size: 12px;
+                color: #888888;
+                text-align: center;
+                margin-top: 30px;
+            }}
+            .footer i {{
+                font-style: italic;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                Đặt lại mật khẩu
             </div>
-        </body>
-        </html>
+            <div class='content'>
+                <p>Chào bạn,</p>
+                <p>
+                    Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản của mình. Vui lòng nhấp vào đường link dưới đây để hoàn tất quá trình đặt lại mật khẩu:
+                </p>
+                <a href='{callbackUrl}' class='link'style='color: #fff !important;'>Đặt lại mật khẩu</a>
+                <p>
+                    Nếu bạn không yêu cầu đặt lại mật khẩu, bạn có thể bỏ qua email này và không cần thực hiện bất kỳ thao tác nào.
+                </p>
+            </div>
+            <div class='footer'>
+                <i>Lưu ý: Đây là email tự động, vui lòng không trả lời trực tiếp.</i>
+            </div>
+        </div>
+    </body>
+    </html>
     ",
                 IsBodyHtml = true
             };
+
 
 
             message.To.Add(email); // Địa chỉ email người nhận
@@ -206,8 +207,10 @@ namespace YourNamespace.Controllers
             {
                 return NotFound("Người dùng không tồn tại.");
             }
-
-            // Mã hóa mật khẩu
+            if (user.TrangThai == "Chờ Xác Nhận")
+            {
+                user.TrangThai = "Đang Làm Việc";
+            }
             user.Password = HashPassword(request.newpassword);
 
             // Lưu thay đổi vào cơ sở dữ liệu
@@ -226,6 +229,47 @@ namespace YourNamespace.Controllers
         {
             // Sử dụng BCrypt để mã hóa mật khẩu
             return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+        [HttpPost("SendEmployeeInvite")]
+        public async Task<IActionResult> SendEmployeeInvite([FromBody] SendEmployeeInviteRequest request)
+        {
+            // Kiểm tra xem email có hợp lệ không
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return BadRequest("Email không hợp lệ.");
+            }
+
+            // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu không
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.ThongTinCN.Email == request.Email); // Giả sử bảng người dùng có trường Email
+
+            if (user == null)
+            {
+                return BadRequest("Email không tồn tại.");
+            }
+
+            // Nếu email chưa có trong hệ thống, tiến hành tạo tài khoản cho nhân viên
+            // Tạo token cho việc tạo mật khẩu
+            string token = Guid.NewGuid().ToString(); // Tạo token
+            TokenStorage[token] = DateTime.UtcNow; // Lưu token với thời gian tạo
+
+            var baseUrl = request.Local;
+            var callbackUrl = $"{baseUrl}/LoginvsRegister/DoiMatKhau?token={token}&email={request.Email}";
+
+            // Gửi email mời nhân viên tạo tài khoản
+            var emailSent = await SendEmailAsync(request.Email, callbackUrl);
+
+            if (!emailSent)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, "Có lỗi xảy ra khi gửi email mời.");
+            }
+
+            return Ok("Đường link tạo mật khẩu đã được gửi tới email của bạn.");
+        }
+        public class SendEmployeeInviteRequest
+        {
+            public string Email { get; set; }
+            public string Local { get; set; }
         }
     }
 
@@ -247,4 +291,6 @@ namespace YourNamespace.Controllers
         public string email { get; set; }
         public string newpassword { set; get; }
     }
+       
+
 }

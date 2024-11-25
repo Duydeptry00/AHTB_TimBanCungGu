@@ -25,6 +25,33 @@ namespace AHTB_TimBanCungGu_API.Controllers
         {
             _context = context;
         }
+        [HttpPost("check-login")]
+        public async Task<IActionResult> CheckLogin([FromBody] CheckLogin request)
+        {
+            // Kiểm tra nếu username hoặc password rỗng
+            if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
+                return BadRequest("Username và password không được để trống.");
+
+            // Tìm người dùng theo tên người dùng hoặc email
+            var user = await _context.Users
+                .Include(u => u.ThongTinCN) // Bao gồm thông tin cá nhân
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName || u.ThongTinCN.Email == request.UserName);
+
+            // Kiểm tra người dùng có tồn tại hay không
+            if (user == null)
+                return Ok(new { IsValid = false, Message = "Tài khoản hoặc mật khẩu không chính xác." });
+
+            // Kiểm tra trạng thái tài khoản
+            if (user.ThongTinCN.TrangThai == "Không Hoạt Động")
+                return Ok(new { IsValid = false, Message = "Tài khoản hiện đang bị khóa." + user.NgayMoKhoa + user.LyDoKhoa });
+
+            // Kiểm tra mật khẩu
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+                return Ok(new { IsValid = false, Message = "Tài khoản hoặc mật khẩu không chính xác." });
+
+            // Trả về kết quả nếu tất cả điều kiện đều hợp lệ
+            return Ok(new { IsValid = true, Message = "Thông tin đăng nhập hợp lệ." });
+        }
 
         // User Registration
         [HttpPost("register")]
@@ -147,5 +174,10 @@ namespace AHTB_TimBanCungGu_API.Controllers
         public string UserName { get; set; }
         public string Password { get; set; }
         public string UserType { get; set; }
+    }
+    public class CheckLogin
+    {
+        public string UserName { get; set; }
+        public string Password { get; set; }
     }
 }
