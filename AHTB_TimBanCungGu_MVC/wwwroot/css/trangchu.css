@@ -12,54 +12,103 @@ svg {
 }
 
 /* Navbar */
+/* Navbar */
 .navbar {
-    background-color: black; /* Màu nền của navbar */
-    padding: 10px 20px; /* Padding cho navbar */
+    background-color: black; /* Màu nền navbar */
+    padding: 1px 20px; /* Khoảng cách padding */
 }
 
+/* Navbar Brand */
 .navbar-brand {
-    color: rgb(255, 0, 0); /* Màu chữ của thương hiệu */
+    color: #ff0000; /* Màu đỏ cho logo thương hiệu */
     font-size: 40px; /* Kích thước chữ */
     font-weight: bold; /* Độ đậm của chữ */
-}
-.custom-dropdown-menu {
-    min-width: 200px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-transform: uppercase; /* Chữ in hoa */
+    text-decoration: none; /* Không gạch chân */
 }
 
-.custom-dropdown-item {
-    color: #000;
-    padding: 8px 16px;
+/* Navbar Navigation Links */
+.navbar-nav {
+    display: flex; /* Hiển thị dạng flex */
+    justify-content: center; /* Căn giữa nội dung */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    flex-grow: 1; /* Mở rộng cho navbar */
+    margin: 0; /* Bỏ margin mặc định */
 }
 
-    .custom-dropdown-item:hover {
-        background-color: #f0f0f0;
+    .navbar-nav .nav-link {
+        color: white; /* Màu chữ trắng */
+        margin: 0 20px; /* Khoảng cách giữa các liên kết */
+        font-size: 17px; /* Kích thước chữ */
+        font-weight: 500; /* Độ đậm của chữ */
+        transition: color 0.3s ease; /* Hiệu ứng chuyển màu */
     }
 
-.navbar-nav {
-    margin: 0 auto; /* Giữa các mục */
-    display: flex; /* Hiển thị dưới dạng flex */
-    flex-grow: 1; /* Cho phép navbar mở rộng */
+        /* Hover và Active trạng thái */
+        .nav-link.active,
+        .navbar-nav .nav-link:hover {
+            color: #ff4500; /* Màu cam cho trạng thái active/hover */
+        }
+
+/* Navbar Icons (Bell & User) */
+.navbar-icons {
+    display: flex; /* Hiển thị dạng flex */
+    align-items: center; /* Căn giữa nội dung */
 }
 
-.navbar-nav .nav-link {
-    color: white; /* Màu chữ của liên kết */
-    margin: 0 20px; /* Khoảng cách giữa các liên kết */
-    font-size: 23px; /* Kích thước chữ */
-    font-weight: 500; /* Độ đậm của chữ */
-    transition: color 0.3s; /* Hiệu ứng chuyển màu */
-    margin-left : 150px;
+    .navbar-icons i {
+        font-size: 38px; /* Kích thước biểu tượng */
+        color: white; /* Màu biểu tượng */
+        margin-left: 15px; /* Khoảng cách giữa các biểu tượng */
+        cursor: pointer; /* Con trỏ dạng tay khi hover */
+        transition: color 0.3s ease; /* Hiệu ứng chuyển màu */
+    }
+
+        .navbar-icons i:hover {
+            color: #ff4500; /* Màu cam khi hover */
+        }
+
+/* Dropdown Menu */
+.dropdown-menu {
+    min-width: 200px; /* Chiều rộng tối thiểu */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng */
+    background-color: #fff; /* Màu nền trắng */
+    border: none; /* Bỏ viền */
+    border-radius: 8px; /* Bo tròn các góc */
 }
 
-.nav-link.active,
-.navbar-nav .nav-link:hover {
-    color: #FF4500; /* Màu chữ khi active hoặc hover */
+.dropdown-item {
+    color: #000; /* Màu chữ */
+    padding: 8px 16px; /* Padding cho item */
+    font-size: 16px; /* Kích thước chữ */
+    transition: background-color 0.3s ease; /* Hiệu ứng hover */
 }
 
-.navbar-icons i {
-    font-size: 38px; /* Kích thước biểu tượng */
-    color: white; /* Màu biểu tượng */
-    transition: color 0.3s; /* Hiệu ứng chuyển màu cho biểu tượng */
+    .dropdown-item:hover {
+        background-color: #f0f0f0; /* Màu nền khi hover */
+    }
+
+/* Badge Notification */
+#notificationBadge {
+    display: none; /* Ẩn mặc định */
+    font-size: 12px; /* Kích thước chữ cho badge */
+    color: white; /* Màu chữ trắng */
+    background-color: red; /* Màu nền đỏ */
+    border-radius: 50%; /* Hình tròn */
+    padding: 4px 6px; /* Padding bên trong */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar-nav {
+        flex-direction: column; /* Hiển thị dọc trên mobile */
+        align-items: flex-start; /* Căn trái */
+        margin-top: 10px;
+    }
+
+    .nav-item {
+        margin-bottom: 10px; /* Khoảng cách giữa các item */
+    }
 }
 
 /* Slider */

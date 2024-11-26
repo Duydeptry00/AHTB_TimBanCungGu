@@ -1,42 +1,198 @@
 ﻿@using System.Linq
 @model IEnumerable<AHTB_TimBanCungGu_API.Models.Phim>
+<style>
+    .carousel-video-container {
+        position: relative; /* Để hỗ trợ căn chỉnh */
+        width: 100%; /* Chiếm toàn bộ chiều rộng của container */
+        height: 700px; /* Chiều cao mong muốn (tuỳ chỉnh) */
+        overflow: hidden; /* Cắt phần video vượt ra ngoài container */
+    }
 
-<div class="slider" style="margin: 0;">
-    <div class="list">
-        @foreach (var phim in Model)
-        {
-            <div class="item @(Model.First() == phim ? "active" : "")">
-                <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim">
-                <div class="content">
-                    <h1>@phim.TenPhim</h1>
-                    <div class="rating">
-                        <span>@phim.DanhGia/10</span>
-                    </div>
-                    <p>@phim.DienVien</p>
-                    <p>@phim.TheLoai.TenTheLoai</p>
-                    <div class="icon-container">
-                        <button class="btn btn-primary btn-icon btn-icon-add" title="Thêm Phim">
-                            <i class="bi bi-plus"></i>
-                        </button>
-                        <button class="btn btn-success btn-icon btn-icon-start" title="Bắt đầu chạy phim">
-                            <i class="bi bi-play"></i>
-                        </button>
-                    </div>
-                    <h4 style="margin-top: 5px;">@phim.MoTa</h4>
+    .carousel-video {
+        width: 100%; /* Đặt chiều rộng của video phù hợp với container */
+        height: auto; /* Giữ tỉ lệ video */
+        object-fit: cover; /* Phóng to video để bao phủ toàn bộ container */
+    }
+
+    .banner {
+        position: absolute;
+        bottom: 0; /* Đặt vị trí banner ở phía dưới */
+        bottom: 66px; /* Đẩy banner lên trên một chút so với vị trí dưới cùng */
+        left: 0; /* Đặt vị trí banner ở bên trái */
+        width: 100%; /* Chiếm toàn bộ chiều rộng */
+        color: white; /* Màu chữ */
+        padding: 30px; /* Khoảng cách bên trong */
+        box-sizing: border-box; /* Đảm bảo padding không làm thay đổi kích thước */
+    }
+
+    .container {
+        max-width: 100%; /* Đảm bảo không có khoảng cách thừa bên trong */
+    }
+
+    .banner h3 {
+        font-size: 30px;
+        margin: 0;
+        font-weight: bold;
+    }
+
+    .banner h1 {
+        font-size: 50px;
+        margin: 16px 0;
+        font-weight: bold;
+    }
+
+    .color-text {
+        color: #ff4500;
+    }
+
+    .banner-watch {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #ff4500;
+        color: white;
+        font-size: 18px;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+        .banner-watch:hover {
+            background-color: #ff6347;
+        }
+
+   /*  phim */
+    /* Grid Layout for 5 items per row */
+    .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr); /* 5 columns */
+        grid-template-rows: repeat(2, auto); /* 2 rows, height tự động theo nội dung */
+        gap: 20px; /* Khoảng cách giữa các mục */
+        max-height: calc(2 * 430px + 20px); /* Giới hạn chiều cao cho 2 hàng (430px là chiều cao mỗi item) */
+        overflow: hidden; /* Ẩn các mục vượt quá */
+    }
+
+    /* Item Styles */
+    .movie-item {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        border-radius: 15px; /* Bo góc */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 0 auto; /* Căn giữa item trong grid */
+    }
+
+        .movie-item img {
+            width: 270px;
+            height: 370px; /* Đảm bảo chiều cao cố định */
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .movie-item:hover img {
+            transform: scale(1.1); /* Phóng to khi hover */
+        }
+
+    .movie-item-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        color: white;
+        padding: 10px;
+        text-align: left; /* Căn trái */
+        background: black; /* Nền tối mờ để dễ nhìn */
+    }
+
+    /* Tên phim - Căn góc dưới bên trái và làm cho tên phim to lên */
+    .movie-item-title {
+        font-size: 1.5rem; /* Tăng kích thước chữ */
+        font-weight: bold;
+        text-transform: uppercase;
+        margin: 0; /* Loại bỏ margin mặc định */
+    }
+
+    /* Thông tin phim */
+    .movie-infos {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .movie-info {
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .movie-info i {
+            color: #f39c12;
+        }
+
+    .recommended-section h2 {
+        color: red; /* Màu chữ đỏ */
+        text-align: center; /* Căn giữa chữ */
+        font-size: 2rem; /* Kích thước chữ (tùy chỉnh) */
+        font-weight: bold; /* Đậm chữ */
+        margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
+    }
+
+</style>
+<body>
+        <div class="carousel-video-container">
+            <video class="carousel-video" autoplay muted loop>
+                <source src="~/image/background/hhh.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
+            <div class="banner">
+                <div class="container">
+                    <h3>Website Đẳng Cấp</h3>
+                    <h1>Trải Nghiệm <span class="color-text"></span> Hàng Đầu Tại Việt Nam</h1>
+                    <a class="banner-watch" href=""><i class="fa-solid fa-play"></i> XEM NGAY</a>
                 </div>
             </div>
-        }
-    </div>
-</div>
-<div class="thumbnail">
-    @foreach (var phim in Model)
-    {
-        <div class="item @(Model.First() == phim ? "active" : "")">
-            <img src="/images/@phim.HinhAnh" style="margin: 0 20px;" alt="@phim.TenPhim">
         </div>
-    }
-</div>
+      
 
+        <!-- Phần phim mới nhất và phổ biến -->
+    <div id="movie-section" class="recommended-container">
+
+            <!-- Phim mới nhất -->
+            <div class="recommended-section">
+                <h2>Mới nhất</h2>
+                <div class="movie-grid">
+                    @foreach (var phim in Model.OrderByDescending(p => p.NgayPhatHanh).Take(5))
+                    {
+                    <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
+                        <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim">
+                    </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Phim đánh giá cao nhất -->
+            <div class="recommended-section">
+                <h2>Phổ biến</h2>
+                <div class="movie-grid">
+                    @foreach (var phim in Model.OrderByDescending(p => p.DanhGia).Take(5))
+                    {
+                    <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
+                        <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim">
+                    </a>
+                    }
+                </div>
+            </div>
+        </div>
+</body>
+    <script>
+        document.querySelector('.banner-watch').addEventListener('click', function (event) {
+            event.preventDefault(); // Ngừng hành động mặc định của link
+            document.getElementById('movie-section').scrollIntoView({
+                behavior: 'smooth'  // Cuộn mượt mà
+            });
+        });
+</script>
 <script src="/js/app.js?v=1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
