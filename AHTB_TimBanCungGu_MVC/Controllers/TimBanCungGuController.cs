@@ -277,7 +277,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         var messageA = new
                         {
                             type = "match",
-                            hoTen = hoTenNguoiGui,  // Gửi tên đầy đủ của người A
+                            hoTen = hoTenNguoiNhan,  // Gửi tên đầy đủ của người A
                         };
                         var jsonMessage = JsonConvert.SerializeObject(messageA);
                         var bufferA = Encoding.UTF8.GetBytes(jsonMessage);
@@ -290,7 +290,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         var messageB = new
                         {
                             type = "match",
-                            hoTen = hoTenNguoiNhan,  // Gửi tên đầy đủ của người B
+                            hoTen = hoTenNguoiGui,  // Gửi tên đầy đủ của người B
                         };
                         var jsonMessage = JsonConvert.SerializeObject(messageB);
                         var bufferB = Encoding.UTF8.GetBytes(jsonMessage);
