@@ -10,6 +10,82 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="/css/trangchu.css?v=1.0" rel="stylesheet" />
 </head>
+<style>
+    /* Khoảng cách từ nội dung xuống navbar */
+    body {
+        padding-top: 50px; /* Cách từ phần nội dung đầu tiên đến navbar */
+    }
+
+    /* Navbar trong suốt hoàn toàn */
+    .navbar {
+        background-color: transparent; /* Nền hoàn toàn trong suốt */
+        border-bottom: none; /* Không có đường viền dưới */
+        box-shadow: none; /* Không có bóng */
+        transition: background-color 0.3s ease-in-out; /* Hiệu ứng chuyển đổi nền */
+        padding: 1px 10px; /* Giảm chiều cao navbar thêm nữa */
+        position: fixed; /* Đặt navbar cố định */
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 9999;
+    }
+
+        /* Khi cuộn xuống, navbar sẽ có nền đậm hơn */
+        .navbar.scrolled {
+            background-color: rgba(0, 0, 0, 0.8); /* Nền đen đậm hơn khi cuộn */
+        }
+
+    /* Các liên kết trong navbar */
+    .navbar-nav {
+        margin-left: auto;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+        /* Liên kết trong navbar */
+        .navbar-nav .nav-link {
+            color: white; /* Màu chữ mặc định */
+            margin: 0 20px;
+            font-size: 15px;
+            font-weight: 500;
+            position: relative; /* Để hiệu ứng underline hoạt động */
+            transition: color 0.3s;
+        }
+
+    /* Hiệu ứng underline (dấu chân) khi hover */
+    .nav-link::after {
+        content: "";
+        position: absolute;
+        width: 0;
+        height: 2px;
+        background-color: #ff5733; /* Màu gạch dưới */
+        left: 50%;
+        bottom: -5px;
+        transition: all 0.3s ease-in-out;
+        transform: translateX(-50%);
+    }
+
+    /* Mở rộng dấu chân khi hover */
+    .nav-link:hover::after {
+        width: 100%; /* Mở rộng dấu chân khi hover */
+    }
+
+    /* Kích thước và hiệu ứng cho biểu tượng trong navbar */
+    .navbar-icons .bi {
+        font-size: 1.8rem;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.3s ease-in-out;
+    }
+
+        /* Hiệu ứng hover cho biểu tượng */
+        .navbar-icons .bi:hover {
+            transform: scale(1.2);
+            color: #ff5733;
+        }
+
+</style>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-black">
         <div class="container-fluid">
