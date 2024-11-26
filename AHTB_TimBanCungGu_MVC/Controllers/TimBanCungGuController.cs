@@ -363,20 +363,14 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 .SortByDescending(x => x["ThoiGian"])
                 .ToListAsync();
 
-            // Lấy danh sách UsID của NguoiGui từ thông báo
-            var senderIds = notifications.Select(x => x["NguoiGui"].ToString()).ToList();
+            // Lấy danh sách UserName của NguoiGui từ thông báo
+            var senderUserNames = notifications.Select(x => x["NguoiGui"].ToString()).ToList();
 
+            // Lấy ThongTinCN của những người gửi có UserName trong danh sách
             var senders = await _context.Users
-     .Where(t => senderIds.Contains(t.UserName))
-     .Select(t => t.ThongTinCN)
-     .ToListAsync();
-
-            var senderNames = senders
-                .Where(t => t != null)
-                .Select(t => t.HoTen)
-                .ToList();
-
-
+                .Where(t => senderUserNames.Contains(t.UserName))
+                .Select(t => new { t.UserName, t.ThongTinCN })
+                .ToListAsync();
 
             // Đếm thông báo chưa đọc
             var unreadCount = notifications.Count(x => x["Read"].ToBoolean() == false);
@@ -385,11 +379,14 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             var result = notifications.Select(x => new
             {
                 id = x["_id"].ToString(),
-                sender = senderNames,
+                sender = senders
+                    .FirstOrDefault(t => t.UserName == x["NguoiGui"].ToString())?.ThongTinCN?.HoTen, // Lấy tên người gửi từ ThongTinCN
                 text = x["NoiDung"].ToString(),
                 time = x["ThoiGian"].ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
                 read = x["Read"]?.ToBoolean() ?? false
             }).ToList();
+
+
 
             return Json(new { success = true, notifications = result, unreadCount });
         }
