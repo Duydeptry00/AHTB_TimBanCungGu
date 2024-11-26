@@ -12,7 +12,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             var token = HttpContext.Session.GetString("JwtToken");
             var userType = HttpContext.Session.GetString("UserType");
 
-            if (userType == "Admin" && token != null)
+            if (userType != "khach" && token != null )
             {
                 return View();
             }

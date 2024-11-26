@@ -332,8 +332,8 @@ table th.sortable.desc::after {
             <thead>
                 <tr>
                     <th>Username</th>
-                    <th>Tên Vai Trò</th>
-                    <th>ID Vai Trò</th>
+                    <th>Quyền</th>
+                    <th>Vai Trò</th>
                     <th></th>
                 </tr>
             </thead>
@@ -344,12 +344,6 @@ table th.sortable.desc::after {
                         <td>@user.Username</td>
                         <td>
                             @user.Module
-                            (
-                            @(user.Add == "true" ? "Thêm" : "Không thêm"),
-                            @(user.Update == "true" ? "Cập nhật" : "Không cập nhật"),
-                            @(user.Delete == "true" ? "Xóa" : "Không xóa"),
-                            @(user.ReviewDetails == "true" ? "Xem chi tiết" : "Không xem chi tiết")
-                            )
                         </td>
                         <td>@user.Tenrole</td>
                         <td>
@@ -451,14 +445,57 @@ table th.sortable.desc::after {
             for (let [key, value] of formData.entries()) {
                 console.log(`${key}: ${value}`);
             }
-            try {
+            try 
+            {
                 const response = await fetch(this.action, {
                     method: 'POST',
                     body: formData // Gửi FormData thay vì JSON
                 });
-
-                if (response.ok) {
-                    // Hiển thị thông báo thành công
+                const result = await response.json(); // Parse JSON từ server
+                console.log(result)
+                if (response.ok && result.success) {
+                    // Hiển thị thông báo về quyền đã cấp
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Thông báo!',
+                        text: result.message, // Sử dụng message từ JSON
+                        showCancelButton: true, // Hiển thị nút "Không"
+                        confirmButtonText: 'Tiếp tục',
+                        cancelButtonText: 'Không',
+                        reverseButtons: true // Đảo thứ tự nút
+                    }).then((swalResult) => {
+                        if (swalResult.isConfirmed) {
+                            // Kiểm tra nếu có thông báo thành công về người dùng đã cấp quyền
+                            if (result.usersSuccess && result.usersSuccess.trim() !== "") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công!',
+                                    text: result.usersSuccess, // Hiển thị thông báo thành công
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    // Sau khi người dùng bấm OK, thực hiện cập nhật quyền người dùng
+                                    updateUserRole(result.usersWithRole, result.roleId);
+                                });
+                            } else {
+                                // Nếu không có thông báo về người dùng, chỉ thực hiện cập nhật quyền người dùng
+                                updateUserRole(result.usersWithRole, result.roleId);
+                            }
+                        } else if (result.usersSuccess && result.usersSuccess.trim() !== "") {
+                            // Kiểm tra nếu usersSuccess không phải là chuỗi rỗng
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: result.usersSuccess, // Hiển thị thông báo thành công
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                // Tải lại trang hoặc chuyển hướng nếu cần
+                                window.location.reload();
+                            });
+                        } else {
+                            window.location.reload();
+                        }
+                    });
+                } else {
                     Swal.fire({
                         icon: 'success',
                         title: 'Thành công!',
@@ -468,14 +505,46 @@ table th.sortable.desc::after {
                         // Tải lại trang hoặc chuyển hướng nếu cần
                         window.location.reload();
                     });
-                } else {
-                    // Hiển thị thông báo thất bại
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi!',
-                        text: 'Có lỗi xảy ra khi cấp quyền. Vui lòng thử lại.',
-                        confirmButtonText: 'OK'
+                }
+                async function updateUserRole(usersWithRole, roleId) {
+
+                    // Gửi yêu cầu cập nhật quyền cho từng user trong usersWithRole
+                    const updateResponse = await fetch('/Admin/NhanVienss/UpdateRole', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value // Nếu sử dụng AntiForgeryToken
+                        },
+                        body: JSON.stringify({
+                            // Truyền danh sách usersWithRole và idRole vào body yêu cầu
+                            usersWithRole: usersWithRole,
+                            idRole: roleId
+                        })
                     });
+
+                    const updateResult = await updateResponse.json();
+                    console.log(updateResult);
+                    if (updateResponse.ok && updateResult.success) {
+                        // Hiển thị thông báo thành công khi cập nhật quyền người dùng
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cập nhật thành công!',
+                            text: updateResult.usersSuccessMessage,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Tải lại trang hoặc chuyển hướng nếu cần
+                            window.location.reload();
+                        });
+                    } else {
+                        // Hiển thị thông báo lỗi nếu có vấn đề khi cập nhật quyền người dùng
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: 'Có lỗi khi cập nhật quyền người dùng. Vui lòng thử lại.',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+
                 }
             } catch (error) {
                 // Hiển thị thông báo lỗi mạng hoặc lỗi khác

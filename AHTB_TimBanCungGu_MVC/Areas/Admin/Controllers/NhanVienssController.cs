@@ -287,19 +287,45 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 return View(userRole); // Trả lại form nếu model không hợp lệ
             }
 
+            // Danh sách để lưu tên người dùng đã có quyền
+            var usersWithRole = new List<string>();
+            var usersSuccess = new List<string>();
             // Cập nhật RolesList cho từng User (nếu chưa có)
             foreach (var username in userRole.User)
             {
+                // Gọi API để kiểm tra quyền
+                var checkRoleResponse = await _httpClient.GetAsync($"{ApiBaseUrl}/CheckRole?UserName={username}");
+
+                if (!checkRoleResponse.IsSuccessStatusCode)
+                {
+                    ModelState.AddModelError(string.Empty, $"Không thể kiểm tra quyền cho người dùng: {username}");
+                    return View(userRole);
+                }
+
+                // Kiểm tra kết quả từ API
+                var roleExists = await checkRoleResponse.Content.ReadFromJsonAsync<bool>();
+                if (roleExists)
+                {
+                    // Thêm người dùng đã có quyền vào danh sách
+                    usersWithRole.Add(username);
+                    continue; // Bỏ qua việc cấp quyền cho người dùng này
+                }
+
                 // Tạo đối tượng dữ liệu để gửi lên API
                 var userRoleRequest = new User_role
-                {                         
-                    Username = username,  // Dùng Username từ danh sách User
-                    Id_Role = userRole.Id_Role,    // Dùng Id_Role từ vai trò
+                {
+                    Username = username, // Dùng Username từ danh sách User
+                    Id_Role = userRole.Id_Role, // Dùng Id_Role từ vai trò
                 };
 
                 // Gửi yêu cầu tới API để gán quyền
                 var response = await _httpClient.PostAsJsonAsync(_apiUrl, userRoleRequest);
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    // Nếu API trả về thành công, thêm người dùng vào danh sách đã cấp quyền
+                    usersSuccess.Add(username);
+                }
+                else
                 {
                     // Nếu có lỗi, thêm lỗi vào ModelState và trả về lại view
                     ModelState.AddModelError(string.Empty, $"Lỗi khi tạo quyền mới cho người dùng: {username}");
@@ -307,8 +333,98 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 }
             }
 
-            // Nếu không có lỗi, chuyển hướng về trang chỉ định
-            return RedirectToAction(); // Chuyển đến trang Index khi thành công
+            // Truyền thông báo về danh sách người dùng đã có quyền
+            if (usersWithRole.Count > 0)
+            {
+                var usersMessage = $" {string.Join(", ", usersWithRole)} đã cấp quyền sẵn!";
+                var usersSuccessMessage = "";
+                if ((usersSuccess.Count > 0))
+                {
+                    usersSuccessMessage = $" {string.Join(", ", usersSuccess)} đã cấp quyền thành công!";
+                }
+               
+                // Trả thông báo JSON với message thay đổi
+                return Json(new
+                {
+                    success = true,
+                    message = usersMessage, // Gửi thông báo với danh sách người dùng đã có quyền
+                    usersWithRole = usersWithRole,
+                    roleId = userRole.Id_Role,
+                    usersSuccess = usersSuccessMessage
+                });
+            }
+            else if (usersSuccess.Count > 0)
+            {
+                var usersSuccessMessage = $" {string.Join(", ", usersSuccess)} đã cấp quyền thành công!";
+                return Json(new
+                {
+                    success = false,
+                    message = "Không có người dùng nào có quyền hiện tại.",
+                    usersWithRole = usersWithRole,
+                    roleId = userRole.Id_Role,
+                });
+            }
+            else
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Lỗi! Không có người dùng nào được quyền hiện tại.",
+                });
+            }
+        }
+        // POST: Admin/UpdateRole
+        [HttpPost]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleRequest request)
+        {
+            var usersSuccess = new List<string>();
+
+            // Cập nhật RolesList cho từng User (nếu chưa có)
+            foreach (var username in request.UsersWithRole)
+            {
+                // Tạo đối tượng dữ liệu để gửi lên API
+                var userRoleRequest = new User_role
+                {
+                    Username = username, // Dùng Username từ danh sách User
+                    Id_Role = request.IdRole, // Dùng Id_Role từ vai trò
+                };
+
+                // Gửi yêu cầu POST tới API để gán quyền cho người dùng
+                var response = await _httpClient.PutAsJsonAsync($"{_apiUrl}/UpdateRole", userRoleRequest);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Nếu API trả về thành công, thêm người dùng vào danh sách đã cấp quyền
+                    usersSuccess.Add(username);
+                }
+                else
+                {
+                    // Nếu có lỗi, thêm lỗi vào ModelState và trả về lại view
+                    ModelState.AddModelError(string.Empty, $"Lỗi khi tạo quyền mới cho người dùng: {username}");
+                    return View();
+                }
+            }
+            if (usersSuccess.Count > 0)
+            {
+                var usersSuccessMessage = $" {string.Join(", ", usersSuccess)} đã cấp quyền thành công!";
+                return Json(new
+                {
+                    success = true,
+                    usersSuccessMessage = usersSuccessMessage,
+                });
+            }
+            else
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Lỗi! Không có người dùng nào được quyền hiện tại.",
+                });
+            }
+        }
+        public class UpdateRoleRequest
+        {
+            public List<string> UsersWithRole { get; set; }
+            public int IdRole { get; set; }
         }
 
     }

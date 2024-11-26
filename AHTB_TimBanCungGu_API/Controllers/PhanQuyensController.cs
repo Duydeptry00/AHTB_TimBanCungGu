@@ -56,6 +56,37 @@ namespace AHTB_TimBanCungGu_API.Controllers
             // Trả về kết quả sau khi thêm thành công
             return CreatedAtAction(nameof(GetUserRole), new { id = userRole.Id_Role }, userRole);
         }
+
+        // PUT: api/PhanQuyens/UpdateRole
+        [HttpPut("UpdateRole")]
+        public async Task<IActionResult> UpdateUserRole(User_role userRole)
+        {
+            // Kiểm tra xem người dùng có tồn tại trong cơ sở dữ liệu hay không
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userRole.Username);
+            if (user == null)
+            {
+                return BadRequest("Người dùng không hợp lệ.");
+            }
+
+            // Kiểm tra xem người dùng có vai trò đã được cấp chưa
+            var existingUserRole = await _context.Role.FirstOrDefaultAsync(r => r.UsID == user.UsID);
+
+            if (existingUserRole == null)
+            {
+                return BadRequest("Vai trò không tồn tại cho người dùng này.");
+            }
+
+            existingUserRole.IDRole = userRole.Id_Role;
+            existingUserRole.TrangThai = userRole.TrangThai;
+
+            // Cập nhật vào cơ sở dữ liệu
+            _context.Role.Update(existingUserRole);
+            await _context.SaveChangesAsync();
+
+            // Trả về kết quả cập nhật thành công
+            return Ok(new { message = "Cập nhật quyền người dùng thành công." });
+        }
+
         [HttpGet]
         public async Task<ActionResult<ListPhanQuyen>> GetPhanQUyen()
         {

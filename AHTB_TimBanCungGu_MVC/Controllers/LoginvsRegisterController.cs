@@ -9,6 +9,8 @@ using System.Text.Json;
 using AHTB_TimBanCungGu_API.ViewModels;
 using System.Reflection.Metadata;
 using static AHTB_TimBanCungGu_MVC.Controllers.LoginvsRegisterController;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -63,17 +65,19 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                             HttpContext.Session.SetString("TempUserName", userName);
 
                             ViewBag.ShowSuccessModal = true;
-
-                            // Hiển thị giao diện phù hợp với loại người dùng
-                            if (tokenResponse.UserType == "Admin")
+                            ViewBag.ShowInterface = tokenResponse.UserType;
+                            if (tokenResponse.UserType != "khach")
                             {
-                                ViewBag.ShowInterface = "Admin";
-                            }
-                            else if (tokenResponse.UserType == "Nhân Viên")
-                            {
-                                ViewBag.ShowInterface = "Nhân Viên";
-                            }
+                                // Gọi API để kiểm tra quyền
+                                var getRoleResponse = await _httpClient.GetAsync($"{ApiBaseUrl}/logins/UserPermissions?username={userName}");
 
+                                if (getRoleResponse.IsSuccessStatusCode)
+                                {
+                                    // Đọc dữ liệu JSON từ phản hồi
+                                    var roleDataJson = await getRoleResponse.Content.ReadAsStringAsync();
+                                    HttpContext.Session.SetString("TempRole", roleDataJson);
+                                }
+                            }
                             return View();
                         }
                         else
@@ -97,6 +101,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             }
 
             return View();
+        }
+        public class Permission
+        {
+            public string Module { get; set; }
         }
         public class CheckLoginResponse
         {

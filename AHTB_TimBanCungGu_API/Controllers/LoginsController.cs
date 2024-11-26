@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
+using System.Linq;
+using Amazon.Runtime.Internal;
 
 namespace AHTB_TimBanCungGu_API.Controllers
 {
@@ -127,7 +130,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
             // Kiểm tra xem người dùng có vai trò "nhanvien" hoặc "Admin" trong bảng User_Role hay không
             var userRole = await _context.Role
                 .Include(ur => ur.Role) // Bao gồm thông tin bảng Role nếu cần
-                .FirstOrDefaultAsync(u => u.UsID == user.UsID && u.Role.TenRole == "Admin" || u.Role.TenRole == "Nhân Viên");
+                .FirstOrDefaultAsync(u => u.UsID == user.UsID);
 
             if (userRole != null)
             {
@@ -158,6 +161,23 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             return Ok(new { token = tokenString, expiration = expiration , userType = request.UserType });
         }
+        [HttpGet("UserPermissions")]
+        public async Task<ActionResult> GetPermissionsByUsername(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return BadRequest("Tên người dùng không được để trống.");
+            }
+
+            // Lấy danh sách quyền (Roles) dựa trên username
+            var permissions = await _context.Role
+                .Include(r => r.User) // Include để truy xuất thông tin User liên kết
+                .Include(r => r.Role) // Include để truy xuất thông tin Role liên kết
+                .FirstOrDefaultAsync(r => r.User.UserName == username); // Lọc theo username
+            
+            return Ok(permissions.Role.Module);
+        }
+
 
     }
 

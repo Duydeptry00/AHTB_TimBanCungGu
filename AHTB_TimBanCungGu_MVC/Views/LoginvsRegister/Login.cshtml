@@ -100,7 +100,7 @@
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-        @if (ViewBag.ShowSuccessModal != null && ViewBag.ShowSuccessModal == true)
+        @if (ViewBag.ShowSuccessModal != null && ViewBag.ShowSuccessModal == true || ViewBag.ShowInterface == "khach")
         {
             <text>
                                     var modal = document.getElementById("successModal");
@@ -114,7 +114,7 @@
         }
         });
         document.addEventListener("DOMContentLoaded", function () {
-        @if (ViewBag.ShowSuccessModal != null && ViewBag.ShowSuccessModal == true && ViewBag.ShowInterface == "Admin" || ViewBag.ShowInterface == "Nhân Viên")
+        @if (ViewBag.ShowSuccessModal != null && ViewBag.ShowSuccessModal == true && ViewBag.ShowInterface != "khach")
         {
             <text>
                 var modal = document.getElementById("successModal");
