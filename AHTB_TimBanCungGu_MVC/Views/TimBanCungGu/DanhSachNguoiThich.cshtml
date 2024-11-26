@@ -8,28 +8,33 @@
 
 @if (Model.Any())
 {
-    <div class="row row-cols-1 row-cols-md-4 g-4">
+    <div class="list-container">
         @foreach (var user in Model)
         {
-            <div class="col">
-                <div class="card h-100 custom-card">
-                    @if (user.HinhAnh != null && user.HinhAnh.Any())
+            <div class="user-card" data-userid="@user.IDProfile">
+                <div class="user-info">
+                    @if (user.HinhAnh != null && user.HinhAnh.Count > 0)
                     {
-                        <img src="@Url.Content("~/uploads/" + user.HinhAnh.First())" class="card-img-top custom-img" alt="Ảnh cá nhân">
+                        <img src="/uploads/@user.HinhAnh[0]" alt="Ảnh cá nhân" class="profile-image" />
                     }
                     else
                     {
-                        <img src="@Url.Content("~/images/default-avatar.png")" class="card-img-top custom-img" alt="Ảnh mặc định">
+                        <img src="/images/default-avatar.png" alt="Ảnh mặc định" class="profile-image" />
                     }
-                    <div class="card-body">
-                        <h5 class="card-title text-center">@user.HoTen</h5>
-                        <p class="card-text"><strong>Giới tính:</strong> @user.GioiTinh</p>
-                        <p class="card-text"><strong>Ngày sinh:</strong> @user.NgaySinh.ToString("dd/MM/yyyy")</p>
+
+                    <div class="user-details">
+                        <h2>@user.HoTen</h2>
+                        <p>@user.MoTa</p>
                     </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-outline-danger me-2">Dislike</button>
-                        <button class="btn btn-outline-success">Like</button>
-                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="dislike" data-userid="@user.IDProfile">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828778.png" alt="Dislike" />
+                    </button>
+                    <button class="like" data-userid="@user.IDProfile">
+                        <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="Like" />
+                    </button>
                 </div>
             </div>
         }
@@ -40,39 +45,161 @@ else
     <p class="text-center">Không có người nào thích bạn.</p>
 }
 
+
 <style>
-    /* Custom card styles with unique class names to avoid conflicts */
-    .custom-card {
-        max-width: 350px; /* Fixed card width for uniformity */
-        margin: 0 auto; /* Center card in its column */
-        border-radius: 15px; /* Rounded corners */
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Smooth shadow */
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .list-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
     }
 
-        .custom-card:hover {
-            transform: scale(1.05); /* Slightly enlarge on hover */
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+    .user-card {
+        background-color: #f9f9f9;
+        width: 350px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+    }
+
+        .user-card:hover {
+            transform: scale(1.05);
         }
 
-    .custom-img {
-        height: 300px; /* Set uniform height for images */
-        object-fit: cover; /* Ensure image is fully visible within frame */
-        border-top-left-radius: 15px;
-        border-top-right-radius: 15px;
+    .profile-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 10px 10px 0 0;
     }
 
-    .custom-card .card-body {
+    .user-details {
         padding: 15px;
-        text-align: center; /* Center-align text in body */
+        text-align: center;
     }
 
-    .custom-card .card-footer {
-        padding: 10px 15px;
-        background-color: #f8f9fa; /* Light gray background */
+        .user-details h2 {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .user-details p {
+            font-size: 16px;
+            color: #777;
+        }
+
+    .action-buttons {
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+        background-color: #f0f0f0;
     }
 
-    .custom-card .btn {
-        width: 45%; /* Ensure buttons are consistent in size */
-    }
+        .action-buttons button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            transition: transform 0.3s ease;
+        }
+
+            .action-buttons button:hover {
+                transform: scale(1.2);
+            }
+
+        .action-buttons img {
+            width: 30px;
+            height: 30px;
+        }
 </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dislikeButtons = document.querySelectorAll(".dislike");
+        const likeButtons = document.querySelectorAll(".like");
+        const cardContainers = document.querySelectorAll(".user-card");
+
+        // Kiểm tra danh sách người đã swipe trong localStorage (nếu không có thì khởi tạo rỗng)
+        let swipedUsers = JSON.parse(localStorage.getItem('swipedUsers')) || [];
+
+        // Lọc lại danh sách người đã swipe để loại bỏ dữ liệu không hợp lệ
+        swipedUsers = Array.isArray(swipedUsers) ? swipedUsers : [];
+
+
+        // Ẩn thẻ người dùng đã swipe từ localStorage khi tải lại trang
+        // swipedUsers.forEach(userId => {
+        //     hideCard(userId);
+        // });
+        // Hàm gửi hành động swipe lên server và xử lý kết quả
+        async function sendSwipeAction(userId2, action) {
+            if (!userId2) {
+                console.error("Không tìm thấy ID người dùng.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/TimBanCungGu/LuuSwipeAction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId2, action })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Thêm user vào danh sách đã swipe nếu thành công
+                    if (!swipedUsers.includes(userId2)) {
+                        swipedUsers.push(userId2);
+                        localStorage.setItem('swipedUsers', JSON.stringify(swipedUsers)); // Lưu lại vào localStorage
+                    }
+                    hideCard(userId2); // Ẩn thẻ người dùng sau khi xử lý swipe
+                } else {
+                    console.error(result.message);
+                }
+            } catch (error) {
+                console.error('Lỗi khi gọi API:', error);
+            }
+        }
+
+        // Hàm ẩn thẻ người dùng dựa trên ID
+        function hideCard(userId2) {
+            const matchedCard = document.querySelector(`[data-userid="${userId2}"]`);
+            if (matchedCard) {
+                matchedCard.style.display = "none"; // Ẩn thẻ người dùng
+            }
+        }
+
+        // Thêm sự kiện cho nút Dislike
+        dislikeButtons.forEach((button, index) => {
+            button.addEventListener("click", () => {
+                const userCard = cardContainers[index];
+                if (userCard) {
+                    const userId2 = userCard.dataset.userid;
+                    sendSwipeAction(userId2, "Dislike");
+                } else {
+                    console.error("Không tìm thấy thẻ người dùng tại index ", index);
+                }
+            });
+        });
+
+        // Thêm sự kiện cho nút Like
+        likeButtons.forEach((button, index) => {
+            button.addEventListener("click", () => {
+                const userCard = cardContainers[index];
+                if (userCard) {
+                    const userId2 = userCard.dataset.userid;
+                    sendSwipeAction(userId2, "Like");
+                } else {
+                    console.error("Không tìm thấy thẻ người dùng tại index ", index);
+                }
+            });
+        });
+    });
+
+</script>
+
+
+
