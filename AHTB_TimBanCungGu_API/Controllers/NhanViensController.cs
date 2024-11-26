@@ -173,7 +173,23 @@ namespace AHTB_TimBanCungGu_API.Controllers
             return CreatedAtAction("GetNhanVien", new { id = userId }, nhanVien);
         }
 
+        // GET: api/PhanQuyens/CheckRole
+        [HttpGet("CheckRole")]
+        public async Task<ActionResult<bool>> CheckRoleExists(string UserName)
+        {
+            // Kiểm tra nếu userId hoặc roleId không hợp lệ
+            if (string.IsNullOrEmpty(UserName))
+            {
+                return BadRequest("Thông tin không hợp lệ.");
+            }
 
+            // Tìm kiếm xem vai trò có tồn tại cho người dùng không
+            var roleExists = await _context.Role
+                .AnyAsync(ur => ur.User.UserName == UserName);
+
+            // Trả về kết quả
+            return Ok(roleExists); // True nếu tồn tại, False nếu không tồn tại
+        }
 
         // PUT: api/NhanViens/5
         [HttpPut("{id}")]
@@ -192,7 +208,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
             }
 
             // Cập nhật các trường không phải mật khẩu
-            existingNhanVien.UserName = nhanVien.UserName;
             existingNhanVien.TrangThai = nhanVien.TrangThai;
             // Nếu bạn muốn cập nhật thêm các trường khác, bạn có thể thêm vào đây
 
@@ -275,6 +290,31 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
                 return StatusCode(500, $"Lỗi khi xóa nhân viên: {ex.Message}");
             }
+        }
+        // GET: api/NhanViens/{id}/Role
+        [HttpGet("{id}/Role")]
+        public async Task<ActionResult<IEnumerable<string>>> GetNhanVienRoles(string id)
+        {
+            // Tìm nhân viên theo id
+            var nhanVien = await _context.Users
+                .Include(u => u.User_Role)    // Bao gồm bảng liên kết User_Role
+                .ThenInclude(ur => ur.Role)  // Bao gồm thông tin Role từ bảng Role
+                .FirstOrDefaultAsync(u => u.UsID == id);
+
+            if (nhanVien == null)
+            {
+                return NotFound($"Không tìm thấy nhân viên với ID: {id}");
+            }
+
+            // Lấy danh sách tên Role của nhân viên
+            var roles = nhanVien.User_Role?.Select(ur => ur.Role.Module).ToList();
+            
+            if (roles == null || roles.Count == 0)
+            {
+                return NotFound($"Nhân viên với ID: {id} không có Role nào.");
+            }
+
+            return Ok(roles); // Trả về danh sách Role
         }
 
         private bool NhanVienExists(string id)

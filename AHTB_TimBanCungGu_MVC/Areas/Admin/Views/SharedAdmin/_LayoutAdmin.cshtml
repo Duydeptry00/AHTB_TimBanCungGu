@@ -1,5 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
+@{
+    var tempRole = HttpContextAccessor.HttpContext.Session.GetString("TempRole") ?? null;
+}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,7 +14,7 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 
@@ -138,110 +141,184 @@
         <nav id="sidebar">
             <h1>Anh Hùng Tranh Bá</h1>
             <div class="sidebar-sticky">
-                <ul class="nav flex-column">
-                    <!-- Nhân Viên và Phân Quyền -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#employeeManagement" aria-expanded="true">
-                            <i class="fas fa-users-cog"></i>
-                            <span>Quản Lý Nhân Sự</span>
-                            <i class="fas fa-minus float-end toggle-icon"></i>
-                        </a>
-                        <ul id="employeeManagement" class="collapse show">
-                            <li>
-                                <a class="nav-link" asp-area="Admin" asp-controller="NhanVienss" asp-action="index">
-                                    <i class="fas fa-users-cog"></i> Quản Lý Nhân Viên
-                                </a>
-                            </li>
-                            <li>
-                                <a class="nav-link" asp-area="Admin" asp-controller="Quyenss" asp-action="index">
-                                    <i class="fas fa-user-shield"></i> Quản Lý Phân Quyền
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                @if (@HttpContextAccessor.HttpContext.Session.GetString("UserType") == "Admin")
+                {
+                    <ul class="nav flex-column">
+                        <!-- Nhân Viên và Phân Quyền -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#employeeManagement" aria-expanded="true">
+                                <i class="fas fa-users-cog"></i>
+                                <span>Quản Lý Nhân Sự</span>
+                                <i class="fas fa-minus float-end toggle-icon"></i>
+                            </a>
+                            <ul id="employeeManagement" class="collapse show">
+                                <li>
+                                    <a class="nav-link" asp-area="Admin" asp-controller="NhanVienss" asp-action="index">
+                                        <i class="fas fa-users-cog"></i> Quản Lý Nhân Viên
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" asp-area="Admin" asp-controller="Quyenss" asp-action="index">
+                                        <i class="fas fa-user-shield"></i> Quản Lý Phân Quyền
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
-                    <!-- Quản Lý Người Dùng -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#userManagement" aria-expanded="true">
-                            <i class="fas fa-users"></i>
-                            <span>Quản Lý Người Dùng</span>
-                            <i class="fas fa-minus float-end toggle-icon"></i>
-                        </a>
-                        <ul id="userManagement" class="collapse show">
-                            <li>
-                                <a class="nav-link" asp-area="Admin" asp-controller="thongtincanhans" asp-action="index">
-                                    <i class="fas fa-user"></i> Thông Tin Người Dùng
-                                </a>
-                            </li>
-                            <li>
-                                <a class="nav-link" asp-area="Admin" asp-controller="QuanLyNguoiDungs" asp-action="index">
-                                    <i class="fas fa-history"></i> Lịch Sử Khóa
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                        <!-- Quản Lý Người Dùng -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#userManagement" aria-expanded="true">
+                                <i class="fas fa-users"></i>
+                                <span>Quản Lý Người Dùng</span>
+                                <i class="fas fa-minus float-end toggle-icon"></i>
+                            </a>
+                            <ul id="userManagement" class="collapse show">
+                                <li>
+                                    <a class="nav-link" asp-area="Admin" asp-controller="thongtincanhans" asp-action="index">
+                                        <i class="fas fa-user"></i> Thông Tin Người Dùng
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" asp-area="Admin" asp-controller="QuanLyNguoiDungs" asp-action="index">
+                                        <i class="fas fa-history"></i> Lịch Sử Khóa
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
-                    <!-- Quản Lý Báo Cáo và Hóa Đơn -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#reportManagement" aria-expanded="true">
-                            <i class="fas fa-clipboard"></i>
-                            <span>Quản Lý Báo Cáo & Hóa Đơn</span>
-                            <i class="fas fa-minus float-end toggle-icon"></i>
-                        </a>
-                        <ul id="reportManagement" class="collapse show">
-                            <li>
-                                <a class="nav-link" asp-area="Admin" asp-controller="BaoCaoNguoiDungs" asp-action="index">
-                                    <i class="fas fa-clipboard-list"></i> Quản Lý Báo Cáo
-                                </a>
-                            </li>
-                            <li>
-                                <a class="nav-link" asp-area="Admin" asp-controller="HoaDons" asp-action="index">
-                                    <i class="fas fa-file-invoice-dollar"></i> Quản Lý Hóa Đơn
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                        <!-- Quản Lý Báo Cáo và Hóa Đơn -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#reportManagement" aria-expanded="true">
+                                <i class="fas fa-clipboard"></i>
+                                <span>Quản Lý Báo Cáo & Hóa Đơn</span>
+                                <i class="fas fa-minus float-end toggle-icon"></i>
+                            </a>
+                            <ul id="reportManagement" class="collapse show">
+                                <li>
+                                    <a class="nav-link" asp-area="Admin" asp-controller="BaoCaoNguoiDungs" asp-action="index">
+                                        <i class="fas fa-clipboard-list"></i> Quản Lý Báo Cáo
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" asp-area="Admin" asp-controller="HoaDons" asp-action="index">
+                                        <i class="fas fa-file-invoice-dollar"></i> Quản Lý Hóa Đơn
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
-                    <!-- Quản Lý Nội Dung -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#contentManagement" aria-expanded="true">
-                            <i class="fas fa-film"></i>
-                            <span>Quản Lý Nội Dung</span>
-                            <i class="fas fa-minus float-end toggle-icon"></i>
-                        </a>
-                        <ul id="contentManagement" class="collapse show">
-                            <li>
-                                <a class="nav-link" asp-area="Admin" asp-controller="QuanLyPhims" asp-action="index">
-                                    <i class="fas fa-film"></i> Quản Lý Phim
-                                </a>
-                            </li>
-                            <li>
-                                <a class="nav-link" asp-area="Admin" asp-controller="Phans" asp-action="index">
-                                    <i class="fas fa-layer-group"></i> Quản Lý Phần
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                        <!-- Quản Lý Nội Dung -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#contentManagement" aria-expanded="true">
+                                <i class="fas fa-film"></i>
+                                <span>Quản Lý Nội Dung</span>
+                                <i class="fas fa-minus float-end toggle-icon"></i>
+                            </a>
+                            <ul id="contentManagement" class="collapse show">
+                                <li>
+                                    <a class="nav-link" asp-area="Admin" asp-controller="QuanLyPhims" asp-action="index">
+                                        <i class="fas fa-film"></i> Quản Lý Phim
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" asp-area="Admin" asp-controller="Phans" asp-action="index">
+                                        <i class="fas fa-layer-group"></i> Quản Lý Phần
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="QuanLyDanhMuc" asp-action="index">
-                            <i class="fas fa-list-alt"></i>
-                            <span>Quản Lý Danh Mục</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="UuDai" asp-action="index">
-                            <i class="fas fa-list-alt"></i>
-                            <span>Quản Lý Ưu Đãi</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="Admin" asp-controller="DoanhThus" asp-action="index">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Doanh Thu</span>
-                        </a>
-                    </li>
-                </ul>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="QuanLyDanhMuc" asp-action="index">
+                                <i class="fas fa-list-alt"></i>
+                                <span>Quản Lý Danh Mục</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="UuDai" asp-action="index">
+                                <i class="fas fa-list-alt"></i>
+                                <span>Quản Lý Ưu Đãi</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="DoanhThus" asp-action="index">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Doanh Thu</span>
+                            </a>
+                        </li>
+                    </ul>
+                }
+                else if(@HttpContextAccessor.HttpContext.Session.GetString("UserType") != "Admin" && tempRole != null)
+                {
+                    if (tempRole.Contains("Quản Lý Người Dùng"))
+                    {
+                        <li>
+                            <a class="nav-link" asp-area="Admin" asp-controller="thongtincanhans" asp-action="index">
+                                <i class="fas fa-user"></i> Thông Tin Người Dùng
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link" asp-area="Admin" asp-controller="QuanLyNguoiDungs" asp-action="index">
+                                <i class="fas fa-history"></i> Lịch Sử Khóa
+                            </a>
+                        </li>
+                    }
+                    if (tempRole.Contains("Quản Lý Ưu Đãi"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="UuDai" asp-action="index">
+                                <i class="fas fa-list-alt"></i>
+                                <span>Quản Lý Ưu Đãi</span>
+                            </a>
+                        </li>
+                    }
+                    if (tempRole.Contains("Quản Lý Doanh Thu"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="DoanhThus" asp-action="index">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Doanh Thu</span>
+                            </a>
+                        </li>
+                    }
+                    if (tempRole.Contains("Quản Lý Danh Mục"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="QuanLyDanhMuc" asp-action="index">
+                                <i class="fas fa-list-alt"></i>
+                                <span>Quản Lý Danh Mục</span>
+                            </a>
+                        </li>
+                    }
+                    if (tempRole.Contains("Quản Lý Báo Cáo"))
+                    {
+                        <li>
+                            <a class="nav-link" asp-area="Admin" asp-controller="BaoCaoNguoiDungs" asp-action="index">
+                                <i class="fas fa-clipboard-list"></i> Quản Lý Báo Cáo
+                            </a>
+                        </li>
+                    }
+                }
+
+                else
+                {
+                    <script type="text/javascript">
+                        // Hiển thị thông báo SweetAlert2 với nút OK
+                        Swal.fire({
+                            title: 'Bạn sẽ bị đăng xuất!',
+                            text: 'Hiện tại bạn chưa được cấp quyền để sử dụng hệ thống!',
+                            icon: 'warning',
+                            showConfirmButton: true,
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Nếu người dùng nhấn "OK", chuyển hướng đến action Logout
+                                window.location.href = '@Url.Action("Logout", "Home", new { area = "" })';
+                            }
+                        });
+                    </script>
+                }
+
 
 
             </div>
