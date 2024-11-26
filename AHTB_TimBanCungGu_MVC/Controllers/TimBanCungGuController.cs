@@ -67,21 +67,34 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     ViewBag.SwipeCount = 0; // Giá trị mặc định nếu không tìm thấy
                 }
                 // Retrieve swiped users
+                // Lọc những người dùng đã swipe (bao gồm cả Like và Dislike)
                 var swipedUsers = await _MatchNguoiDung
-                    .Find(x => x["User1"] == userName && x["SwipeAction"] != "Dislike")
+                    .Find(x => x["User1"] == userName)
                     .ToListAsync();
 
-                var swipedUsernames = swipedUsers.Select(x => x["User2"].ToString()).ToList();
+                var likedOrDislikedUsernames = swipedUsers
+                    .Where(x => x["SwipeAction"] == "Like" || x["SwipeAction"] == "Dislike")
+                    .Select(x => x["User2"].ToString())
+                    .ToList();
+
+                // Loại bỏ những người dùng đã bị "Dislike"
+                var dislikedUsernames = swipedUsers
+                    .Where(x => x["SwipeAction"] == "Dislike")
+                    .Select(x => x["User2"].ToString())
+                    .ToList();
 
                 var dBAHTBContext = _context.ThongTinCN
                     .Include(t => t.User)
                     .Include(t => t.AnhCaNhan)
                     .Where(t =>
                         (t.TrangThai == "Hoạt Động" || t.TrangThai == "Không Hoạt Động") // Lọc theo trạng thái
-                        && !swipedUsernames.Contains(t.User.UserName)) // Lọc những người đã swipe
-            .AsQueryable();
+                        && !likedOrDislikedUsernames.Contains(t.User.UserName) // Loại bỏ người đã swipe
+                        && !dislikedUsernames.Contains(t.User.UserName)) // Loại bỏ người đã "Dislike"
+                    .AsQueryable();
 
                 // Map user profiles to view model
+
+
                 var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
                 {
                     IDProfile = t.IDProfile,
@@ -213,33 +226,51 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                
                 // Lưu thông tin match vào MongoDB từ người A
                 var matchNguoiDung = new BsonDocument
+
+                // Lưu thông tin swipe vào MongoDB từ người A
+                var swipeAction = new BsonDocument
         {
-            { "IDMatch", Guid.NewGuid().ToString() },
+            { "IDSwipe", Guid.NewGuid().ToString() },
             { "User1", nguoiTimDoiTuong.UserName },
             { "User2", doiTuong.UserName },
-            { "MatchedAt", DateTime.UtcNow },
-            { "SwipeAction", request.Action }
+            { "SwipeAction", request.Action },
+            { "SwipedAt", DateTime.UtcNow }
         };
 
-                await _MatchNguoiDung.InsertOneAsync(matchNguoiDung);
+                await _MatchNguoiDung.InsertOneAsync(swipeAction);
+                if (request.Action == "Dislike")
+                {
+                    var filter = Builders<BsonDocument>.Filter.And(
+                        Builders<BsonDocument>.Filter.Eq("User1", nguoiTimDoiTuong.UserName),
+                        Builders<BsonDocument>.Filter.Eq("User2", doiTuong.UserName)
+                    );
+                    var update = Builders<BsonDocument>.Update.Set("SwipeAction", "Dislike");
+                    await _MatchNguoiDung.UpdateOneAsync(filter, update);
+                }
 
-                // Kiểm tra xem người B đã swipe like người A chưa
-                var matchReverse = await _MatchNguoiDung
+
+                // Kiểm tra xem người A đã swipe "Like" với người B chưa
+                var matchNguoiA = await _MatchNguoiDung
+                    .Find(x => x["User1"] == nguoiTimDoiTuong.UserName && x["User2"] == doiTuong.UserName && x["SwipeAction"] == "Like")
+                    .FirstOrDefaultAsync();
+
+                // Kiểm tra xem người B đã swipe "Like" với người A chưa
+                var matchNguoiB = await _MatchNguoiDung
                     .Find(x => x["User1"] == doiTuong.UserName && x["User2"] == nguoiTimDoiTuong.UserName && x["SwipeAction"] == "Like")
                     .FirstOrDefaultAsync();
-                var hoTenNguoiGui = await _context.ThongTinCN
-    .Where(x => x.UsID == nguoiTimDoiTuong.UsID)
-    .Select(x => x.HoTen)
-    .FirstOrDefaultAsync();
 
-                var hoTenNguoiNhan = await _context.ThongTinCN
-                    .Where(x => x.UsID == doiTuong.UsID)
-                    .Select(x => x.HoTen)
-                    .FirstOrDefaultAsync();
-
-                if (matchReverse != null)
+                if (matchNguoiA != null && matchNguoiB != null)
                 {
-                    // Nếu người B cũng swipe like người A, tạo thông báo cho cả 2 người
+                    // Nếu cả hai người đều đã swipe "Like", tạo thông báo cho cả hai người
+                    var hoTenNguoiGui = await _context.ThongTinCN
+                        .Where(x => x.UsID == nguoiTimDoiTuong.UsID)
+                        .Select(x => x.HoTen)
+                        .FirstOrDefaultAsync();
+
+                    var hoTenNguoiNhan = await _context.ThongTinCN
+                        .Where(x => x.UsID == doiTuong.UsID)
+                        .Select(x => x.HoTen)
+                        .FirstOrDefaultAsync();
 
                     // Thông báo cho người A rằng họ đã matched với người B
                     var thongBaoA = new BsonDocument
@@ -248,10 +279,9 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 { "NguoiNhan", doiTuong.UserName },
                 { "NoiDung", $" đã matched với bạn!" },
                 { "ThoiGian", DateTime.UtcNow },
-                 {"Read", false }
+                { "Read", false }
             };
 
-                    // Lưu thông báo cho người A
                     await _ThongBao.InsertOneAsync(thongBaoA);
 
                     // Thông báo cho người B rằng họ đã matched với người A
@@ -261,11 +291,11 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 { "NguoiNhan", nguoiTimDoiTuong.UserName },
                 { "NoiDung", $" đã matched với bạn!" },
                 { "ThoiGian", DateTime.UtcNow },
-                {"Read", false }
+                { "Read", false }
             };
 
-                    // Lưu thông báo cho người B
                     await _ThongBao.InsertOneAsync(thongBaoB);
+
                     // Gửi thông báo qua WebSocket cho người A (nếu người A đang online)
                     if (_userWebSockets.TryGetValue(nguoiTimDoiTuong.UserName, out var webSocketA))
                     {
@@ -291,7 +321,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         var bufferB = Encoding.UTF8.GetBytes(jsonMessage);
                         await webSocketB.SendAsync(new ArraySegment<byte>(bufferB), WebSocketMessageType.Text, true, CancellationToken.None);
                     }
-
                 }
 
                 return Ok(new { success = true, message = "Đã lưu hành động swipe." });
@@ -301,6 +330,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return StatusCode(500, new { success = false, message = $"Lỗi hệ thống: {ex.Message}" });
             }
         }
+
 
         public class SwipeRequest
         {
@@ -399,16 +429,16 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("Login", "LoginvsRegister");
             }
 
-            // Lấy tên người dùng hiện tại từ Session
-            var userName = HttpContext.Session.GetString("TempUserName");
-            if (string.IsNullOrEmpty(userName))
+            // Lấy tên người dùng đang đăng nhập từ Session
+            var userNameLogged = HttpContext.Session.GetString("TempUserName");
+            if (string.IsNullOrEmpty(userNameLogged))
             {
                 return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
             }
 
             // Truy vấn MongoDB: Tìm tất cả những ai đã "Like" người dùng hiện tại
             var likedUsers = await _MatchNguoiDung
-                .Find(x => x["User2"] == userName && x["SwipeAction"] == "Like")
+                .Find(x => x["User2"] == userNameLogged && x["SwipeAction"] == "Like")
                 .ToListAsync();
 
             if (likedUsers.Count == 0)
@@ -419,6 +449,25 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             // Lấy danh sách tên người dùng đã thích
             var userNames = likedUsers.Select(x => x["User1"].ToString()).ToList();
+
+            // Lấy danh sách người dùng mà tài khoản hiện tại đã "Like" hoặc "Dislike"
+            var actionsByCurrentUser = await _MatchNguoiDung
+                .Find(x => x["User1"] == userNameLogged)
+                .ToListAsync();
+
+            var excludedUserNames = actionsByCurrentUser
+                .Where(x => x["SwipeAction"] == "Like" || x["SwipeAction"] == "Dislike")
+                .Select(x => x["User2"].ToString())
+                .ToHashSet(); // Sử dụng HashSet để loại bỏ trùng lặp và tăng hiệu suất tìm kiếm
+
+            // Loại bỏ những người dùng đã được "Like" hoặc "Dislike" bởi người dùng hiện tại
+            userNames = userNames.Except(excludedUserNames).ToList();
+
+            if (userNames.Count == 0)
+            {
+                ViewBag.Message = "Không có người nào thích bạn.";
+                return View(new List<InfoNguoiDung>()); // Trả về view trống
+            }
 
             // Truy vấn danh sách thông tin người dùng từ SQL Server
             var likedUserDetails = await _context.ThongTinCN
@@ -444,6 +493,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             return View(likedUserDetails); // Trả về view với danh sách thông tin người đã thích bạn
         }
+
 
     }
 }
