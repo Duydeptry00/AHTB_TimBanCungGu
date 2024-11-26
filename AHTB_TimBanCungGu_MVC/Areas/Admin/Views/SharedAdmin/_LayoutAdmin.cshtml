@@ -15,6 +15,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 
@@ -146,14 +147,14 @@
                     <ul class="nav flex-column">
                         <!-- Nhân Viên và Phân Quyền -->
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#employeeManagement" aria-expanded="true">
+                            <a class="nav-link active" href="#" data-bs-toggle="collapse" data-bs-target="#employeeManagement" aria-expanded="true">
                                 <i class="fas fa-users-cog"></i>
                                 <span>Quản Lý Nhân Sự</span>
                                 <i class="fas fa-minus float-end toggle-icon"></i>
                             </a>
                             <ul id="employeeManagement" class="collapse show">
                                 <li>
-                                    <a class="nav-link" asp-area="Admin" asp-controller="NhanVienss" asp-action="index">
+                                    <a class="nav-link active" asp-area="Admin" asp-controller="NhanVienss" asp-action="index">
                                         <i class="fas fa-users-cog"></i> Quản Lý Nhân Viên
                                     </a>
                                 </li>
@@ -388,6 +389,7 @@
     <!-- JavaScript -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            // Handle toggle links for collapsible sections
             const toggleLinks = document.querySelectorAll('[data-bs-toggle="collapse"]');
 
             toggleLinks.forEach(link => {
@@ -397,6 +399,14 @@
                     const targetId = link.getAttribute('data-bs-target');
                     const target = document.querySelector(targetId);
 
+                    // Add or remove 'active' class for the clicked link
+                    const allLinks = document.querySelectorAll('#sidebar .nav-link');
+                    allLinks.forEach(link => {
+                        link.classList.remove('active'); // Remove 'active' from all links
+                    });
+                    link.classList.add('active'); // Add 'active' to the clicked link
+
+                    // Change the icon for collapsible sections
                     target.addEventListener('shown.bs.collapse', () => {
                         icon.classList.remove('fa-plus');
                         icon.classList.add('fa-minus');
@@ -408,16 +418,73 @@
                     });
                 });
             });
-        });
-        const toggleSidebarButton = document.getElementById('toggleSidebar');
-        const sidebar = document.getElementById('sidebar');
-        const contentWrapper = document.getElementById('content-wrapper');
 
-        // Toggle the sidebar visibility
-        toggleSidebarButton.addEventListener('click', function () {
-            sidebar.classList.toggle('closed');
+            // Event listener for regular nav links (non-toggle links)
+            const regularLinks = document.querySelectorAll('.nav-link[href]:not([href="#"])');
+
+            regularLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    // Remove the 'active' class from all links
+                    regularLinks.forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    // Add the 'active' class to the clicked link
+                    link.classList.add('active');
+                });
+
+                // Optionally, add hover effect through JS if needed
+                link.addEventListener('mouseenter', () => {
+                    link.classList.add('hover'); // Add a hover class on mouse enter
+                });
+
+                link.addEventListener('mouseleave', () => {
+                    link.classList.remove('hover'); // Remove the hover class on mouse leave
+                });
+            });
         });
 
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Sử dụng AJAX để tải nội dung mà không làm reload toàn bộ trang
+            $(document).on('click', '.nav-link', function (e) {
+                // Kiểm tra nếu đây không phải là liên kết đăng xuất
+                if ($(this).attr('href') === '/Home/Logout') {
+                    return;  // Không làm gì, để liên kết đăng xuất hoạt động bình thường
+                }
+
+                e.preventDefault();  // Ngừng hành động mặc định (reload toàn bộ trang)
+                var url = $(this).attr('href');  // Lấy URL của liên kết đã click
+
+                // Sử dụng AJAX để lấy nội dung
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function (response) {
+                        // Tải nội dung từ phản hồi vào phần <main>
+                        $('main').html($(response).find('main').html());
+                        // Cập nhật lịch sử trình duyệt (tùy chọn)
+                        history.pushState(null, '', url);
+                    },
+                    error: function () {
+                        alert('Lỗi khi tải nội dung.');
+                    }
+                });
+            });
+
+            // Xử lý khi người dùng sử dụng nút quay lại hoặc tiếp theo của trình duyệt
+            window.onpopstate = function () {
+                var url = location.href;  // Lấy URL hiện tại
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function (response) {
+                        // Cập nhật nội dung của phần <main> khi người dùng quay lại
+                        $('main').html($(response).find('main').html());
+                    }
+                });
+            };
+        });
     </script>
 
     <!-- Bootstrap 5 JS, Popper.js, and FontAwesome -->
