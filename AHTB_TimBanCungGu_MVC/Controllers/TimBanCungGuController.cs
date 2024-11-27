@@ -434,6 +434,19 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
             }
 
+            // Kiểm tra xem người dùng có phải là Premium không
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .Where(t => t.User.UserName == userNameLogged)
+                .FirstOrDefaultAsync();
+
+            if (userInfo == null || !userInfo.IsPremium)
+            {
+                // Lưu thông báo vào TempData và chuyển hướng về trang chủ
+                TempData["Message"] = "Bạn phải là người dùng Premium để vào trang danh sách người thích.";
+                return RedirectToAction("TrangChu", "TimBanCungGu");
+            }
+
             // Truy vấn MongoDB: Tìm tất cả những ai đã "Like" người dùng hiện tại
             var likedUsers = await _MatchNguoiDung
                 .Find(x => x["User2"] == userNameLogged && x["SwipeAction"] == "Like")

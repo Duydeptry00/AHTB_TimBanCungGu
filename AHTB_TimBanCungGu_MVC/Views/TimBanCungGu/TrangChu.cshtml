@@ -361,6 +361,35 @@
     });
 
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Lấy thông báo từ TempData
+        var message = '@TempData["Message"]';
+
+        if (message) {
+            // Giải mã HTML để hiển thị đúng ký tự đặc biệt
+            var decodedMessage = decodeHtml(message);
+
+            // Hiển thị thông báo với SweetAlert
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thông báo',
+                text: decodedMessage,
+                confirmButtonText: 'OK'
+            });
+        }
+
+        // Hàm giải mã HTML
+        function decodeHtml(html) {
+            var txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+        }
+    });
+</script>
+
+
+
 
 
 </html>
