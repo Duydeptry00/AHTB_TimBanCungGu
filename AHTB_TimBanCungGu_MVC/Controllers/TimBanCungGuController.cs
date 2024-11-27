@@ -223,9 +223,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     var countSwipService = new CountSwipService();
                     await countSwipService.GiamLuotVuot(userName);
                 }
-               
-                // Lưu thông tin match vào MongoDB từ người A
-                var matchNguoiDung = new BsonDocument
+
+
 
                 // Lưu thông tin swipe vào MongoDB từ người A
                 var swipeAction = new BsonDocument
