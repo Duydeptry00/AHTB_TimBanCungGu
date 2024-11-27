@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AHTB_TimBanCungGu_API.Migrations
 {
     [DbContext(typeof(DBAHTBContext))]
-    [Migration("20241119043549_ngewnget")]
-    partial class ngewnget
+    [Migration("20241125232524_dbmoinhat")]
+    partial class dbmoinhat
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -315,6 +315,9 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<string>("ReviewDetails")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TenRole")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Update")
                         .HasColumnType("nvarchar(max)");
 
@@ -438,7 +441,7 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<int>("IDRole")
                         .HasColumnType("int");
 
-                    b.Property<string>("TenRole")
+                    b.Property<string>("TrangThai")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UsID")

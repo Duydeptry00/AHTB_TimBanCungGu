@@ -9,17 +9,29 @@ using System.Text.Json;
 using AHTB_TimBanCungGu_API.ViewModels;
 using System.Reflection.Metadata;
 using static AHTB_TimBanCungGu_MVC.Controllers.LoginvsRegisterController;
+using AHTB_TimBanCungGu_MVC.Service;
+using MongoDB.Driver;
+using static AHTB_TimBanCungGu_MVC.Service.CountSwipService;
+using AHTB_TimBanCungGu_API.Data;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
     public class LoginvsRegisterController : Controller
     {
+        private readonly DBAHTBContext _context;
         private readonly HttpClient _httpClient;
         private const string ApiBaseUrl = "http://localhost:15172/api";
-
-        public LoginvsRegisterController(HttpClient httpClient)
+        private readonly IMongoCollection<UserSwipeInfo> _userSwipes;
+        public LoginvsRegisterController(HttpClient httpClient , DBAHTBContext context)
         {
+            _context = context;
             _httpClient = httpClient;
+            var connectionString = "mongodb://localhost:27017";  // MongoDB connection string
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase("AHTBdb");  // Database name
+            _userSwipes = database.GetCollection<UserSwipeInfo>("SoLuotVuot");  // Collection name
         }
 
         public IActionResult Login()
@@ -61,7 +73,23 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                             HttpContext.Session.SetString("JwtToken", tokenResponse.Token);
                             HttpContext.Session.SetString("UserType", tokenResponse.UserType);
                             HttpContext.Session.SetString("TempUserName", userName);
-
+                            var nguoiTimDoiTuong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
+                            if (nguoiTimDoiTuong == null)
+                            {
+                                return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+                            }
+                            var premium = _context.ThongTinCN.FirstOrDefault(x => x.UsID == nguoiTimDoiTuong.UsID);
+                            if (premium.IsPremium != true)
+                            {
+                                var countSwipService = new CountSwipService();
+                                await countSwipService.HandleUserLoginAsync(userName);
+                            }
+                            else
+                            {
+                                var countSwipService = new CountSwipService();
+                                await countSwipService.LuotVuotPrimeumAsync(userName);
+                            }
+                        
                             ViewBag.ShowSuccessModal = true;
 
                             // Hiển thị giao diện phù hợp với loại người dùng

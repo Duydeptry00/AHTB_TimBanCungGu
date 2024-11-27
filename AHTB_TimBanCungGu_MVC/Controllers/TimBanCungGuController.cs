@@ -14,6 +14,7 @@ using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
+using AHTB_TimBanCungGu_MVC.Service;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -22,6 +23,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         private readonly DBAHTBContext _context;
         private readonly IMongoCollection<BsonDocument> _MatchNguoiDung;
         private readonly IMongoCollection<BsonDocument> _ThongBao;
+        private readonly IMongoCollection<BsonDocument> _SoLuotVuot;
         private static Dictionary<string, WebSocket> _userWebSockets = new Dictionary<string, WebSocket>();
 
         public TimBanCungGuController(DBAHTBContext context)
@@ -34,6 +36,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             var database = client.GetDatabase("AHTBdb");
             _MatchNguoiDung = database.GetCollection<BsonDocument>("MatchNguoiDung");
             _ThongBao = database.GetCollection<BsonDocument>("Thongbao");
+            _SoLuotVuot = database.GetCollection<BsonDocument>("SoLuotVuot");
         }
 
         public async Task<IActionResult> TrangChu()
@@ -54,7 +57,16 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     return NotFound(new { success = false, message = "Người dùng không tồn tại." });
                 }
 
-                // Lọc những người dùng đã swipe
+                var userSwipeInfo = await _SoLuotVuot.Find(x => x["Uservuot"] == userName).FirstOrDefaultAsync();
+                if (userSwipeInfo != null)
+                {
+                    ViewBag.SwipeCount = userSwipeInfo["SwipesRemaining"].ToInt32(); // Hoặc ToInt32() để chuyển đổi kiểu nếu cần
+                }
+                else
+                {
+                    ViewBag.SwipeCount = 0; // Giá trị mặc định nếu không tìm thấy
+                }
+                // Retrieve swiped users
                 var swipedUsers = await _MatchNguoiDung
                     .Find(x => x["User1"] == userName && x["SwipeAction"] != "Dislike")
                     .ToListAsync();
@@ -64,9 +76,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 var dBAHTBContext = _context.ThongTinCN
                     .Include(t => t.User)
                     .Include(t => t.AnhCaNhan)
-                    .Where(t => !swipedUsernames.Contains(t.User.UserName))  // Lọc người đã swipe
+                    .Where(t => !swipedUsernames.Contains(t.User.UserName))  // Exclude already swiped users
                     .AsQueryable();
 
+                // Map user profiles to view model
                 var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
                 {
                     IDProfile = t.IDProfile,
@@ -83,6 +96,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
                 }).Where(x => x.UsID != nguoitimdoituong.UsID).ToListAsync();
 
+
                 return View(thongTinCaNhanViewModels);
             }
             else
@@ -91,6 +105,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
+
 
 
         // GET: TimBanCungGu/Create
@@ -166,7 +181,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             }
 
             try
-            {
+            { 
                 int idUser2 = int.Parse(request.UserId2);
                 var idDoiTuong = await _context.ThongTinCN.FirstOrDefaultAsync(x => x.IDProfile == idUser2);
                 if (idDoiTuong == null)
@@ -176,7 +191,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                 var doiTuong = await _context.Users.FirstOrDefaultAsync(x => x.UsID == idDoiTuong.UsID);
                 var userName = HttpContext.Session.GetString("TempUserName");
-
+          
                 if (string.IsNullOrEmpty(userName))
                 {
                     return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
@@ -187,7 +202,13 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 {
                     return NotFound(new { success = false, message = "Người dùng không tồn tại." });
                 }
-
+                var premium = _context.ThongTinCN.FirstOrDefault(x => x.UsID == nguoiTimDoiTuong.UsID);
+                if (premium.IsPremium == false) 
+                {
+                    var countSwipService = new CountSwipService();
+                    await countSwipService.GiamLuotVuot(userName);
+                }
+               
                 // Lưu thông tin match vào MongoDB từ người A
                 var matchNguoiDung = new BsonDocument
         {

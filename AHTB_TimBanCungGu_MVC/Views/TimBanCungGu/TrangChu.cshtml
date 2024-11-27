@@ -192,7 +192,7 @@
                 <li class="lii"><a href="#thongtin">Hồ sơ cá nhân</a></li>
                 <li class="lii"><a href="#nhantin">Nhắn tin</a></li>
                 <li class="lii"><a href="#danhsach">Danh sách người thích</a></li>
-                <li class="lii"><a href="#soluot">Số lượt vuốt còn lại</a></li>
+                <li class="lii"><a href="#soluot" >Số lượt vuốt còn lại : <span id="swipeCount">@ViewBag.SwipeCount</span></a></li>
             </ul>
         </div>
         <div class="main-container col-md-9 col-12">
@@ -258,6 +258,7 @@
         const likeButtons = document.querySelectorAll(".like");
         const cardContainers = document.querySelectorAll(".card-container");
         const detailsContainers = document.querySelectorAll(".details-container");
+        let swipeCount = parseInt(document.getElementById("swipeCount").textContent);
 
         async function sendSwipeAction(userId2, action) {
             if (!userId2) {
@@ -275,14 +276,33 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    // Nếu hành động thành công, ẩn thẻ người dùng
+                    // Nếu hành động thành công, ẩn thẻ người dùng và giảm lượt vuốt
                     hideCard(userId2);
+                    updateSwipeCount();
                 } else {
                     console.error(result.message);
                 }
             } catch (error) {
                 console.error('Lỗi khi gọi API:', error);
             }
+        }
+
+        function updateSwipeCount() {
+            if (swipeCount > 0) {
+                swipeCount -= 1;
+                document.getElementById("swipeCount").textContent = swipeCount;
+            }
+
+            // Nếu hết lượt, hiện thông báo và khóa các nút
+            if (swipeCount <= 0) {
+                alert("Bạn đã hết lượt vuốt!");
+                disableSwipeButtons();
+            }
+        }
+
+        function disableSwipeButtons() {
+            const buttons = document.querySelectorAll(".like, .dislike");
+            buttons.forEach(button => button.disabled = true);
         }
 
         // Hàm ẩn thẻ người dùng
@@ -302,7 +322,7 @@
             const userId2 = currentCard.dataset.userid;
 
             // Gửi hành động swipe cho "Dislike", không gửi cho "Like"
-            if (action === "Dislike") {
+            if (action === "Dislike" || action === "Like") {
                 sendSwipeAction(userId2, action);
             }
 
@@ -336,18 +356,10 @@
 
         // Xử lý sự kiện khi bấm nút Like
         likeButtons.forEach((button, index) => {
-            button.addEventListener("click", () => {
-                swipeCard(index, 150, "Like");
-
-                // Sau khi gửi hành động like, kiểm tra xem có match không
-                const currentCard = cardContainers[index];
-                const userId2 = currentCard.dataset.userid;
-
-                // Gửi hành động "Like"
-                sendSwipeAction(userId2, "Like");
-            });
+            button.addEventListener("click", () => swipeCard(index, 150, "Like"));
         });
     });
+
 </script>
 
 

@@ -313,6 +313,9 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<string>("ReviewDetails")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TenRole")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Update")
                         .HasColumnType("nvarchar(max)");
 
@@ -436,7 +439,7 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<int>("IDRole")
                         .HasColumnType("int");
 
-                    b.Property<string>("TenRole")
+                    b.Property<string>("TrangThai")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UsID")

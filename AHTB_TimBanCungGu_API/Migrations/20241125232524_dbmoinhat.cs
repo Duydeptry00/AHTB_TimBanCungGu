@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AHTB_TimBanCungGu_API.Migrations
 {
-    public partial class ngewnget : Migration
+    public partial class dbmoinhat : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -17,7 +17,8 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     Add = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Update = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Delete = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ReviewDetails = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    ReviewDetails = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TenRole = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -224,7 +225,7 @@ namespace AHTB_TimBanCungGu_API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UsID = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     IDRole = table.Column<int>(type: "int", nullable: false),
-                    TenRole = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    TrangThai = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
