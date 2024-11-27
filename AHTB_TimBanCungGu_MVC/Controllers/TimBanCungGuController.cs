@@ -334,9 +334,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             // Lấy thông báo
             var notifications = await _ThongBao
-                .Find(x => x["NguoiNhan"] == userName)
-                .SortByDescending(x => x["ThoiGian"])
-                .ToListAsync();
+      .Find(x => x["NguoiNhan"] == userName)
+      .Sort(Builders<BsonDocument>.Sort.Ascending("ThoiGian"))
+      .ToListAsync();
+
 
             // Lấy danh sách UserName của NguoiGui từ thông báo
             var senderUserNames = notifications.Select(x => x["NguoiGui"].ToString()).ToList();
@@ -355,9 +356,9 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 id = x["_id"].ToString(),
                 sender = senders
-                    .FirstOrDefault(t => t.UserName == x["NguoiGui"].ToString())?.ThongTinCN?.HoTen, // Lấy tên người gửi từ ThongTinCN
+           .FirstOrDefault(t => t.UserName == x["NguoiGui"].ToString())?.ThongTinCN?.HoTen, // Lấy tên người gửi từ ThongTinCN
                 text = x["NoiDung"].ToString(),
-                time = x["ThoiGian"].ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+                time = x["ThoiGian"].ToUniversalTime().ToString("o"), // ISO 8601 format (UTC)
                 read = x["Read"]?.ToBoolean() ?? false
             }).ToList();
 

@@ -130,8 +130,11 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     // Lưu ảnh nếu có file được chọn và nếu chưa đạt số lượng ảnh tối đa
                     if (AnhCaNhanFile != null && AnhCaNhanFile.Length > 0 && existingProfile.AnhCaNhan.Count < 7)
                     {
-                        // Tính toán tên file mới theo thứ tự
-                        var newFileName = (existingProfile.AnhCaNhan.Count + 1) + Path.GetExtension(AnhCaNhanFile.FileName);
+                        // Định nghĩa số thứ tự dựa trên số lượng ảnh hiện tại
+                        var imageIndex = existingProfile.AnhCaNhan.Count + 1;
+
+                        // Tạo tên file mới theo cú pháp username + số thứ tự
+                        var newFileName = $"{userName}_{imageIndex}{Path.GetExtension(AnhCaNhanFile.FileName)}";
 
                         // Đường dẫn lưu trữ ảnh
                         var filePath = Path.Combine("wwwroot/uploads", newFileName);
