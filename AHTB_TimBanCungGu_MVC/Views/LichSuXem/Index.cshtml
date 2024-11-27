@@ -1,0 +1,86 @@
+﻿
+@model List<AHTB_TimBanCungGu_API.Models.LichSuXem>
+
+@{
+    Layout = null;
+
+    var latestItems = Model
+        .OrderByDescending(x => x.ThoiGianXem) // This will first sort by date, then by time automatically
+        .Take(8)
+        .ToList();
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Sử Xem Phim</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/lichsuxem.css">
+</head>
+<body>
+    <h1>Lịch Sử Xem Phim</h1>
+    <div class="carousel-container">
+        <ul id="movieList" class="movie-list">
+            @foreach (var item in latestItems)
+            {
+                <li class="movie-item" data-url="@Url.Action("ChiTietPhim", "Phim", new { id = item.PhimDaXem })">
+                    <img src="~/images/@item.Phim.HinhAnh" alt="@item.Phim.TenPhim" />
+                    <div class="movie-details">
+                        <p class="movie-title">Phim: @item.Phim.TenPhim</p>
+                        <p class="movie-date">Thời gian xem: @item.ThoiGianXem.ToString("yyyy-MM-dd HH:mm")</p>
+                    </div>
+                </li>
+            }
+        </ul>
+        <button id="prevButton" class="control-button"><i class="fas fa-chevron-left"></i></button>
+        <button id="nextButton" class="control-button"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Handle click event on each movie item to navigate to the movie details page
+            $('.movie-item').on('click', function () {
+                // Get the URL for the movie details from the data-url attribute
+                var redirectUrl = $(this).data('url');
+
+                // Check if redirectUrl is available
+                if (!redirectUrl) {
+                    alert('URL chi tiết phim không hợp lệ.');
+                    return;
+                }
+
+                // Redirect to the movie details page
+                window.location.href = redirectUrl;
+            });
+        });
+        const itemsPerPage = 3;
+        let currentIndex = 0;
+
+        function updateCarousel() {
+            const movieList = document.getElementById("movieList");
+            const totalPages = Math.ceil(@Model.Count / itemsPerPage);
+                    movieList.style.transform = `translateX(-${currentIndex * (100 / totalPages)}%)`;
+        }
+
+        document.getElementById("prevButton").addEventListener("click", () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            }
+        });
+
+        document.getElementById("nextButton").addEventListener("click", () => {
+            if (currentIndex < Math.ceil(@Model.Count / itemsPerPage) - 1) {
+currentIndex++;
+            updateCarousel();
+        }
+                });
+    </script>
+
+
+</body>
+</html>
