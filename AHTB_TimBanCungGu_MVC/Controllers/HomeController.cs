@@ -27,32 +27,42 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _httpClient = httpClient;
         }
 
-        public async Task<IActionResult> Index(string username)
+        public async Task<IActionResult> Index()
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
 
             if (!string.IsNullOrEmpty(token))
             {
-                // Thêm token vào header Authorization của HttpClient
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var userName = HttpContext.Session.GetString("TempUserName");
 
-                // Lấy dữ liệu phim từ API
+                var userInfo = await _context.ThongTinCN
+                    .Include(t => t.User)
+                    .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+                if (userInfo != null)
+                {
+                    // Truyền thông tin người dùng vào ViewBag
+                    ViewBag.HoTen = userInfo.HoTen;
+                    ViewBag.GioiTinh = userInfo.GioiTinh;
+                    ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+                }
+
+                // Lấy danh sách phim từ cơ sở dữ liệu
                 var phimList = await _context.Phim
-                                .Include(p => p.TheLoai)  // Bao gồm thông tin của bảng TheLoai
-                                .OrderByDescending(p => p.NgayCapNhat) // Sắp xếp phim theo ngày cập nhật mới nhất
-                                .Take(6) // Lấy 6 phim mới nhất
-                                .ToListAsync(); // Trả về danh sách
+                    .Include(p => p.TheLoai)
+                    .OrderByDescending(p => p.NgayCapNhat)
+                    .Take(6)
+                    .ToListAsync();
 
                 return View(phimList);
             }
-            else
-            {
-                // Nếu không có token, có thể chuyển đến trang đăng nhập
-                ViewBag.Message = "Bạn chưa đăng nhập.";
-                return RedirectToAction("Login", "LoginvsRegister");
-            }
+
+            return View();
         }
+
+
+
         public IActionResult GioiThieu()
         {
             // Lấy JWT token từ Session

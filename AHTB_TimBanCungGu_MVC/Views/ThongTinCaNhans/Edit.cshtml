@@ -32,19 +32,22 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Giới tính:</label>
-                            <div class="form-check d-inline-block mr-2">
-                                <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nam" id="Nam" />
-                                <label class="form-check-label" for="Nam">Nam</label>
+                            <div>
+                                <div class="form-check d-inline-block mr-2">
+                                    <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nam" id="Nam" />
+                                    <label class="form-check-label" for="Nam">Nam</label>
+                                </div>
+                                <div class="form-check d-inline-block">
+                                    <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nữ" id="Nu" />
+                                    <label class="form-check-label" for="Nu">Nữ</label>
+                                </div>
                             </div>
-                            <div class="form-check d-inline-block">
-                                <input asp-for="GioiTinh" class="form-check-input" type="radio" value="Nữ" id="Nu" />
-                                <label class="form-check-label" for="Nu">Nữ</label>
-                            </div>
-                            <span asp-validation-for="GioiTinh" class="text-danger"></span>
+                            <span asp-validation-for="GioiTinh" class="text-danger d-block mt-2"></span>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Ngày sinh:</label>
-                            <input asp-for="NgaySinh" type="text" class="form-control" value="@Model.NgaySinh.ToString("dd/MM/yyyy")" />
+                            <input asp-for="NgaySinh" type="text" class="form-control" value="@Model.NgaySinh?.ToString("dd/MM/yyyy")" />
                             <span asp-validation-for="NgaySinh" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
@@ -108,7 +111,7 @@
                 <!-- Nút lưu và quay lại -->
                 <div class="text-center mt-4">
                     <input type="submit" value="Lưu" class="btn btn-primary" />
-                    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                    <a asp-action="Index" asp-route-id="@Model.IDProfile" class="btn btn-secondary">Quay lại</a>
                 </div>
             </form>
         </div>
@@ -152,9 +155,9 @@
             cancelButtonText: "Hủy"
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post(`/ThongTinCaNhans/DeleteImage/${id}`, function () {
+                $.post(/ThongTinCaNhans/DeleteImage / ${ id }, function () {
                     // Xóa phần tử ảnh khỏi giao diện
-                    $(`#image-${id}`).remove();
+                    $(#image - ${ id }).remove();
 
                     Swal.fire("Đã xóa", "Ảnh đã được xóa thành công", "success");
                 }).fail(function () {
@@ -171,4 +174,4 @@
             $('.photo-grid').html(data);
         });
     }
-</script>
+</script> 

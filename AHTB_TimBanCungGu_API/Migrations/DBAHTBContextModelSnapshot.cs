@@ -380,7 +380,7 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<string>("MoTa")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("NgaySinh")
+                    b.Property<DateTime?>("NgaySinh")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("NgayTao")
