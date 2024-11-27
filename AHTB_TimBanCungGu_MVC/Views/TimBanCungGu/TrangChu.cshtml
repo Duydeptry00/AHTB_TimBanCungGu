@@ -84,10 +84,11 @@
     }
 
     /* Styling hình ảnh trong card */
-    .card {
-        display: flex;
-        flex-direction: column;
-    }
+        .card {
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* Chiều cao đầy đủ để đảm bảo card co giãn đúng */
+        }
 
     .card img {
         width: 100%;
@@ -103,14 +104,14 @@
     }
 
     /* Khung chứa các icon Like/Dislike */
-    .icons {
-        display: flex;
-        justify-content: space-around;
-        width: 100%;
-        padding: 12px 0;
-        border-top: 1px solid #e5e5e5;
-        background-color: #f7f7f7;
-    }
+        .icons {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid #e5e5e5;
+            background-color: #f7f7f7;
+            margin-top: auto; /* Đảm bảo các nút ở cuối card */
+        }
 
     .icons button {
         background: none;
@@ -160,13 +161,16 @@
         color: #555;
     }
 
-    .info {
-        margin-top: 20px;
-    }
+        .info {
+            margin-top: auto; /* Đẩy phần thông tin lên để các nút Like/Dislike luôn ở cuối */
+            padding: 20px; /* Thêm padding để tạo khoảng cách giữa nội dung và nút */
+            text-align: center;
+        }
 
     /* Phần hình ảnh bổ sung */
     .images {
-        display: flex;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
         justify-content: space-between;
         margin-top: 20px;
     }
@@ -204,7 +208,7 @@
                     <div class="card">
                         @if (thongTin.HinhAnh != null && thongTin.HinhAnh.Count > 0)
                         {
-                            <img src="/Image/timbancunggu/@thongTin.HinhAnh[0]" alt="Ảnh cá nhân" class="profile-image" />
+                            <img src="/uploads/@thongTin.HinhAnh[0]" alt="Ảnh cá nhân" class="profile-image" />
                         }
                         else
                         {
@@ -235,9 +239,9 @@
                     <div class="images">
                         @if (thongTin.HinhAnh != null && thongTin.HinhAnh.Count > 1)
                         {
-                            @for (int j = 1; j < thongTin.HinhAnh.Count && j <= 3; j++)
+                            @for (int j = 1; j < thongTin.HinhAnh.Count; j++)
                             {
-                                <img src="/Image/timbancunggu/@thongTin.HinhAnh[j]" alt="Hobby @j">
+                                <img src="/uploads/@thongTin.HinhAnh[j]" alt="Hobby @j">
                             }
                         }
                         else
