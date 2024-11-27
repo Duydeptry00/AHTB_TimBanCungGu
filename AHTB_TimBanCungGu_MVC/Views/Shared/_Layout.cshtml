@@ -379,27 +379,28 @@
             console.log(userInfo); // Kiểm tra giá trị
 
             // Kiểm tra xem người dùng đã xem thông báo chưa bằng sessionStorage
-            if ((!userInfo.gioiTinh || !userInfo.hoTen) && !sessionStorage.getItem('seenUpdatePrompt')) {
-        @if (ViewBag.GioiTinh == null || ViewBag.HoTen == null)
-        {
-            <text>
-                        Swal.fire({
-                            title: 'Cập nhật thông tin',
-                            text: 'Bạn cần cập nhật Giới tính và Họ tên để tiếp tục sử dụng dịch vụ.',
-                            icon: 'warning',
-                            confirmButtonText: 'Cập nhật ngay', // Giữ nút "Cập nhật ngay"
-                            showCancelButton: false,
-                            allowOutsideClick: false,
-                            position: 'center', // Hiển thị ở giữa màn hình
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Lưu vào sessionStorage để ngừng hiển thị thông báo sau khi chuyển trang
-                                sessionStorage.setItem('seenUpdatePrompt', 'true');
-                                window.location.href = `/ThongTinCaNhans/Edit/${userInfo.IdThongTinCaNhan}`;
-                            }
-                        });
-            </text>
-        }
+            if ((!userInfo.gioiTinh || !userInfo.hoTen) && !sessionStorage.getItem('seenUpdatePrompt')) 
+            {
+                @if (ViewBag.GioiTinh == null || ViewBag.HoTen == null)
+                {
+                    <text>
+                                Swal.fire({
+                                    title: 'Cập nhật thông tin',
+                                    text: 'Bạn cần cập nhật Giới tính và Họ tên để tiếp tục sử dụng dịch vụ.',
+                                    icon: 'warning',
+                                    confirmButtonText: 'Cập nhật ngay', // Giữ nút "Cập nhật ngay"
+                                    showCancelButton: false,
+                                    allowOutsideClick: false,
+                                    position: 'center', // Hiển thị ở giữa màn hình
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        // Lưu vào sessionStorage để ngừng hiển thị thông báo sau khi chuyển trang
+                                        sessionStorage.setItem('seenUpdatePrompt', 'true');
+                                        window.location.href = `/ThongTinCaNhans/Edit/${userInfo.IdThongTinCaNhan}`;
+                                    }
+                                });
+                    </text>
+                }
             }
         };
     
