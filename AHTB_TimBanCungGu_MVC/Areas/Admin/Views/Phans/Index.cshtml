@@ -1,20 +1,251 @@
 ﻿@model IEnumerable<AHTB_TimBanCungGu_API.Models.Phan>
 
 @{
-    ViewData["Title"] = "Quản lý Phân";
+    ViewData["Title"] = "Quản lý Phần Phim";
     Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
+<style>
+    /* Nền tổng thể tối */
+    .dark-background {
+        margin: 15px;
+        background-color: #0d1b2a; /* Màu xanh tối dịu mắt */
+        color: #ffffff; /* Chữ sáng */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6); /* Hiệu ứng đổ bóng nhẹ */
+    }
 
-<div class="background-dark">
-    <div class="table-responsive">
-        <table class="table table-striped table-dark table-bordered">
+    /* Bảng */
+    .table-dark {
+        border-collapse: collapse;
+        width: 100%;
+        color: #ffffff; /* Chữ bảng */
+        background-color: #1a2b3c; /* Nền bảng xanh đậm */
+    }
+
+        .table-dark th {
+            background-color: #2c3e50; /* Nền tiêu đề bảng tối hơn */
+            color: #ffffff;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 2px solid #3b4f63; /* Viền tiêu đề bảng */
+        }
+
+        .table-dark td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #3b4f63; /* Viền giữa các ô */
+            background-color: #243447; /* Tông nền xen kẽ dịu mắt */
+        }
+
+        .table-dark tr:nth-child(even) td {
+            background-color: #1c2833; /* Xen kẽ màu tối hơn */
+        }
+
+    /* Nút thêm mới */
+    #addNewBtn {
+        background-color: #198754; /* Màu xanh lá đậm */
+        color: #ffffff;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+        #addNewBtn:hover {
+            background-color: #157347; /* Màu hover */
+            color: #ffffff;
+        }
+
+    /* Trường tìm kiếm */
+    #searchInput {
+        background-color: #243447; /* Nền tối hơn */
+        color: #ffffff; /* Chữ sáng */
+        border: 1px solid #3b4f63; /* Viền */
+        border-radius: 5px;
+        padding: 0.5em;
+    }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #66e; /* Hiệu ứng khi focus */
+            box-shadow: 0 0 5px rgba(102, 140, 255, 0.7);
+        }
+
+    /* Cuộn bảng */
+    .table-wrapper {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #3b4f63;
+        border-radius: 5px;
+    }
+
+    /* Hiệu ứng khi di chuột lên hàng */
+    .table-dark tr:hover {
+        background-color: #345678; /* Tông sáng hơn */
+    }
+
+    /* Checkbox */
+    .genre-checkbox {
+        accent-color: #66e; /* Màu chọn */
+    }
+
+    .filter-section {
+        background-color: #1e1e1e;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    #searchInput {
+        background-color: #1e1e1e;
+        color: #fff;
+        border: 1px solid #555;
+    }
+
+    .container {
+        position: relative;
+        display: block;
+        width: 600px;
+    }
+
+    details {
+        position: relative;
+        width: auto;
+        height: auto;
+        overflow: hidden;
+        max-height: 2.5em !important;
+        transition: all 0.1s ease;
+    }
+
+        details > summary {
+            position: relative;
+            margin-top: 0.25em;
+            color: #99e;
+            padding: 0.1em 0.5em 0.2em;
+            background: #333;
+            border-radius: 5px;
+        }
+
+            details > summary:before {
+                color: #eee;
+                font-size: 0.5em;
+                margin-right: 0.5em;
+            }
+
+        details[open] > summary {
+            background: #444;
+            color: #fff;
+        }
+
+            details[open] > summary:before {
+                color: #ccc;
+            }
+
+    .folder {
+        margin: 0 0 0.5em 0.86em;
+        padding: 0.1em 0em 0.1em 2.5em;
+        border-left: 0.1em #666 dotted;
+        border-bottom: 0.1em #666 dotted;
+    }
+
+    details[open] {
+        height: auto;
+        max-height: 99em !important;
+        transition: all 1.2s ease;
+    }
+
+    details:not([open]) .folder {
+        height: 0px !important;
+    }
+
+    /* Styling for select dropdown */
+    select, option {
+        background-color: #333;
+        color: #eee;
+        border: 1px solid #555;
+        padding: 0.5em;
+        width: 100%;
+        margin-bottom: 1em;
+        border-radius: 5px;
+    }
+
+        select:focus {
+            outline: none;
+            border-color: #66e;
+            box-shadow: 0 0 5px rgba(102, 140, 255, 0.7);
+        }
+
+    option {
+        background-color: #333;
+    }
+
+        option:hover {
+            background-color: #444;
+        }
+
+    .btn-outline-light.active {
+        background-color: #fff;
+        color: #000;
+        border-color: #66e;
+    }
+
+    /* Updated Style for filter section */
+    .filter-section {
+        display: flex;
+        justify-content: space-between; /* This will space the filters out horizontally */
+        flex-wrap: wrap; /* Allows wrapping to the next line if space is insufficient */
+        margin-bottom: 1.5em;
+    }
+
+    .filter-item {
+        margin-right: 1em; /* Add space between filter items */
+        margin-bottom: 1em; /* Add bottom margin for spacing if needed */
+        width: calc(33.33% - 1em); /* Ensure each filter takes 1/3 of the available width */
+    }
+
+        .filter-item:last-child {
+            margin-right: 0; /* No margin for the last item */
+        }
+
+    /* Table Styling */
+    .table {
+        table-layout: fixed;
+    }
+
+    /* Scrollable Table Wrapper */
+    .table-wrapper {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    /* Updated style for active button */
+    .btn-outline-light.active {
+        background-color: #000; /* Light blue background for selected filter */
+        color: #fff; /* White text for selected filter */
+        border-color: #000; /* Light blue border for selected filter */
+    }
+
+    .action-link {
+        text-decoration: none;
+        color: #fff; /* Màu sắc biểu tượng */
+        padding: 5px;
+        transition: color 0.3s;
+    }
+
+        .action-link:hover {
+            color: #198754; /* Màu hover khi di chuột vào */
+        }
+
+</style>
+<div class="dark-background">
+    <h1>Quản lý Phần Phim</h1>
+    <div class="table-wrapper">
+        <table class="table table-striped table-hover table-bordered text-center align-middle table-dark text-light" id="movieTable">
             <thead>
                 <tr>
-                    <th class="table-header"><i class="fas fa-cogs"></i> Số Phân</th>
-                    <th class="table-header"><i class="fas fa-calendar-alt"></i> Ngày Công Chiếu</th>
-                    <th class="table-header"><i class="fas fa-list-ul"></i> Số Lượng Tập</th>
-                    <th class="table-header"><i class="fas fa-film"></i> Phim</th>
-                    <th class="table-header"></th>
+                    <th><i class="fas fa-cogs"></i> Số Phân</th>
+                    <th><i class="fas fa-calendar-alt"></i> Ngày Công Chiếu</th>
+                    <th><i class="fas fa-list-ul"></i> Số Lượng Tập</th>
+                    <th><i class="fas fa-film"></i> Phim</th>
+                    <th><i class="fas fa-cogs"></i> Thao Tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,104 +253,21 @@
                 {
                     <tr>
                         <td>@Html.DisplayFor(modelItem => item.SoPhan)</td>
-                        <td>@Html.DisplayFor(modelItem => item.NgayCongChieu)</td>
+                        <td>@item.NgayCongChieu.ToString("MM/dd/yyyy")</td>
                         <td>@Html.DisplayFor(modelItem => item.SoLuongTap)</td>
-                        <td>@Html.DisplayFor(modelItem => item.Phim.IDPhim)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Phim.TenPhim)</td>
                         <td>
-                            <a asp-action="Edit" asp-route-id="@item.IDPhan" class="action-link">Sửa</a> |
-                            <a asp-action="Details" asp-route-id="@item.IDPhan" class="action-link">Chi tiết</a> |
-                            <a asp-action="Delete" asp-route-id="@item.IDPhan" class="action-link">Xóa</a>
+                            <a asp-action="Edit" asp-route-id="@item.IDPhan" class="btn btn-primary btn-sm me-1">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        @*     <a asp-action="Details" asp-route-id="@item.IDPhan" class="btn btn-info btn-sm me-1">
+                                <i class="fas fa-info-circle"></i>
+                            </a> *@
                         </td>
+
                     </tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
-
-<style>
-    /* Nền đen cho toàn bộ vùng chứa */
-    .background-dark {
-        background-color: #0d1b2a;
-        padding: 20px;
-        margin: 15px;
-        border-radius: 5px;
-    }
-
-    /* Tiêu đề trang */
-    h1 {
-        color: #fff;
-        font-size: 2rem;
-        margin-bottom: 20px;
-    }
-
-    /* Bảng */
-    .table-dark {
-        background-color: #1f1f1f;
-        border-color: #333;
-        color: #fff;
-        border-collapse: collapse;
-    }
-
-    /* Tiêu đề bảng nổi bật với icon và viền dưới */
-    .table-header {
-        background-color: #333;
-        color: #ff5252;
-        font-weight: bold;
-        font-size: 1.1rem;
-        text-align: center;
-        padding: 10px;
-        border-right: 2px solid #ff5252; /* Viền phải giữa các tiêu đề */
-        border-bottom: 2px solid #ff5252; /* Viền dưới giữa tiêu đề và dữ liệu */
-    }
-
-        .table-header:last-child {
-            border-right: none; /* Bỏ viền phải của tiêu đề cuối cùng */
-        }
-
-        .table-header i {
-            margin-right: 8px;
-        }
-
-    /* Dữ liệu trong bảng */
-    .table-dark td {
-        padding: 10px;
-        text-align: center;
-        border-right: 2px solid #333;
-        border-bottom: 2px solid #333;
-    }
-
-        .table-dark td:last-child {
-            border-right: none;
-        }
-
-    /* Các dòng dữ liệu */
-    .table-dark tbody tr:nth-child(even) {
-        background-color: #262626;
-    }
-
-    .table-dark tbody tr:nth-child(odd) {
-        background-color: #1f1f1f;
-    }
-
-    .table-dark tbody tr:hover {
-        background-color: #444 !important;
-        cursor: pointer;
-    }
-
-    /* Link hành động */
-    .action-link {
-        color: #ff5252;
-        text-decoration: none;
-        font-weight: bold;
-        padding: 5px 10px;
-        border-radius: 3px;
-        transition: all 0.2s ease;
-    }
-
-        .action-link:hover {
-            background-color: #b71c1c;
-            color: white;
-            text-decoration: none;
-        }
-</style>

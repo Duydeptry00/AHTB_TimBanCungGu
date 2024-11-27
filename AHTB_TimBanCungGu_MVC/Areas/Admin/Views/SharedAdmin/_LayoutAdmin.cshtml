@@ -22,17 +22,19 @@
             background-color: #444343;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
-            overflow-y: hidden;
+            height: auto; /* Thay đổi từ 100% thành auto */
+            overflow-y: auto;
         }
+
 
         .layout-container {
             display: flex;
-            height: 100vh;
+            height: auto;
             flex-direction: row;
             position: relative;
             transition: margin-left 0.3s ease;
             overflow: hidden;
+            overflow-y: auto;
         }
 
         #sidebar {
@@ -44,6 +46,7 @@
             top: 0;
             transition: transform 0.1s ease;
             z-index: 100;
+           
         }
 
             #sidebar.closed {
@@ -312,19 +315,16 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const toggleLinks = document.querySelectorAll('[data-bs-toggle="collapse"]');
-
             toggleLinks.forEach(link => {
                 const icon = link.querySelector('.toggle-icon');
 
                 link.addEventListener('click', (e) => {
                     const targetId = link.getAttribute('data-bs-target');
                     const target = document.querySelector(targetId);
-
                     target.addEventListener('shown.bs.collapse', () => {
                         icon.classList.remove('fa-plus');
                         icon.classList.add('fa-minus');
                     });
-
                     target.addEventListener('hidden.bs.collapse', () => {
                         icon.classList.remove('fa-minus');
                         icon.classList.add('fa-plus');
@@ -335,8 +335,6 @@
         const toggleSidebarButton = document.getElementById('toggleSidebar');
         const sidebar = document.getElementById('sidebar');
         const contentWrapper = document.getElementById('content-wrapper');
-
-        // Toggle the sidebar visibility
         toggleSidebarButton.addEventListener('click', function () {
             sidebar.classList.toggle('closed');
         });

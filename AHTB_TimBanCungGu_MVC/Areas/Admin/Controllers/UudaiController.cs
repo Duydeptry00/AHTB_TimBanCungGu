@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
+using Microsoft.AspNetCore.Http;
+using AHTB_TimBanCungGu_MVC.Models;
+using DocumentFormat.OpenXml.Vml;
+using System.IO;
 
 namespace Uudaipro.Controllers
 {
@@ -56,16 +60,53 @@ namespace Uudaipro.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(UuDai uudai)
+        public async Task<IActionResult> Create(UuDai uudai, IFormFile hinh)
         {
             if (ModelState.IsValid)
             {
+                if (hinh == null || hinh.Length == 0)
+                {
+                    ModelState.AddModelError(string.Empty, "Cần phải chọn tệp hình ảnh.");
+                   
+                    return View(uudai);
+                }
+                // Kiểm tra định dạng tệp hình ảnh
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var fileExtension = System.IO.Path.GetExtension(hinh.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    ModelState.AddModelError(string.Empty, "Chỉ cho phép các tệp hình ảnh (.jpg, .jpeg, .png, .gif).");
+                   
+                    return View(uudai);
+                }
+
+                // Tạo đường dẫn lưu trữ ảnh
+                var fileName = System.IO.Path.GetRandomFileName() + fileExtension;
+                var filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Uploads", fileName);
+
+                try
+                {
+                    // Lưu tệp hình ảnh
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await hinh.CopyToAsync(fileStream);
+                    }
+                    uudai.Hinh = fileName;
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"Đã xảy ra lỗi khi tải hình ảnh: {ex.Message}");
+                    return View(uudai);
+                }
+
+                // Lưu đối tượng UuDai vào cơ sở dữ liệu
                 _context.Add(uudai);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(uudai);
         }
+
 
         // GET: Uudai/Edit/5
         public async Task<IActionResult> Edit(string id)
@@ -80,15 +121,18 @@ namespace Uudaipro.Controllers
             {
                 return NotFound();
             }
+
+            ViewBag.CurrentImage = uudai.Hinh; // Lưu đường dẫn hình ảnh hiện tại vào ViewBag
             return View(uudai);
         }
+
 
         // POST: Uudai/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, UuDai uudai)
+        public async Task<IActionResult> Edit(string id, UuDai uudai, IFormFile hinh)
         {
             if (id != uudai.IdUuDai)
             {
@@ -99,6 +143,35 @@ namespace Uudaipro.Controllers
             {
                 try
                 {
+                    if (hinh != null && hinh.Length > 0)
+                    {
+                        // Xử lý tệp hình ảnh mới
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                        var fileExtension = System.IO.Path.GetExtension(hinh.FileName).ToLowerInvariant();
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError(string.Empty, "Chỉ cho phép các tệp hình ảnh (.jpg, .jpeg, .png, .gif).");
+                            return View(uudai);
+                        }
+
+                        var fileName = System.IO.Path.GetRandomFileName() + fileExtension;
+                        var filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Uploads", fileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await hinh.CopyToAsync(fileStream);
+                        }
+
+                        // Cập nhật hình ảnh mới
+                        uudai.Hinh = fileName;
+                    }
+                    else
+                    {
+                        // Giữ nguyên hình ảnh hiện tại
+                        var existingUuDai = await _context.UuDai.AsNoTracking().FirstOrDefaultAsync(u => u.IdUuDai == id);
+                        uudai.Hinh = existingUuDai?.Hinh;
+                    }
+
                     _context.Update(uudai);
                     await _context.SaveChangesAsync();
                 }
@@ -117,6 +190,7 @@ namespace Uudaipro.Controllers
             }
             return View(uudai);
         }
+
 
         // GET: Uudai/Delete/5
         public async Task<IActionResult> Delete(string id)
