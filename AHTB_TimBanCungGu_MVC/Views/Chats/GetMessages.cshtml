@@ -1,0 +1,123 @@
+﻿@model List<AHTB_TimBanCungGu_API.Chats.MessageVM>
+
+@{
+    ViewData["Title"] = "Cuộc trò chuyện";
+}
+
+<div class="messenger-container">
+    <!-- Cửa sổ trò chuyện -->
+    <div class="chat-window">
+        <div class="chat-header">
+            <span id="chatTitle">Cuộc trò chuyện</span>
+        </div>
+        <div class="chat-body" id="chatBody">
+            @if (Model != null && Model.Count > 0)
+            {
+                @foreach (var message in Model)
+                {
+                    <div class="message-item @(message.SenderUsername == "user" ? "user-message" : "receiver-message")">
+                        <strong>@message.SenderUsername:</strong> @message.Content
+                        <br />
+                        <span class="timestamp">@message.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>Chưa có tin nhắn nào.</p>
+            }
+        </div>
+        <div class="chat-footer">
+            <textarea id="messageContent" placeholder="Gõ tin nhắn..."></textarea>
+            <button onclick="sendMessage()">Gửi</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .messenger-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px;
+    }
+
+    .chat-window {
+        width: 80%;
+        max-width: 800px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fff;
+    }
+
+    .chat-header {
+        background-color: #0078D4;
+        color: white;
+        padding: 10px;
+        font-size: 18px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .chat-body {
+        flex-grow: 1;
+        padding: 15px;
+        background-color: #f9f9f9;
+        overflow-y: auto;
+        max-height: 400px;
+    }
+
+    .message-item {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 8px;
+        word-wrap: break-word;
+    }
+
+    .user-message {
+        background-color: #d4f1d4;
+        align-self: flex-end;
+    }
+
+    .receiver-message {
+        background-color: #f1f1f1;
+        align-self: flex-start;
+    }
+
+    .timestamp {
+        font-size: 0.8em;
+        color: gray;
+        margin-top: 5px;
+    }
+
+    .chat-footer {
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        background-color: #f0f0f0;
+    }
+
+        .chat-footer textarea {
+            flex-grow: 1;
+            height: 50px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-right: 10px;
+        }
+
+        .chat-footer button {
+            padding: 10px 20px;
+            background-color: #0078D4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            .chat-footer button:hover {
+                background-color: #005a8e;
+            }
+</style>
+
