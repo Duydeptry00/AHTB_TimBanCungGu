@@ -191,7 +191,7 @@
             <ul class="uul">
                 <li class="lii"><a href="#thongtin">Hồ sơ cá nhân</a></li>
                 <li class="lii"><a href="#nhantin">Nhắn tin</a></li>
-                <li class="lii"><a href="#danhsach">Danh sách người thích</a></li>
+                <li class="lii"><a href="/TimBanCungGu/DanhSachNguoiThich">Danh sách người thích</a></li>
                 <li class="lii"><a href="#soluot">Số lượt vuốt còn lại</a></li>
             </ul>
         </div>
@@ -349,6 +349,35 @@
         });
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Lấy thông báo từ TempData
+        var message = '@TempData["Message"]';
+
+        if (message) {
+            // Giải mã HTML để hiển thị đúng ký tự đặc biệt
+            var decodedMessage = decodeHtml(message);
+
+            // Hiển thị thông báo với SweetAlert
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thông báo',
+                text: decodedMessage,
+                confirmButtonText: 'OK'
+            });
+        }
+
+        // Hàm giải mã HTML
+        function decodeHtml(html) {
+            var txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+        }
+    });
+</script>
+
+
+
 
 
 </html>
