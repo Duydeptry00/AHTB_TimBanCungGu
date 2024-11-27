@@ -4,118 +4,155 @@
     ViewData["Title"] = "Create";
     Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
+<style>
+    .btn {
+        border-radius: 5px;
+        font-size: 16px;
+        padding: 10px 20px;
+    }
 
-<h1>Create</h1>
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
 
-<h4>Phim</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
 
-        <form asp-action="Create" enctype="multipart/form-data">
-            if (ImageFile == null || ImageFile.Length == 0)
-            {
-            ModelState.AddModelError(string.Empty, "Image file is required.");
-            PopulateViewData(phim);
-            return View(phim);
-            }
+    .btn i {
+        margin-right: 5px;
+    }
 
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="IDPhim" class="control-label"></label>
-                <input asp-for="IDPhim" class="form-control" />
-                <span asp-validation-for="IDPhim" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TenPhim" class="control-label"></label>
-                <input asp-for="TenPhim" class="form-control" />
-                <span asp-validation-for="TenPhim" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MoTa" class="control-label"></label>
-                <input asp-for="MoTa" class="form-control" />
-                <span asp-validation-for="MoTa" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DienVien" class="control-label"></label>
-                <input asp-for="DienVien" class="form-control" />
-                <span asp-validation-for="DienVien" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TheLoaiPhim" class="control-label"></label>
-                <select asp-for="TheLoaiPhim" class ="form-control" asp-items="ViewBag.TheLoaiPhim"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="NgayPhatHanh" class="control-label"></label>
-                <input asp-for="NgayPhatHanh" class="form-control" />
-                <span asp-validation-for="NgayPhatHanh" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DanhGia" class="control-label"></label>
-                <input asp-for="DanhGia" class="form-control" />
-                <span asp-validation-for="DanhGia" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TrailerURL" class="control-label"></label>
-                <input asp-for="TrailerURL" class="form-control" />
-                <span asp-validation-for="TrailerURL" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="NoiDungPremium" /> @Html.DisplayNameFor(model => model.NoiDungPremium)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="SourcePhim" class="control-label"></label>
-                <input asp-for="SourcePhim" class="form-control" />
-                <span asp-validation-for="SourcePhim" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="HinhAnh" class="control-label"></label>
-                <input asp-for="HinhAnh" class="form-control" type="file" name="ImageFile" onchange="previewImage(event)" />
+</style>
+<div class="container mt-4" style="padding-bottom: 40px">
+    <h1 class="mb-4 text-white text-center" style="text-transform:uppercase; font-weight: bold">Thêm Mới Phim</h1>
+    <div class="card shadow">
+        <div class="card-body">
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-                <img id="imagePreview" src="#" alt="Image preview" style="display:none; max-width: 100%; margin-top: 10px;" />
-                <span asp-validation-for="HinhAnh" class="text-danger"></span>
-            </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="IDPhim" class="form-label">IDPhim</label>
+                        <input asp-for="IDPhim" class="form-control" />
+                        <span asp-validation-for="IDPhim" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="TenPhim" class="form-label">Tên phim</label>
+                        <input asp-for="TenPhim" class="form-control" />
+                        <span asp-validation-for="TenPhim" class="text-danger"></span>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label asp-for="DangPhim" class="control-label"></label>
-                <select asp-for="DangPhim" class="form-control" id="DangPhimSelect" onchange="toggleFields()">
-                    <option value="">-- Chọn Dạng Phim --</option>
-                    <option value="Phim Bộ">Phim Bộ</option>
-                    <option value="Phim Lẻ">Phim Lẻ</option>
-                </select>
-                <span asp-validation-for="DangPhim" class="text-danger"></span>
-            </div>
-            <div class="form-group" id="SoLuongTapGroup">
-                <label for="SoLuongTap" class="control-label">Số Lượng Tập</label>
-                <input type="number" name="soluongtap" class="form-control" id="SoLuongTapInput" />
-                <span class="text-danger" data-valmsg-for="soluongtap"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="NgayCapNhat" class="control-label"></label>
-                <input asp-for="NgayCapNhat" class="form-control" />
-                <span asp-validation-for="NgayCapNhat" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="IDAdmin" class="control-label"></label>
-                <select asp-for="IDAdmin" class ="form-control" asp-items="ViewBag.IDAdmin"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="TrangThai" class="control-label"></label>
-                <input asp-for="TrangThai" class="form-control" />
-                <span asp-validation-for="TrangThai" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label asp-for="MoTa" class="form-label">Mô tả</label>
+                        <textarea asp-for="MoTa" class="form-control"></textarea>
+                        <span asp-validation-for="MoTa" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label asp-for="NoiDungPremium" class="form-check-label">Premium</label>
+                        <input asp-for="NoiDungPremium" class="form-check-input" type="checkbox" />
+                        <span asp-validation-for="NoiDungPremium" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="DienVien" class="form-label">Diễn viên</label>
+                        <input asp-for="DienVien" class="form-control" />
+                        <span asp-validation-for="DienVien" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="TheLoaiPhim" class="form-label">Thể loại</label>
+                        <select asp-for="TheLoaiPhim" class="form-select" asp-items="ViewBag.TheLoaiPhim"></select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="NgayPhatHanh" class="form-label">Ngày phát hành</label>
+                        <input asp-for="NgayPhatHanh" class="form-control" type="date" />
+                        <span asp-validation-for="NgayPhatHanh" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DanhGia" class="form-label">Đánh giá</label>
+                        <input asp-for="DanhGia" class="form-control" />
+                        <span asp-validation-for="DanhGia" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="TrailerURL" class="form-label">TrailerURL</label>
+                        <input asp-for="TrailerURL" class="form-control" />
+                        <span asp-validation-for="TrailerURL" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SourcePhim" class="form-label">Source Phim</label>
+                        <input asp-for="SourcePhim" class="form-control" />
+                        <span asp-validation-for="SourcePhim" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="HinhAnh" class="form-label">Hình ảnh</label>
+                        <input asp-for="HinhAnh" class="form-control" type="file" name="ImageFile" onchange="previewImage(event)" />
+                        <img id="imagePreview" src="#" alt="Image preview" class="img-fluid mt-3 d-none" style="width: 300px; height: 300px" />
+                        <span asp-validation-for="HinhAnh" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="NgayCapNhat" class="form-label">Ngày cập nhật</label>
+                        <input asp-for="NgayCapNhat" class="form-control" type="date" />
+                        <span asp-validation-for="NgayCapNhat" class="text-danger"></span>
+                    </div>
+                    
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="DangPhim" class="form-label">Dạng phim</label>
+                        <select asp-for="DangPhim" class="form-select" id="DangPhimSelect" onchange="toggleFields()">
+                            <option value="">-- Chọn Dạng Phim --</option>
+                            <option value="Phim Bộ">Phim Bộ</option>
+                            <option value="Phim Lẻ">Phim Lẻ</option>
+                        </select>
+                        <span asp-validation-for="DangPhim" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6" id="SoLuongTapGroup">
+                        <label for="SoLuongTap" class="form-label">Số Lượng Tập</label>
+                        <input type="number" name="soluongtap" class="form-control" id="SoLuongTapInput" />
+                        <span class="text-danger" data-valmsg-for="soluongtap"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                        <input asp-for="TrangThai" class="form-control" />
+                        <span asp-validation-for="TrangThai" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="IDAdmin" class="form-label">ID Admin</label>
+                        <select asp-for="IDAdmin" class="form-select" asp-items="ViewBag.IDAdmin"></select>
+                       
+                    </div>
+                </div>
+                <div class="form-group d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Lưu
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 <script>
     function previewImage(event) {
@@ -124,15 +161,16 @@
         const reader = new FileReader();
         reader.onload = function () {
             imagePreview.src = reader.result;
-            imagePreview.style.display = 'block';
-        }
+            imagePreview.classList.remove('d-none');
+        };
         if (file) {
             reader.readAsDataURL(file);
         } else {
             imagePreview.src = '#';
-            imagePreview.style.display = 'none';
+            imagePreview.classList.add('d-none');
         }
     }
+
     function toggleFields() {
         var dangPhim = document.getElementById("DangPhimSelect").value;
         var soLuongTapGroup = document.getElementById("SoLuongTapGroup");

@@ -168,7 +168,30 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             ViewData["PhimId"] = new SelectList(_context.Phim, "IDPhim", "TenPhim", phan.Phim);
             return View(phan);
         }
+        [HttpGet]
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+            // Lấy dữ liệu Phan từ cơ sở dữ liệu
+            var phan = await _context.Phan
+                .Include(p => p.Phim) // Nếu cần thông tin liên kết
+                .FirstOrDefaultAsync(m => m.IDPhan == id);
+
+            if (phan == null)
+            {
+                return NotFound();
+            }
+
+            // Truyền danh sách Phim vào ViewBag
+            ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim", phan.PhimID);
+
+            // Trả dữ liệu về View
+            return View(phan);
+        }
 
         // POST: Admin/Phans/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -186,7 +209,42 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             {
                 try
                 {
-                    _context.Update(phan);
+                    var existingPhan = await _context.Phan.Include(p => p.Tap).FirstOrDefaultAsync(p => p.IDPhan == id);
+                    if (existingPhan == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Cập nhật thông tin phần phim
+                    existingPhan.SoPhan = phan.SoPhan;
+                    existingPhan.NgayCongChieu = phan.NgayCongChieu;
+                    existingPhan.PhimID = phan.PhimID;
+                    existingPhan.SoLuongTap = phan.SoLuongTap; // Cập nhật SoLuongTap trong bảng Phan
+
+                    // Kiểm tra và thêm các tập mới nếu SoLuongTap tăng
+                    int currentEpisodeCount = existingPhan.Tap.Count;
+                    if (phan.SoLuongTap > currentEpisodeCount)
+                    {
+                        int nextEpisodeNumber = currentEpisodeCount + 1;
+
+                        // Thêm các tập mới
+                        for (int i = nextEpisodeNumber; i <= phan.SoLuongTap; i++)
+                        {
+                            string newIDTap = "T" + i;
+
+                            var newTap = new Tap
+                            {
+                                IDTap = newIDTap,
+                                SoTap = i,
+                                PhanPhim = phan.IDPhan
+                            };
+
+                            _context.Tap.Add(newTap);
+                        }
+                    }
+
+                    // Lưu thay đổi
+                    _context.Update(existingPhan);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -202,7 +260,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "IDPhim", phan.PhimID);
+
+            ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim", phan.PhimID);
             return View(phan);
         }
 

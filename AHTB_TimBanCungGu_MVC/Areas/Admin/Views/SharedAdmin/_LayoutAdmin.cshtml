@@ -26,17 +26,19 @@
             background-color: #444343;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
-            overflow-y: hidden;
+            height: auto; /* Thay đổi từ 100% thành auto */
+            overflow-y: auto;
         }
+
 
         .layout-container {
             display: flex;
-            height: 100vh;
+            height: auto;
             flex-direction: row;
             position: relative;
             transition: margin-left 0.3s ease;
             overflow: hidden;
+            overflow-y: auto;
         }
 
         #sidebar {
@@ -48,6 +50,7 @@
             top: 0;
             transition: transform 0.1s ease;
             z-index: 100;
+           
         }
 
             #sidebar.closed {
@@ -391,86 +394,29 @@
         document.addEventListener("DOMContentLoaded", () => {
             // Handle toggle links for collapsible sections
             const toggleLinks = document.querySelectorAll('[data-bs-toggle="collapse"]');
-
             toggleLinks.forEach(link => {
                 const icon = link.querySelector('.toggle-icon');
 
                 link.addEventListener('click', (e) => {
                     const targetId = link.getAttribute('data-bs-target');
                     const target = document.querySelector(targetId);
-
-                    // Add or remove 'active' class for the clicked link
-                    const allLinks = document.querySelectorAll('#sidebar .nav-link');
-                    allLinks.forEach(link => {
-                        link.classList.remove('active'); // Remove 'active' from all links
-                    });
-                    link.classList.add('active'); // Add 'active' to the clicked link
-
-                    // Change the icon for collapsible sections
                     target.addEventListener('shown.bs.collapse', () => {
                         icon.classList.remove('fa-plus');
                         icon.classList.add('fa-minus');
                     });
-
                     target.addEventListener('hidden.bs.collapse', () => {
                         icon.classList.remove('fa-minus');
                         icon.classList.add('fa-plus');
                     });
                 });
             });
-
-            // Event listener for regular nav links (non-toggle links)
-            const regularLinks = document.querySelectorAll('.nav-link[href]:not([href="#"])');
-
-            regularLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    // Remove the 'active' class from all links
-                    regularLinks.forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    // Add the 'active' class to the clicked link
-                    link.classList.add('active');
-                });
-
-                // Optionally, add hover effect through JS if needed
-                link.addEventListener('mouseenter', () => {
-                    link.classList.add('hover'); // Add a hover class on mouse enter
-                });
-
-                link.addEventListener('mouseleave', () => {
-                    link.classList.remove('hover'); // Remove the hover class on mouse leave
-                });
-            });
         });
-
-    </script>
-    <script>
-        $(document).ready(function () {
-            // Sử dụng AJAX để tải nội dung mà không làm reload toàn bộ trang
-            $(document).on('click', '.nav-link', function (e) {
-                // Kiểm tra nếu đây không phải là liên kết đăng xuất
-                if ($(this).attr('href') === '/Home/Logout') {
-                    return;  // Không làm gì, để liên kết đăng xuất hoạt động bình thường
-                }
-
-                e.preventDefault();  // Ngừng hành động mặc định (reload toàn bộ trang)
-                var url = $(this).attr('href');  // Lấy URL của liên kết đã click
-
-                // Sử dụng AJAX để lấy nội dung
-                $.ajax({
-                    url: url,
-                    type: 'GET',
-                    success: function (response) {
-                        // Tải nội dung từ phản hồi vào phần <main>
-                        $('main').html($(response).find('main').html());
-                        // Cập nhật lịch sử trình duyệt (tùy chọn)
-                        history.pushState(null, '', url);
-                    },
-                    error: function () {
-                        alert('Lỗi khi tải nội dung.');
-                    }
-                });
-            });
+        const toggleSidebarButton = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const contentWrapper = document.getElementById('content-wrapper');
+        toggleSidebarButton.addEventListener('click', function () {
+            sidebar.classList.toggle('closed');
+        });
 
             // Xử lý khi người dùng sử dụng nút quay lại hoặc tiếp theo của trình duyệt
             window.onpopstate = function () {

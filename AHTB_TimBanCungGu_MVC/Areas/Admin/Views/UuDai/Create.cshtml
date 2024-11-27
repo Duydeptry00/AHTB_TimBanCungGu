@@ -4,91 +4,142 @@
     Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
     ViewData["Title"] = "Tạo mới ưu đãi";
 }
+<style>
+    .custom-form-card {
+        background-color: #fff;
+        color: #333;
+        padding: 20px;
+        border-radius: 8px;
+    }
 
-<h1 style="color: #d32f2f; text-align: center; margin-bottom: 20px;">Tạo mới ưu đãi</h1>
+    .custom-heading {
+        color: #333;
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+
+    .custom-hr {
+        border-color: #333;
+    }
+
+    .custom-label {
+        margin: 10px 0;
+        white-space: nowrap;
+        color: #F31313;
+    }
+
+    .custom-input {
+        width: 100%; /* Chiếm toàn bộ chiều rộng */
+        border-color: #ced4da;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+        .custom-input:focus {
+            border-color: #80bdff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+        }
+
+    .custom-image-preview {
+        width: 150px;
+        height: 150px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+
+    .text-muted {
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+
+    .custom-text-danger {
+        color: red;
+    }
+
+    .d-flex {
+        display: flex;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+ 
+
+</style>
 
 <div class="container">
-    <div class="row justify-content-center">
+    <div class="row justify-content-center" style="margin-top:5%">
         <div class="col-md-6">
-            <div class="card" style="background-color: #222; color: #fff; padding: 20px; border-radius: 8px;">
-                <h4 style="color: #d32f2f; text-align: center;">Thông tin ưu đãi</h4>
-                <hr style="border-color: #d32f2f;" />
-                <form asp-action="Create">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="card custom-form-card">
+                <h4 class="custom-heading">Tạo mới ưu đãi</h4>
+                <hr class="custom-hr" />
+                <form asp-action="Create" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="custom-text-danger"></div>
 
                     <div class="form-group">
-                        <label asp-for="IdUuDai" class="control-label" style="color: #d32f2f; font-weight: bold;"></label>
-                        <input asp-for="IdUuDai" class="form-control input-custom" />
-                        <span asp-validation-for="IdUuDai" class="text-danger"></span>
+                        <label asp-for="IdUuDai" class="control-label custom-label">ID Ưu đãi</label>
+                        <input asp-for="IdUuDai" class="form-control custom-input" />
+                        <span asp-validation-for="IdUuDai" class="custom-text-danger"></span>
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="TenUuDai" class="control-label" style="color: #d32f2f; font-weight: bold;"></label>
-                        <input asp-for="TenUuDai" class="form-control input-custom" />
-                        <span asp-validation-for="TenUuDai" class="text-danger"></span>
+                        <label asp-for="TenUuDai" class="control-label custom-label">Tên Ưu đãi</label>
+                        <input asp-for="TenUuDai" class="form-control custom-input" />
+                        <span asp-validation-for="TenUuDai" class="custom-text-danger"></span>
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="NgayUuDai" class="control-label" style="color: #d32f2f; font-weight: bold;"></label>
-                        <input asp-for="NgayUuDai" type="date" class="form-control input-custom" />
-                        <span asp-validation-for="NgayUuDai" class="text-danger"></span>
+                        <label asp-for="NgayUuDai" class="control-label custom-label">Ngày Ưu Đãi</label>
+                        <input asp-for="NgayUuDai" type="date" class="form-control custom-input" />
+                        <span asp-validation-for="NgayUuDai" class="custom-text-danger"></span>
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="PhanTram" class="control-label" style="color: #d32f2f; font-weight: bold;"></label>
-                        <input asp-for="PhanTram" type="number" class="form-control input-custom" />
-                        <span asp-validation-for="PhanTram" class="text-danger"></span>
+                        <label asp-for="PhanTram" class="control-label custom-label">Phần trăm</label>
+                        <input asp-for="PhanTram" type="number" class="form-control custom-input" min="0" max="100" />
+                        <span asp-validation-for="PhanTram" class="custom-text-danger"></span>
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="Hinh" class="control-label" style="color: #d32f2f; font-weight: bold;"></label>
-                        <input asp-for="Hinh" class="form-control input-custom" />
-                        <span asp-validation-for="Hinh" class="text-danger"></span>
+                        <label class="form-label custom-label">Hình ảnh</label>
+                        <div class="d-flex align-items-center">
+                            <img id="currentImage" class="img-fluid d-none custom-image-preview me-3" />
+                            <div>
+                                <input type="file" id="imageFileInput" name="hinh" class="form-control custom-input" />
+                                <small class="text-muted">Chọn ảnh từ thiết bị</small>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="form-group text-center">
-                        <input type="submit" value="Tạo mới" class="btn btn-custom" />
+                    <div class="modal-footer custom-modal-footer-btn">
+                        <button type="button" class="btn btn-danger" onclick="window.location.href='@Url.Action("Index", "UuDai")'">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
                     </div>
                 </form>
-                <div class="text-center" style="margin-top: 10px;">
-                    <a asp-action="Index" style="color: #d32f2f; text-decoration: none;">← Quay lại danh sách</a>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    document.getElementById('imageFileInput').addEventListener('change', function (event) {
+        var file = event.target.files[0];
+        if (file) {
+            var reader = new FileReader();
 
-<style>
-    /* Styling for input fields */
-    .input-custom {
-        background-color: #333;
-        color: white;
-        border: 1px solid #444;
-        border-radius: 5px;
-        padding: 10px;
-        margin-top: 5px;
-        transition: all 0.3s ease;
-    }
+            reader.onload = function (e) {
+                var imageUrl = e.target.result;
+                var imgElement = document.getElementById('currentImage');
 
-        .input-custom:focus {
-            border-color: #d32f2f;
-            box-shadow: 0 0 8px rgba(211, 47, 47, 0.5);
+                // Hiển thị ảnh
+                imgElement.src = imageUrl;
+                imgElement.classList.remove('d-none'); // Hiển thị ảnh
+            };
+
+            reader.readAsDataURL(file); // Đảm bảo đóng ngoặc đúng
         }
-
-    /* Styling for submit button */
-    .btn-custom {
-        background-color: #d32f2f;
-        border-color: #d32f2f;
-        color: #fff;
-        padding: 10px 20px;
-        font-weight: bold;
-        border-radius: 5px;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-        .btn-custom:hover {
-            background-color: #b71c1c;
-            box-shadow: 0 0 10px rgba(183, 28, 28, 0.5);
-        }
-</style>
+    });
+</script>

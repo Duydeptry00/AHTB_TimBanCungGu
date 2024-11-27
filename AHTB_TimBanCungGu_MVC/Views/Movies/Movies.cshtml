@@ -10,8 +10,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh Sách Phim</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    @*    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"> *@
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
 
     <style>
@@ -77,116 +78,52 @@
                 vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
             }
 
+       /* Khi hover vào thẻ card, nút sẽ hiện lên */
+                .card-hover:hover .btn-xem-ngay {
+                    opacity: 1;
+                    pointer-events: auto; /* Cho phép click khi hover */
+                }
 
+                /* Tạo biểu tượng cho nút "Xem ngay" */
+                .card-hover .btn-xem-ngay i {
+                    margin-right: 8px;
+                }
 
-        /* Khi hover vào thẻ card, nút sẽ hiện lên */
-        .card-hover:hover .btn-xem-ngay {
-            opacity: 1;
-            pointer-events: auto; /* Cho phép click khi hover */
-        }
+                /* Điều chỉnh font và màu cho tiêu đề */
+                .card-title {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #f8f9fa;
+                }
 
-        /* Tạo biểu tượng cho nút "Xem ngay" */
-        .card-hover .btn-xem-ngay i {
-            margin-right: 8px;
-        }
+                /* Căn chỉnh phân trang */
+                .pagination {
+                    margin-top: 20px;
+                    justify-content: center;
+                }
 
-        /* Điều chỉnh font và màu cho tiêu đề */
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #f8f9fa;
-        }
+                .speech-recognition-btn button {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 50px; /* Kích thước của nút */
+                    height: 50px; /* Kích thước của nút */
+                    color: white; /* Màu chữ trắng */
+                    border-radius: 50%; /* Hình dạng tròn */
+                    font-size: 28px; /* Kích thước biểu tượng micro */
+                    border: none; /* Loại bỏ viền */
+                    cursor: pointer; /* Con trỏ khi hover */
+                    transition: background-color 0.3s, transform 0.2s; /* Hiệu ứng chuyển màu và phóng to khi hover */
+                }
 
-        /* Căn chỉnh phân trang */
-        .pagination {
-            margin-top: 20px;
-            justify-content: center;
-        }
-        /* phim */
-        /* Grid Container */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr); /* 5 items per row */
-            gap: 20px; /* Space between items */
-        }
+                    .speech-recognition-btn button:hover {
 
-        /* Grid Item */
-        .grid-item {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+                        transform: scale(1.1); /* Phóng to nút khi hover */
+                    }
 
-        /* Card Styles */
-        .card-hover {
-            border: none;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-            .card-hover:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-            }
-
-        .card-img-top {
-            width: 100%;
-            height: 200px; /* Fixed height for consistency */
-            object-fit: cover;
-        }
-
-        .card-body {
-            padding: 1px;
-            text-align: center;
-        }
-
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 11px;
-        }
-
-        .btn-xem-ngay {
-            background-color: red;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-            .btn-xem-ngay:hover {
-                background-color: red;
-            }
-
-        /* Pagination */
-        .pagination .page-item.active .page-link {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .no-results p {
-            font-size: 1.2rem;
-            color: #666;
-        }
-
-        .row h2 {
-            color: white; /* Màu chữ đỏ */
-            text-align: left; /* Căn giữa chữ */
-            font-size: 2rem; /* Kích thước chữ (tùy chỉnh) */
-            font-weight: bold; /* Đậm chữ */
-            margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
-        }
-
-        .custom-container {
-            max-width: 1900px; /* Hoặc giá trị bạn muốn */
-            margin: 0 auto; /* Để căn giữa */
-        }
-
-
+                    .speech-recognition-btn button:active {
+                        transform: scale(0.95); /* Nhỏ nút khi nhấn */
+                    }
     </style>
 </head>
 <body>
@@ -196,8 +133,11 @@
                 <form id="searchForm" action="/Movies/Movies" method="get" onsubmit="return false;">
                     <div class="movies" style="display: flex">
                         <input style="margin-right:10px" type="text" id="searchBox" class="form-control" name="query" placeholder="Tìm kiếm phim..." value="@ViewBag.Search">
-                        <button style="border-radius:5px" type="button" onclick="startRecognition()">🎤</button>
+                        <div class="speech-recognition-btn">
+                            <button style="border-radius:5px;" type="button" onclick="startRecognition()">🎤</button>
+                        </div>
                     </div>
+
                 </form>
             </div>
             <div class="col-md-2">
@@ -326,7 +266,7 @@
             }
 
             // Gán sự kiện nhận diện giọng nói vào nút
-            $('button[type="button"]').click(startRecognition);
+            $('.speech-recognition-btn').click(startRecognition);
         });
     </script>
 </body>

@@ -1,106 +1,138 @@
 ﻿@model AHTB_TimBanCungGu_API.Models.Phim
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Chỉnh Sửa Phim";
     Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
+<style>
+    .modal-sm {
+        max-width: 800px; /* Chiều rộng cụ thể */
+    }
 
-<h1>Edit</h1>
+    .modal-content {
+        padding: 20px;
+        border-radius: 8px; /* Bo góc mềm mại */
+    }
+</style>
+<div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="editModalLabel" style="text-transform:uppercase">Chỉnh Sửa Phim</h5>
+            <button type="button" class="btn-close" onclick="window.location.href='@Url.Action("Index", "QuanLyPhims")'" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form asp-action="Edit" enctype="multipart/form-data" method="post" id="editForm">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="IDPhim" />
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="TenPhim" class="form-label">Tên Phim</label>
+                        <input asp-for="TenPhim" class="form-control" required />
+                        <span asp-validation-for="TenPhim" class="text-danger"></span>
+                    </div>
 
-<h4>Phim</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit" enctype="multipart/form-data">
-            <!-- Thêm enctype để tải lên tệp -->
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="IDPhim" />
-            <div class="form-group">
-                <label asp-for="TenPhim" class="control-label"></label>
-                <input asp-for="TenPhim" class="form-control" />
-                <span asp-validation-for="TenPhim" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MoTa" class="control-label"></label>
-                <input asp-for="MoTa" class="form-control" />
-                <span asp-validation-for="MoTa" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DienVien" class="control-label"></label>
-                <input asp-for="DienVien" class="form-control" />
-                <span asp-validation-for="DienVien" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TheLoaiPhim" class="control-label"></label>
-                <select asp-for="TheLoaiPhim" class="form-control" asp-items="ViewBag.TheLoaiPhim"></select>
-                <span asp-validation-for="TheLoaiPhim" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="NgayPhatHanh" class="control-label"></label>
-                <input asp-for="NgayPhatHanh" class="form-control" />
-                <span asp-validation-for="NgayPhatHanh" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DanhGia" class="control-label"></label>
-                <input asp-for="DanhGia" class="form-control" />
-                <span asp-validation-for="DanhGia" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TrailerURL" class="control-label"></label>
-                <input asp-for="TrailerURL" class="form-control" />
-                <span asp-validation-for="TrailerURL" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="NoiDungPremium" /> @Html.DisplayNameFor(model => model.NoiDungPremium)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="SourcePhim" class="control-label"></label>
-                <input asp-for="SourcePhim" class="form-control" />
-                <span asp-validation-for="SourcePhim" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label>Hình Ảnh Hiện Tại:</label><br />
-                @if (!string.IsNullOrEmpty(Model.HinhAnh))
-                {
-                    <img src="@Url.Content("~/Uploads/" + Model.HinhAnh)" alt="Hình Ảnh" style="max-width: 200px; max-height: 200px;" />
-                }
-                else
-                {
-                    <p>Không có hình ảnh.</p>
-                }
-                <label for="ImageFile">Tải Lên Hình Ảnh Mới:</label>
-                <input type="file" name="ImageFile" class="form-control" />
-                <span asp-validation-for="HinhAnh" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DangPhim" class="control-label"></label>
-                <input asp-for="DangPhim" class="form-control" />
-                <span asp-validation-for="DangPhim" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="NgayCapNhat" class="control-label"></label>
-                <input asp-for="NgayCapNhat" class="form-control" />
-                <span asp-validation-for="NgayCapNhat" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="IDAdmin" class="control-label"></label>
-                <select asp-for="IDAdmin" class="form-control" asp-items="ViewBag.IDAdmin"></select>
-                <span asp-validation-for="IDAdmin" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TrangThai" class="control-label"></label>
-                <input asp-for="TrangThai" class="form-control" />
-                <span asp-validation-for="TrangThai" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="TheLoaiPhim" class="form-label">Thể Loại Phim</label>
+                        <select asp-for="TheLoaiPhim" class="form-control" asp-items="ViewBag.TheLoaiPhim" required></select>
+                        <span asp-validation-for="TheLoaiPhim" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DienVien" class="form-label">Diễn Viên</label>
+                        <input asp-for="DienVien" class="form-control" required />
+                        <span asp-validation-for="DienVien" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="NgayPhatHanh" class="form-label">Ngày Phát Hành</label>
+                        <input asp-for="NgayPhatHanh" type="date" class="form-control" required />
+                        <span asp-validation-for="NgayPhatHanh" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DanhGia" class="form-label">Đánh Giá</label>
+                        <input asp-for="DanhGia" class="form-control" required />
+                        <span asp-validation-for="DanhGia" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DangPhim" class="form-label">Dạng phim</label>
+                        <input asp-for="DangPhim" class="form-control" disabled />
+                        <input type="hidden" asp-for="DangPhim" />
+                        <span asp-validation-for="DangPhim" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="TrailerURL" class="form-label">Trailer URL</label>
+                        <input  asp-for="TrailerURL" class="form-control" required />
+                        <span asp-validation-for="TrailerURL" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="TrangThai" class="form-label">Trạng Thái</label>
+                        <input asp-for="TrangThai" class="form-control" required />
+                        <span asp-validation-for="TrangThai" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center mb-3">
+                     
+                        <label asp-for="NoiDungPremium" class="form-check-label mb-0" for="premiumCheckbox">Premium</label>
+                        <input asp-for="NoiDungPremium" class="form-check-input me-2" style="margin: 0 10px;" type="checkbox" required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="NgayCapNhat" class="form-label">Ngày Cập Nhật</label>
+                        <input asp-for="NgayCapNhat" type="date" class="form-control" required />
+                        <span asp-validation-for="NgayCapNhat" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SourcePhim" class="form-label">Source Phim</label>
+                        <input asp-for="SourcePhim" class="form-control" required />
+                        <span asp-validation-for="SourcePhim" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <label>Hình Ảnh Hiện Tại:</label><br />
+                    @if (!string.IsNullOrEmpty(Model.HinhAnh))
+                    {
+                        <img id="currentImage" src="@Url.Content("~/Uploads/" + Model.HinhAnh)" alt="Hình Ảnh" style="max-width: 200px; max-height: 200px; margin: 10px 0;" />
+                    }
+                    else
+                    {
+                        <p>Không có hình ảnh.</p>
+                    }
+                    <input type="file" name="ImageFile" class="form-control" id="imageFileInput" />
+                    <span asp-validation-for="HinhAnh" class="text-danger"></span>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="window.location.href='@Url.Action("Index", "QuanLyPhims")'">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<script>
+    document.getElementById('imageFileInput').addEventListener('change', function (event) {
+        var file = event.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                var imageUrl = e.target.result;
+                var imgElement = document.getElementById('currentImage');
+
+                if (imgElement) {
+                    imgElement.src = imageUrl;
+                } else {
+                    var newImage = document.createElement('img');
+                    newImage.src = imageUrl;
+                    newImage.style.maxWidth = '200px';
+                    newImage.style.maxHeight = '200px';
+                    document.querySelector('.form-group').appendChild(newImage);
+                }
+            };
+
+            reader.readAsDataURL(file);
+        }
+    });
+</script>

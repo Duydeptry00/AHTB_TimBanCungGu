@@ -31,7 +31,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             if (userType == "Admin" && token != null)
             {
-                var dBAHTBContext = _context.Phim.Include(p => p.TheLoai).Include(p => p.User);
+                var dBAHTBContext = _context.Phim.Include(p => p.TheLoai).Include(p => p.User).Where(p => p.TrangThai != "Ẩn");
                 // Get all unique genres from the database
                 var genres = await _context.TheLoai.Select(t => t.TenTheLoai).Distinct().ToListAsync();
 
@@ -84,7 +84,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             if (userType == "Admin" && token != null)
             {
                 ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai");
-                ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID");
+                ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UserName");
                 ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
                 return View();
             }
@@ -98,34 +98,37 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IDPhim,TenPhim,MoTa,DienVien,TheLoaiPhim,NgayPhatHanh,DanhGia,TrailerURL,NoiDungPremium,SourcePhim,HinhAnh,DangPhim,NgayCapNhat,IDAdmin,TrangThai")] Phim phim, IFormFile ImageFile , int? soluongtap)
+        public async Task<IActionResult> Create(
+      [Bind("IDPhim,TenPhim,MoTa,DienVien,TheLoaiPhim,NgayPhatHanh,DanhGia,TrailerURL,NoiDungPremium,SourcePhim,HinhAnh,DangPhim,NgayCapNhat,IDAdmin,TrangThai")] Phim phim,
+      IFormFile ImageFile,
+      int? soluongtap)
         {
             if (ModelState.IsValid)
             {
                 if (ImageFile == null || ImageFile.Length == 0)
                 {
-                    ModelState.AddModelError(string.Empty, "Image file is required.");
+                    ModelState.AddModelError(string.Empty, "Cần phải chọn tệp hình ảnh.");
                     PopulateViewData(phim);
                     return View(phim);
                 }
 
-                // Check allowed file extensions
+                // Kiểm tra định dạng tệp hình ảnh
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
                 var fileExtension = Path.GetExtension(ImageFile.FileName).ToLowerInvariant();
                 if (!allowedExtensions.Contains(fileExtension))
                 {
-                    ModelState.AddModelError(string.Empty, "Only image files (.jpg, .jpeg, .png, .gif) are allowed.");
+                    ModelState.AddModelError(string.Empty, "Chỉ cho phép các tệp hình ảnh (.jpg, .jpeg, .png, .gif).");
                     PopulateViewData(phim);
                     return View(phim);
                 }
 
-                // Generate a unique file name and path
+                // Tạo đường dẫn lưu trữ ảnh
                 var fileName = Path.GetRandomFileName() + fileExtension;
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Uploads", fileName);
 
                 try
                 {
-                    // Save the file to the specified path
+                    // Lưu tệp hình ảnh
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await ImageFile.CopyToAsync(fileStream);
@@ -134,27 +137,34 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError(string.Empty, $"An error occurred while uploading the image: {ex.Message}");
+                    ModelState.AddModelError(string.Empty, $"Đã xảy ra lỗi khi tải hình ảnh: {ex.Message}");
                     PopulateViewData(phim);
                     return View(phim);
                 }
+
+                // Lưu thông tin phim trước
+                _context.Add(phim);
+                await _context.SaveChangesAsync(); // Lưu để lấy IDPhim đã được tạo
+
+                // Nếu là Phim Bộ, thêm Phan và các Tập
                 if (phim.DangPhim == "Phim Bộ" && soluongtap.HasValue)
                 {
-                    // Lấy IDPhan cuối cùng và tính toán IDPhan tiếp theo
+                    // Tính toán IDPhan mới
                     string lastphanId = _context.Phan.OrderByDescending(kh => kh.IDPhan).Select(kh => kh.IDPhan).FirstOrDefault();
                     int nextphanId = (lastphanId == null) ? 1 : int.Parse(lastphanId.Substring(2)) + 1;
 
-                    // Tạo phần mới
                     var phan = new Phan
                     {
                         IDPhan = "PH" + nextphanId.ToString(),
                         SoPhan = 1,
                         SoLuongTap = soluongtap.Value,
-                        PhimID = phim.IDPhim
+                        PhimID = phim.IDPhim // Đảm bảo IDPhim đã tồn tại
                     };
 
                     _context.Phan.Add(phan);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(); // Lưu để tạo khóa chính cho phần
+
+                    // Tính toán IDTap mới
                     string lasttapId = _context.Tap.OrderByDescending(t => t.IDTap).Select(t => t.IDTap).FirstOrDefault();
                     int nexttapId = (lasttapId == null) ? 1 : int.Parse(lasttapId.Substring(1)) + 1;
 
@@ -165,14 +175,15 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                         {
                             IDTap = "T" + nexttapId,
                             SoTap = i,
-                            PhanPhim = phan.IDPhan
+                            PhanPhim = phan.IDPhan // Liên kết với phần vừa tạo
                         };
                         _context.Tap.Add(tap);
-                        nexttapId++; // Tăng IDTap tiếp theo
+                        nexttapId++;
                     }
+
+                    await _context.SaveChangesAsync(); // Lưu các tập phim
                 }
-                    _context.Add(phim);
-                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -180,13 +191,14 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             return View(phim);
         }
 
+
         // Helper method to populate ViewData
         private void PopulateViewData(Phim phim)
         {
 
             ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
-            ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID", phim.IDAdmin);
-            ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
+            ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UserName", phim.IDAdmin);
+            ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" }, phim.DangPhim);
         }
 
 
@@ -212,8 +224,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
                 // Populate dropdowns for the form
                 ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
-                ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UsID", phim.IDAdmin);
-                ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
+                ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UserName", phim.IDAdmin);
+                ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" }, phim?.DangPhim);
                 return View(phim);
             }
 
@@ -326,44 +338,17 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
 
 
-        // GET: Admin/QuanLyPhims/Delete/5
-        public async Task<IActionResult> Delete(string id)
-        {
-            // Lấy token JWT và UserType từ session
-            var token = HttpContext.Session.GetString("JwtToken");
-            var userType = HttpContext.Session.GetString("UserType");
-
-            if (userType == "Admin" && token != null)
-            {
-                if (id == null)
-                {
-                    return NotFound();
-                }
-
-                var phim = await _context.Phim
-                    .Include(p => p.TheLoai)
-                    .Include(p => p.User)
-                    .FirstOrDefaultAsync(m => m.IDPhim == id);
-                if (phim == null)
-                {
-                    return NotFound();
-                }
-
-                return View(phim);
-            }
-
-            return NotFound();
-          
-        }
-
-        // POST: Admin/QuanLyPhims/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        [HttpPost]
+        public async Task<IActionResult> HideFromIndex(string id)
         {
             var phim = await _context.Phim.FindAsync(id);
-            _context.Phim.Remove(phim);
-            await _context.SaveChangesAsync();
+            if (phim != null)
+            {
+                // Thay đổi trạng thái phim thành "Ẩn"
+                phim.TrangThai = "Ẩn"; // Đảm bảo bạn có cột "TrangThai" trong bảng Phim
+                _context.Update(phim);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Index));
         }
 

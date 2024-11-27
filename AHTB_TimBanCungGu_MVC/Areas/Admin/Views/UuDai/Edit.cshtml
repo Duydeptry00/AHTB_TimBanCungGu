@@ -5,90 +5,123 @@
     ViewData["Title"] = "Chỉnh sửa ưu đãi";
 }
 
-<h1 style="color: #d32f2f; text-align: center; margin-bottom: 20px;">Chỉnh sửa ưu đãi</h1>
+<style>
+    .custom-form-card {
+        background-color: #fff;
+        color: #333;
+        padding: 20px;
+        border-radius: 8px;
+    }
 
-<div class="card" style="background-color: #222; color: #fff; padding: 20px; border-radius: 8px; margin: 0 auto; max-width: 500px;">
-    <h4 style="color: #d32f2f;">Thông tin ưu đãi</h4>
-    <hr style="border-color: #d32f2f;" />
+    .custom-heading {
+        color: #333;
+        text-align: center;
+        text-transform: uppercase;
+    }
 
-    <form asp-action="Edit">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="IdUuDai" />
+    .custom-hr {
+        border-color: #333;
+    }
 
-        <div class="form-group">
-            <label asp-for="TenUuDai" class="control-label" style="color: #d32f2f;"></label>
-            <input asp-for="TenUuDai" class="form-control" style="background-color: #333; color: #fff; border: none;" />
-            <span asp-validation-for="TenUuDai" class="text-danger"></span>
+    .custom-label {
+        color: #F31313;
+        margin: 10px 0;
+    }
+    .custom-image-preview {
+        width: 150px;
+        height: 150px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        object-fit: cover; /* Giữ tỷ lệ hình ảnh */
+        margin-right: 15px; /* Khoảng cách giữa ảnh và input */
+    }
+
+    .custom-input {
+        width: 100%;
+    }
+
+    .text-muted {
+        font-size: 0.875rem;
+        margin-top: 5px;
+        color: #6c757d; /* Màu chú thích nhạt hơn */
+    }
+
+
+    .custom-text-danger {
+        color: red;
+    }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center" style="margin-top:5%">
+        <div class="col-md-6">
+            <div class="card custom-form-card">
+                <h4 class="custom-heading">Chỉnh sửa ưu đãi</h4>
+                <hr class="custom-hr" />
+                <form asp-action="Edit" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="custom-text-danger"></div>
+                    <input type="hidden" asp-for="IdUuDai" />
+
+                    <div class="form-group">
+                        <label asp-for="TenUuDai" class="control-label custom-label">Tên Ưu đãi</label>
+                        <input asp-for="TenUuDai" class="form-control custom-input" />
+                        <span asp-validation-for="TenUuDai" class="custom-text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="NgayUuDai" class="control-label custom-label">Ngày Ưu Đãi</label>
+                        <input asp-for="NgayUuDai" type="date" class="form-control custom-input" />
+                        <span asp-validation-for="NgayUuDai" class="custom-text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="PhanTram" class="control-label custom-label">Phần trăm</label>
+                        <input asp-for="PhanTram" type="number" class="form-control custom-input" min="0" max="100" />
+                        <span asp-validation-for="PhanTram" class="custom-text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label custom-label">Hình ảnh</label>
+                        <div class="d-flex align-items-center">
+                            @if (ViewBag.CurrentImage != null)
+                            {
+                                <img src="~/Uploads/@ViewBag.CurrentImage" id="currentImage" class="img-fluid custom-image-preview me-3" />
+                            }
+                            else
+                            {
+                                <img id="currentImage" class="img-fluid d-none custom-image-preview me-3" />
+                            }
+                            <div>
+                                <input type="file" id="imageFileInput" name="hinh" class="form-control custom-input" />
+                                <small class="text-muted">Chọn ảnh mới nếu muốn thay đổi</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer custom-modal-footer-btn">
+                        <button type="button" class="btn btn-danger" onclick="window.location.href='@Url.Action("Index", "UuDai")'">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label asp-for="NgayUuDai" class="control-label" style="color: #d32f2f;"></label>
-            <input asp-for="NgayUuDai" class="form-control" style="background-color: #333; color: #fff; border: none;" />
-            <span asp-validation-for="NgayUuDai" class="text-danger"></span>
-        </div>
-
-        <div class="form-group">
-            <label asp-for="PhanTram" class="control-label" style="color: #d32f2f;"></label>
-            <input asp-for="PhanTram" class="form-control" style="background-color: #333; color: #fff; border: none;" />
-            <span asp-validation-for="PhanTram" class="text-danger"></span>
-        </div>
-
-        <div class="form-group">
-            <label asp-for="Hinh" class="control-label" style="color: #d32f2f;"></label>
-            <input asp-for="Hinh" class="form-control" style="background-color: #333; color: #fff; border: none;" />
-            <span asp-validation-for="Hinh" class="text-danger"></span>
-        </div>
-
-        <div class="form-group" style="text-align: center; margin-top: 20px;">
-            <input type="submit" value="Lưu" class="btn btn-custom btn-danger" />
-            <a asp-action="Index" class="btn btn-custom btn-secondary">Quay lại danh sách</a>
-        </div>
-    </form>
+    </div>
 </div>
 
+<script>
+    document.getElementById('imageFileInput').addEventListener('change', function (event) {
+        var file = event.target.files[0];
+        if (file) {
+            var reader = new FileReader();
 
-<style>
-    /* Button Custom Styling */
-    .btn-custom {
-        padding: 10px 20px;
-        font-weight: bold;
-        border-radius: 5px;
-        margin: 5px;
-        transition: background-color 0.3s ease;
-        text-decoration: none;
-    }
+            reader.onload = function (e) {
+                var imageUrl = e.target.result;
+                var imgElement = document.getElementById('currentImage');
 
-    .btn-danger {
-        background-color: #d32f2f;
-        border-color: #d32f2f;
-        color: #fff;
-    }
+                // Hiển thị ảnh
+                imgElement.src = imageUrl;
+                imgElement.classList.remove('d-none'); // Hiển thị ảnh
+            };
 
-        .btn-danger:hover {
-            background-color: #b71c1c;
-            border-color: #b71c1c;
+            reader.readAsDataURL(file); // Đảm bảo đóng ngoặc đúng
         }
-
-    .btn-secondary {
-        background-color: #555;
-        color: #fff;
-        border-color: #444;
-    }
-
-        .btn-secondary:hover {
-            background-color: #333;
-        }
-    /* Form input custom styling */
-    .form-control {
-        padding: 10px;
-        font-size: 14px;
-        border-radius: 4px;
-        transition: background-color 0.3s ease;
-    }
-
-        .form-control:focus {
-            background-color: #444;
-            color: #fff;
-            outline: none;
-        }
-</style>
+    });
+</script>
