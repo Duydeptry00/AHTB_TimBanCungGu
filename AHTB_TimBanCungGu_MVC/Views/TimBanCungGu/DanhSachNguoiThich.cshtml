@@ -24,7 +24,7 @@
 
                     <div class="user-details">
                         <h2>@user.HoTen</h2>
-                        <p>@user.MoTa</p>
+                        <p>@user.GioiTinh</p>
                     </div>
                 </div>
 
@@ -39,6 +39,7 @@
             </div>
         }
     </div>
+
 }
 else
 {
@@ -48,16 +49,18 @@ else
 
 <style>
     .list-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* Chia thành 4 cột đều nhau */
+        gap: 20px; /* Khoảng cách giữa các thẻ */
         margin-top: 20px;
+        padding: 0 20px; /* Tạo khoảng cách với viền */
+        justify-items: center; /* Canh giữa các phần tử trong cột */
     }
 
     .user-card {
         background-color: #f9f9f9;
-        width: 350px;
-        margin-bottom: 20px;
+        width: 100%; /* Để chiều rộng tự động theo cột */
+        max-width: 350px; /* Giới hạn chiều rộng tối đa */
         border-radius: 10px;
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         overflow: hidden;
@@ -70,25 +73,49 @@ else
 
     .profile-image {
         width: 100%;
-        height: 250px;
-        object-fit: cover;
+        height: 420px; /* Cố định chiều cao */
+        object-fit: cover; /* Đảm bảo hình ảnh không bị méo */
         border-radius: 10px 10px 0 0;
+        background-color: #f0f0f0; /* Nền mặc định */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #999;
     }
+
+        .profile-image img {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
 
     .user-details {
         padding: 15px;
         text-align: center;
+        min-height: 80px; /* Đảm bảo chiều cao cố định cho phần thông tin */
     }
 
         .user-details h2 {
             font-size: 22px;
             font-weight: bold;
+            color: #000; /* Màu chữ đen */
+            margin: 0;
         }
 
         .user-details p {
             font-size: 16px;
-            color: #777;
+            color: #000; /* Màu chữ đen */
+            margin: 5px 0 0; /* Khoảng cách nhỏ giữa các dòng */
+            visibility: visible; /* Duy trì vị trí khi thiếu nội dung */
         }
+
+            /* Ẩn nhưng giữ không gian nếu `GioiTinh` trống */
+            .user-details p.hidden {
+                visibility: hidden;
+            }
+
 
     .action-buttons {
         display: flex;
@@ -113,6 +140,7 @@ else
             width: 30px;
             height: 30px;
         }
+
 </style>
 
 <script>
