@@ -74,7 +74,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     HoTen = t.HoTen,
                     Email = t.Email,
                     GioiTinh = t.GioiTinh,
-                    NgaySinh = t.NgaySinh,
+                    NgaySinh = (DateTime)t.NgaySinh,
                     SoDienThoai = t.SoDienThoai,
                     IsPremium = t.IsPremium,
                     MoTa = t.MoTa,

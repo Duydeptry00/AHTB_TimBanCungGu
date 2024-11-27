@@ -9,6 +9,10 @@ using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using DocumentFormat.OpenXml.Spreadsheet;
+using AHTB_TimBanCungGu_MVC.Models;
+using ThongTinCaNhan = AHTB_TimBanCungGu_API.Models.ThongTinCaNhan;
+using AnhCaNhan = AHTB_TimBanCungGu_API.Models.AnhCaNhan;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -20,8 +24,11 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         {
             _context = context;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int id)
         {
+            // Kiểm tra xem ID có được truyền đúng không
+            Console.WriteLine($"ID từ URL: {id}");
+
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
 
@@ -30,49 +37,54 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 var userName = HttpContext.Session.GetString("TempUserName");
 
                 var thongTinCaNhan = await _context.ThongTinCN
-              .Include(t => t.User)              // Nạp thông tin người dùng
-              .Include(t => t.AnhCaNhan)         // Nạp ảnh cá nhân
-              .FirstOrDefaultAsync(t => t.User.UserName == userName);
+                    .Include(t => t.User)              // Nạp thông tin người dùng
+                    .Include(t => t.AnhCaNhan)         // Nạp ảnh cá nhân
+                    .FirstOrDefaultAsync(t => t.IDProfile == id && t.User.UserName == userName);
 
-                if (thongTinCaNhan == null)
+                if (thongTinCaNhan != null)
                 {
-                    return NotFound();
+                    // Truyền IDProfile vào ViewBag để có thể sử dụng trong View
+                    ViewBag.IdThongTinCaNhan = thongTinCaNhan.IDProfile;
                 }
-
-                return View(thongTinCaNhan); // Truyền một đối tượng duy nhất
+                else
+                {
+                    // Xử lý trường hợp không tìm thấy thông tin người dùng
+                    ViewBag.Message = "Không tìm thấy thông tin người dùng!";
+                }
+                return View(thongTinCaNhan);
             }
             else
             {
-                // Nếu không có token, có thể chuyển đến trang đăng nhập
-                ViewBag.Message = "Bạn chưa đăng nhập.";
+                // Nếu không có token trong session, bạn có thể yêu cầu đăng nhập lại
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
 
-        // GET: ThongTinCaNhans/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+
+        public async Task<IActionResult> Edit(int id)
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
 
             if (!string.IsNullOrEmpty(token))
             {
-                if (id == null)
+                // Kiểm tra ID có hợp lệ không
+                if (id <= 0)
                 {
-                    return NotFound();
+                    return NotFound(); // Nếu ID không hợp lệ, trả về lỗi 404
                 }
 
                 var userName = HttpContext.Session.GetString("TempUserName");
 
-                // Tìm thông tin cá nhân của người dùng theo ID và UserName từ session,
-                // bao gồm cả ảnh cá nhân (AnhCaNhan)
+                // Tìm thông tin cá nhân của người dùng theo ID và UserName từ session
                 var thongTinCaNhan = await _context.ThongTinCN
                     .Include(t => t.AnhCaNhan) // Nạp dữ liệu từ bảng AnhCaNhan
-                    .FirstOrDefaultAsync(t => t.IDProfile == id && t.User.UserName == userName);
+                    .FirstOrDefaultAsync(t => t.IDProfile == id && t.User.UserName == userName); // Tìm theo ID và Username
 
                 if (thongTinCaNhan == null)
                 {
-                    return Unauthorized(); // Trả về Unauthorized nếu không tìm thấy thông tin của người dùng
+                    // Nếu không tìm thấy dữ liệu, trả về lỗi 404
+                    return NotFound();
                 }
 
                 return View(thongTinCaNhan); // Truyền thông tin đến view để hiển thị
@@ -80,7 +92,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             else
             {
                 // Nếu không có token, có thể chuyển đến trang đăng nhập
-                ViewBag.Message = "Bạn chưa đăng nhập.";
+                TempData["Message"] = "Bạn chưa đăng nhập.";
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
@@ -100,81 +112,97 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return Unauthorized();
             }
 
-            if (ModelState.IsValid)
+            // Kiểm tra lỗi validation ngày sinh và số điện thoại trước khi tiếp tục
+            if (thongTinCaNhan.NgaySinh >= DateTime.Now)
             {
-                try
-                {
-                    var existingProfile = await _context.ThongTinCN
-                        .Include(t => t.AnhCaNhan) // Nạp danh sách ảnh liên kết với ThongTinCaNhan
-                        .FirstOrDefaultAsync(t => t.IDProfile == id && t.User.UserName == userName);
-
-                    if (existingProfile == null)
-                    {
-                        return NotFound();
-                    }
-
-                    // Cập nhật thông tin cá nhân
-                    existingProfile.HoTen = thongTinCaNhan.HoTen;
-                    existingProfile.GioiTinh = thongTinCaNhan.GioiTinh;
-                    existingProfile.NgaySinh = thongTinCaNhan.NgaySinh;
-                    existingProfile.SoDienThoai = thongTinCaNhan.SoDienThoai;
-                    existingProfile.MoTa = thongTinCaNhan.MoTa;
-                    existingProfile.DiaChi = thongTinCaNhan.DiaChi;
-
-                    if (existingProfile.AnhCaNhan.Count >= 7)
-                    {
-                        ViewBag.ErrorMessage = "Bạn chỉ có thể tải tối đa 7 ảnh cá nhân.";
-                        return View(existingProfile); // Trả về lại trang Edit với thông báo lỗi
-                    }
-
-                    // Lưu ảnh nếu có file được chọn và nếu chưa đạt số lượng ảnh tối đa
-                    if (AnhCaNhanFile != null && AnhCaNhanFile.Length > 0 && existingProfile.AnhCaNhan.Count < 7)
-                    {
-                        // Tính toán tên file mới theo thứ tự
-                        var newFileName = (existingProfile.AnhCaNhan.Count + 1) + Path.GetExtension(AnhCaNhanFile.FileName);
-
-                        // Đường dẫn lưu trữ ảnh
-                        var filePath = Path.Combine("wwwroot/uploads", newFileName);
-
-                        // Lưu ảnh vào thư mục
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await AnhCaNhanFile.CopyToAsync(stream);
-                        }
-
-                        // Thêm ảnh vào danh sách AnhCaNhan của profile
-                        var newAnhCaNhan = new AnhCaNhan
-                        {
-                            HinhAnh = newFileName,
-                            IDProfile = existingProfile.IDProfile
-                        };
-
-                        existingProfile.AnhCaNhan.Add(newAnhCaNhan);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    // Lưu thay đổi vào cơ sở dữ liệu
-                    _context.Update(existingProfile);
-                    await _context.SaveChangesAsync();
-
-                    // Trả về lại cùng trang Edit sau khi lưu thay đổi
-                    return View(existingProfile);
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ThongTinCaNhanExists(thongTinCaNhan.IDProfile))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                ModelState.AddModelError("NgaySinh", "Ngày sinh phải nhỏ hơn ngày hiện tại.");
             }
 
-            return View(thongTinCaNhan);
+            if (!string.IsNullOrEmpty(thongTinCaNhan.SoDienThoai) &&
+                (thongTinCaNhan.SoDienThoai.Length < 10 || thongTinCaNhan.SoDienThoai.Length > 11))
+            {
+                ModelState.AddModelError("SoDienThoai", "Số điện thoại phải có độ dài từ 10 đến 11 ký tự.");
+            }
+
+            if (string.IsNullOrEmpty(thongTinCaNhan.HoTen))
+            {
+                ModelState.AddModelError("HoTen", "Vui lòng nhập họ tên");
+            }
+
+            // Nếu có lỗi validation, trả lại form với các lỗi
+            if (!ModelState.IsValid)
+            {
+                var existingProfile = await _context.ThongTinCN
+                    .Include(t => t.AnhCaNhan) // Nạp danh sách ảnh liên kết với ThongTinCaNhan
+                    .FirstOrDefaultAsync(t => t.IDProfile == id && t.User.UserName == userName);
+
+                return View(existingProfile);  // Trả lại trang Edit với các lỗi và giữ lại hình ảnh
+            }
+
+            try
+            {
+                var existingProfile = await _context.ThongTinCN
+                    .Include(t => t.AnhCaNhan)
+                    .FirstOrDefaultAsync(t => t.IDProfile == id && t.User.UserName == userName);
+
+                if (existingProfile == null)
+                {
+                    return NotFound();
+                }
+
+                if (existingProfile.AnhCaNhan.Count >= 7)
+                {
+                    ViewBag.ErrorMessage = "Bạn chỉ có thể tải tối đa 7 ảnh cá nhân.";
+                    return View(existingProfile);  // Trả về lại trang Edit với thông báo lỗi
+                }
+
+                // Cập nhật thông tin cá nhân
+                existingProfile.HoTen = thongTinCaNhan.HoTen;
+                existingProfile.GioiTinh = thongTinCaNhan.GioiTinh;
+                existingProfile.NgaySinh = thongTinCaNhan.NgaySinh;
+                existingProfile.SoDienThoai = thongTinCaNhan.SoDienThoai;
+                existingProfile.MoTa = thongTinCaNhan.MoTa;
+                existingProfile.DiaChi = thongTinCaNhan.DiaChi;
+
+                // Lưu ảnh nếu có file được chọn và nếu chưa đạt số lượng ảnh tối đa
+                if (AnhCaNhanFile != null && AnhCaNhanFile.Length > 0 && existingProfile.AnhCaNhan.Count < 7)
+                {
+                    var newFileName = (existingProfile.AnhCaNhan.Count + 1) + Path.GetExtension(AnhCaNhanFile.FileName);
+                    var filePath = Path.Combine("wwwroot/uploads", newFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await AnhCaNhanFile.CopyToAsync(stream);
+                    }
+
+                    var newAnhCaNhan = new AnhCaNhan
+                    {
+                        HinhAnh = newFileName,
+                        IDProfile = existingProfile.IDProfile
+                    };
+
+                    existingProfile.AnhCaNhan.Add(newAnhCaNhan);
+                }
+
+                // Lưu thay đổi vào cơ sở dữ liệu
+                _context.Update(existingProfile);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Index", new { id = thongTinCaNhan.IDProfile });
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ThongTinCaNhanExists(thongTinCaNhan.IDProfile))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
+
 
         // POST: ThongTinCaNhans/DeleteImage/5
         [HttpPost]
