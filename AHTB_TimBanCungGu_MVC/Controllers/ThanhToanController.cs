@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using AHTB_TimBanCungGu_API.Data;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -25,10 +27,23 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         }
 
         [HttpGet]
-        public IActionResult Premium()
+        public async Task<IActionResult> PremiumAsync()
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
+            var userName = HttpContext.Session.GetString("TempUserName");
+
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+            if (userInfo != null)
+            {
+                // Truyền thông tin người dùng vào ViewBag
+                ViewBag.HoTen = userInfo.HoTen;
+                ViewBag.GioiTinh = userInfo.GioiTinh;
+                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+            }
 
             if (!string.IsNullOrEmpty(token))
             {
@@ -45,6 +60,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         [HttpPost]
         public IActionResult Premium(int GiaGoi, int SoThang, string payment)
         {
+
             // Lưu số tiền và số tháng vào session trước khi xử lý thanh toán
             var amountBytes = System.Text.Encoding.UTF8.GetBytes(GiaGoi.ToString());
             HttpContext.Session.Set("Amount", amountBytes);

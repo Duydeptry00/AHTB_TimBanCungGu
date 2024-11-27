@@ -354,18 +354,19 @@
                 console.log("WebSocket for swipe error:", error);
             };
         });
+
+        // Đánh dấu tất cả thông báo là đã đọc trong localStorage
+        const allNotifications = notificationList.querySelectorAll("a");
+        allNotifications.forEach(notification => {
+            const notificationText = notification.getAttribute("data-id");
+            localStorage.setItem(notificationText, "read"); // Đánh dấu là đã đọc
+            notification.parentElement.classList.add("read"); // Thêm class "read"
+        });
+                    });
+                });
     </script>
 
 
-                // Đánh dấu tất cả thông báo là đã đọc trong localStorage
-                const allNotifications = notificationList.querySelectorAll("a");
-                allNotifications.forEach(notification => {
-                    const notificationText = notification.getAttribute("data-id");
-                    localStorage.setItem(notificationText, "read"); // Đánh dấu là đã đọc
-                    notification.parentElement.classList.add("read"); // Thêm class "read"
-                });
-            });
-        });
      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         window.onload = function () {

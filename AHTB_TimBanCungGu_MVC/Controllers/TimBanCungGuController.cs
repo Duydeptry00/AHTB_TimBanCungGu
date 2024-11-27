@@ -46,6 +46,19 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             if (!string.IsNullOrEmpty(token))
             {
                 var userName = HttpContext.Session.GetString("TempUserName");
+
+                var userInfo = await _context.ThongTinCN
+                    .Include(t => t.User)
+                    .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+                if (userInfo != null)
+                {
+                    // Truyền thông tin người dùng vào ViewBag
+                    ViewBag.HoTen = userInfo.HoTen;
+                    ViewBag.GioiTinh = userInfo.GioiTinh;
+                    ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+                }
+
                 if (string.IsNullOrEmpty(userName))
                 {
                     return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
@@ -491,7 +504,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     HoTen = t.HoTen,
                     Email = t.Email,
                     GioiTinh = t.GioiTinh,
-                    NgaySinh = t.NgaySinh,
+                    NgaySinh = (DateTime)t.NgaySinh,
                     SoDienThoai = t.SoDienThoai,
                     IsPremium = t.IsPremium,
                     MoTa = t.MoTa,

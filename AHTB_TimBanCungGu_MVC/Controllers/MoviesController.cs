@@ -19,10 +19,23 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _context = context;
         }
 
-        public IActionResult Movies(int page = 1, string genre = "Tất cả", string search = "")
+        public async Task<IActionResult> MoviesAsync(int page = 1, string genre = "Tất cả", string search = "")
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
+            var userName = HttpContext.Session.GetString("TempUserName");
+
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+            if (userInfo != null)
+            {
+                // Truyền thông tin người dùng vào ViewBag
+                ViewBag.HoTen = userInfo.HoTen;
+                ViewBag.GioiTinh = userInfo.GioiTinh;
+                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+            }
 
             if (!string.IsNullOrEmpty(token))
             {
