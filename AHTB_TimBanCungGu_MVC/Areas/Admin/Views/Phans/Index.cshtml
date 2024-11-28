@@ -72,6 +72,7 @@
 
     /* Cuộn bảng */
     .table-wrapper {
+        margin-top: 1.2rem;
         max-height: 400px;
         overflow-y: auto;
         border: 1px solid #3b4f63;
@@ -236,12 +237,18 @@
 
 </style>
 <div class="dark-background">
+    
     <h1>Quản lý Phần Phim</h1>
+    <div class="col text-end">
+        <a asp-action="Create" class="btn btn-success" id="addNewBtn">
+            <i class="fas fa-plus"></i> Thêm Mới
+        </a>
+    </div>
     <div class="table-wrapper">
         <table class="table table-striped table-hover table-bordered text-center align-middle table-dark text-light" id="movieTable">
             <thead>
                 <tr>
-                    <th><i class="fas fa-cogs"></i> Số Phân</th>
+                    <th><i class="fas fa-cogs"></i> Số Phần</th>
                     <th><i class="fas fa-calendar-alt"></i> Ngày Công Chiếu</th>
                     <th><i class="fas fa-list-ul"></i> Số Lượng Tập</th>
                     <th><i class="fas fa-film"></i> Phim</th>

@@ -50,27 +50,26 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             // Lấy token JWT và UserType từ session
             var token = HttpContext.Session.GetString("JwtToken");
             var userType = HttpContext.Session.GetString("UserType");
-
-            if (userType == "Admin" && token != null)
-            {
+            var userName = HttpContext.Session.GetString("TempUserName");
+             if (userType == "Admin" && token != null)
+             {
+                ViewData["IDAdmin"] = userName;
                 if (id == null)
-                {
-                    return NotFound();
-                }
+                    {
+                        return NotFound();
+                    }
+                    var phim = await _context.Phim
+                        .Include(p => p.TheLoai)
+                        .Include(p => p.User)
+                        .FirstOrDefaultAsync(m => m.IDPhim == id);
+                    if (phim == null)
+                    {
+                        return NotFound();
+                    }
+                    return View(phim);
+             }
 
-                var phim = await _context.Phim
-                    .Include(p => p.TheLoai)
-                    .Include(p => p.User)
-                    .FirstOrDefaultAsync(m => m.IDPhim == id);
-                if (phim == null)
-                {
-                    return NotFound();
-                }
-
-                return View(phim);
-            }
-
-            return NotFound();
+                return NotFound();
            
         }
 
@@ -104,10 +103,10 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
       IFormFile ImageFile,
       int? soluongtap)
         {
-            
             if (ModelState.IsValid)
             {
                 var userName = HttpContext.Session.GetString("TempUserName");
+
                 if (ImageFile == null || ImageFile.Length == 0)
                 {
                     ModelState.AddModelError(string.Empty, "Cần phải chọn tệp hình ảnh.");
@@ -144,30 +143,26 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     PopulateViewData(phim);
                     return View(phim);
                 }
-                string newPhimId = await GenerateUniquePhimId();
-                // Tìm người dùng từ UsID
-                var admin = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
 
+                string newPhimId = GenerateUniquePhimId();
+              
+                var admin = await _context.Users.FirstOrDefaultAsync(u => u.UsID == phim.IDAdmin);
                 if (admin != null)
                 {
-                    phim.IDAdmin = admin.UsID; ;  // Gán UserName vào IDAdmin
+                    ViewData["IDAdmin"] = admin.UserName;  // Pass the UserName to the view
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Không tìm thấy người dùng với UsID.");
-                    return View(phim);
+                    ViewData["IDAdmin"] = "Unknown";  // Fallback if no admin found
                 }
-                // Gán IDPhim cho phim
                 phim.IDPhim = newPhimId;
-             
-                // Lưu thông tin phim trước
-                _context.Add(phim);
-                await _context.SaveChangesAsync(); // Lưu để lấy IDPhim đã được tạo
 
-                // Nếu là Phim Bộ, thêm Phan và các Tập
+                _context.Add(phim);
+                await _context.SaveChangesAsync();
+
+                // Kiểm tra nếu phim là "Phim Bộ"
                 if (phim.DangPhim == "Phim Bộ" && soluongtap.HasValue && soluongtap.Value > 0)
                 {
-                    // Tạo IDPhan mới và tự động sửa nếu bị trùng
                     string newPhanId;
                     int nextphanId = 1;
 
@@ -177,7 +172,6 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                         nextphanId++;
                     } while (_context.Phan.Any(p => p.IDPhan == newPhanId));
 
-                    // Tạo đối tượng Phan
                     var phan = new Phan
                     {
                         IDPhan = newPhanId,
@@ -187,9 +181,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     };
 
                     _context.Phan.Add(phan);
-                    await _context.SaveChangesAsync(); // Lưu Phần để lấy ID
+                    await _context.SaveChangesAsync();
 
-                    // Tạo IDTap mới và tự động sửa nếu bị trùng
                     int nexttapId = 1;
                     var taps = new List<Tap>();
 
@@ -215,11 +208,11 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     _context.Tap.AddRange(taps);
                     await _context.SaveChangesAsync(); // Lưu các tập phim
                 }
-                else
+                else if (phim.DangPhim != "Phim Lẻ")
                 {
+                    // Nếu phim không phải là Phim Bộ và không phải Phim Lẻ, throw exception
                     throw new ArgumentException("Số lượng tập không hợp lệ hoặc phim không phải là Phim Bộ.");
                 }
-
 
                 return RedirectToAction(nameof(Index));
             }
@@ -229,15 +222,16 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         }
 
 
+
         // Helper method to populate ViewData
         private void PopulateViewData(Phim phim)
         {
-
+            var userName = HttpContext.Session.GetString("TempUserName");
             ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
-            ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UserName", phim.IDAdmin);
+            ViewData["IDAdmin"] = userName;
             ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" }, phim.DangPhim);
         }
-        private async Task<string> GenerateUniquePhimId()
+        private string GenerateUniquePhimId()
         {
             // Tìm IDPhim lớn nhất trong cơ sở dữ liệu bắt đầu với "P"
             var maxPhimId =  _context.Phim
@@ -333,7 +327,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     {
                         return NotFound();
                     }
-                    throw; // Ném lại ngoại lệ nếu phim vẫn tồn tại
+                    throw;
                 }
             }
 
@@ -346,7 +340,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         {
             if (ImageFile != null && ImageFile.Length > 0)
             {
-                // Validate file type and size
+              
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
                 var fileExtension = Path.GetExtension(ImageFile.FileName).ToLowerInvariant();
 
@@ -356,22 +350,19 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     return;
                 }
 
-                // Generate a unique file name and path
                 var fileName = Path.GetRandomFileName() + fileExtension;
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Uploads", fileName);
 
-                // Save the new image
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await ImageFile.CopyToAsync(fileStream);
                 }
 
-                // Save the new image file name
                 phim.HinhAnh = fileName;
             }
             else
             {
-                // If no new image is uploaded, retain the existing image
+
                 var existingPhim = await _context.Phim.FindAsync(phim.IDPhim);
                 if (existingPhim != null)
                 {
@@ -396,7 +387,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             if (phim != null)
             {
                 // Thay đổi trạng thái phim thành "Ẩn"
-                phim.TrangThai = "Ẩn"; // Đảm bảo bạn có cột "TrangThai" trong bảng Phim
+                phim.TrangThai = "Ẩn"; 
                 _context.Update(phim);
                 await _context.SaveChangesAsync();
             }

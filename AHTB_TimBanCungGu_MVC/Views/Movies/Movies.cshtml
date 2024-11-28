@@ -15,6 +15,7 @@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
 
+
     <style>
         /* Tạo hiệu ứng khi hover vào thẻ card */
         .card-hover {
@@ -78,56 +79,55 @@
                 vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
             }
 
-       /* Khi hover vào thẻ card, nút sẽ hiện lên */
-                .card-hover:hover .btn-xem-ngay {
-                    opacity: 1;
-                    pointer-events: auto; /* Cho phép click khi hover */
-                }
+        /* Khi hover vào thẻ card, nút sẽ hiện lên */
+        .card-hover:hover .btn-xem-ngay {
+            opacity: 1;
+            pointer-events: auto; /* Cho phép click khi hover */
+        }
 
-                /* Tạo biểu tượng cho nút "Xem ngay" */
-                .card-hover .btn-xem-ngay i {
-                    margin-right: 8px;
-                }
+        /* Tạo biểu tượng cho nút "Xem ngay" */
+        .card-hover .btn-xem-ngay i {
+            margin-right: 8px;
+        }
 
-                /* Điều chỉnh font và màu cho tiêu đề */
-                .card-title {
-                    font-size: 18px;
-                    font-weight: bold;
-                    color: #f8f9fa;
-                }
+        /* Điều chỉnh font và màu cho tiêu đề */
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f8f9fa;
+        }
 
-                /* Căn chỉnh phân trang */
-                .pagination {
-                    margin-top: 20px;
-                    justify-content: center;
-                }
+        /* Căn chỉnh phân trang */
+        .pagination {
+            margin-top: 20px;
+            justify-content: center;
+        }
 
-                .speech-recognition-btn button {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 50px; /* Kích thước của nút */
-                    height: 50px; /* Kích thước của nút */
-                    color: white; /* Màu chữ trắng */
-                    border-radius: 50%; /* Hình dạng tròn */
-                    font-size: 28px; /* Kích thước biểu tượng micro */
-                    border: none; /* Loại bỏ viền */
-                    cursor: pointer; /* Con trỏ khi hover */
-                    transition: background-color 0.3s, transform 0.2s; /* Hiệu ứng chuyển màu và phóng to khi hover */
-                }
+        .speech-recognition-btn button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px; /* Kích thước của nút */
+            height: 50px; /* Kích thước của nút */
+            color: white; /* Màu chữ trắng */
+            border-radius: 50%; /* Hình dạng tròn */
+            font-size: 28px; /* Kích thước biểu tượng micro */
+            border: none; /* Loại bỏ viền */
+            cursor: pointer; /* Con trỏ khi hover */
+            transition: background-color 0.3s, transform 0.2s; /* Hiệu ứng chuyển màu và phóng to khi hover */
+        }
 
-                    .speech-recognition-btn button:hover {
+            .speech-recognition-btn button:hover {
+                transform: scale(1.1); /* Phóng to nút khi hover */
+            }
 
-                        transform: scale(1.1); /* Phóng to nút khi hover */
-                    }
-
-                    .speech-recognition-btn button:active {
-                        transform: scale(0.95); /* Nhỏ nút khi nhấn */
-                    }
+            .speech-recognition-btn button:active {
+                transform: scale(0.95); /* Nhỏ nút khi nhấn */
+            }
     </style>
 </head>
 <body>
-    <div class="container my-5 custom-container">
+    <div class="container my-5">
         <div class="row mb-4">
             <div class="col-md-6">
                 <form id="searchForm" action="/Movies/Movies" method="get" onsubmit="return false;">
@@ -141,10 +141,9 @@
                 </form>
             </div>
             <div class="col-md-2">
-                <button class="btn btn-secondary" style="width: 100px; height: 60px; margin-left: 600px;" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-list"></i> 
+                <button class="btn btn-secondary" style="width: 100px; height: 60px;" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-funnel-fill"></i> Lọc
                 </button>
-
                 <ul class="dropdown-menu" id="filter-options">
                     <li><a class="dropdown-item @(@ViewBag.Genre == "Tất cả" ? "active" : "")" href="#" onclick="filterMovies('Tất cả')">Tất cả</a></li>
                     <li><a class="dropdown-item @(@ViewBag.Genre == "Hành động" ? "active" : "")" href="#" onclick="filterMovies('Hành động')">Hành động</a></li>
@@ -155,33 +154,30 @@
         </div>
 
         <div class="row" id="movie-container">
-            <h2>Danh sách</h2>
             @if (ViewBag.NoResults == true)
             {
-                <div class="col-12 no-results text-center">
+                <div class="col-12 no-results">
                     <p>Không tìm thấy phim nào.</p>
                 </div>
             }
             else
             {
-                <div class="grid-container">
-                    @foreach (var movie in Model)
-                    {
-                        <div class="grid-item">
-                            <div class="card-hover">
-                                <img src="/Uploads/@movie.HinhAnh" alt="@movie.TenPhim" class="card-img-top">
-                                <div class="card-body">
-                                    <h5 class="card-title">@movie.TenPhim</h5>
-                                    <button class="btn-xem-ngay">
-                                        <a asp-controller="Phim" asp-action="ChiTietPhim" asp-route-id="@movie.IDPhim" style="text-decoration: none; color: white;">
-                                            <i class="bi bi-play-fill"></i> Xem ngay
-                                        </a>
-                                    </button>
-                                </div>
+                @foreach (var movie in Model)
+                {
+                    <div class="col-md-3 mb-4">
+                        <div class="card-hover">
+                            <img src="/Uploads/@movie.HinhAnh" alt="@movie.TenPhim" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">@movie.TenPhim</h5>
+                                <button class="btn-xem-ngay">
+                                    <a asp-controller="Phim" asp-action="ChiTietPhim" asp-route-id="@movie.IDPhim" style="text-decoration: none; color: white;">
+                                        <i class="bi bi-play-fill"></i> Xem ngay
+                                    </a>
+                                </button>
                             </div>
                         </div>
-                    }
-                </div>
+                    </div>
+                }
                 @if (ViewBag.TotalPages > 1)
                 {
                     <nav aria-label="Phân trang">
@@ -197,7 +193,6 @@
                 }
             }
         </div>
-
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -214,60 +209,60 @@
                         $('#movie-container').html($(data).find('#movie-container').html());
                         $('#pagination-container').html($(data).find('#pagination-container').html());
                     }
-                });
-            }
+                                });
+                            }
 
-            // Thay đổi khi người dùng nhập từ khóa tìm kiếm
-            $('#searchBox').on('input', function () {
-                fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
-            });
-
-            // Thay đổi thể loại khi người dùng chọn thể loại
-            $('.dropdown-item').on('click', function () {
-                $('.dropdown-item').removeClass('active');
-                $(this).addClass('active');
-                fetchMovies(1, $(this).text(), $('#searchBox').val());
-            });
-
-            // Phân trang
-            $(document).on('click', '.page-link', function (e) {
-                e.preventDefault();
-                var page = $(this).data('page');
-                fetchMovies(page, $('#filter-options .dropdown-item.active').text(), $('#searchBox').val());
-            });
-
-            // Nhận diện giọng nói
-            function startRecognition() {
-                if (!('webkitSpeechRecognition' in window)) {
-                    alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.");
-                    return;
-                }
-                var recognition = new webkitSpeechRecognition();
-                recognition.lang = 'vi-VN';
-                recognition.continuous = false;
-                recognition.interimResults = false;
-
-                recognition.onstart = function () {
-                    console.log("Bắt đầu nhận giọng nói...");
-                };
-
-                recognition.onerror = function (event) {
-                    console.log("Có lỗi xảy ra: ", event.error);
-                };
-
-                recognition.onresult = function (event) {
-                    var result = event.results[0][0].transcript;
-                    console.log("Kết quả nhận diện giọng nói:", result);
-                    $('#searchBox').val(result);
-                    fetchMovies(1, $('#filter-options .dropdown-item.active').text(), result);
-                };
-
-                recognition.start();
-            }
-
-            // Gán sự kiện nhận diện giọng nói vào nút
-            $('.speech-recognition-btn').click(startRecognition);
+        // Thay đổi khi người dùng nhập từ khóa tìm kiếm
+        $('#searchBox').on('input', function () {
+            fetchMovies(1, $('#filter-options .dropdown-item.active').text(), $(this).val());
         });
+
+        // Thay đổi thể loại khi người dùng chọn thể loại
+        $('.dropdown-item').on('click', function () {
+            $('.dropdown-item').removeClass('active');
+            $(this).addClass('active');
+            fetchMovies(1, $(this).text(), $('#searchBox').val());
+        });
+
+        // Phân trang
+        $(document).on('click', '.page-link', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            fetchMovies(page, $('#filter-options .dropdown-item.active').text(), $('#searchBox').val());
+        });
+
+        // Nhận diện giọng nói
+        function startRecognition() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.");
+                return;
+            }
+            var recognition = new webkitSpeechRecognition();
+            recognition.lang = 'vi-VN';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = function () {
+                console.log("Bắt đầu nhận giọng nói...");
+            };
+
+            recognition.onerror = function (event) {
+                console.log("Có lỗi xảy ra: ", event.error);
+            };
+
+            recognition.onresult = function (event) {
+                var result = event.results[0][0].transcript;
+                console.log("Kết quả nhận diện giọng nói:", result);
+                $('#searchBox').val(result);
+                fetchMovies(1, $('#filter-options .dropdown-item.active').text(), result);
+            };
+
+            recognition.start();
+        }
+
+        // Gán sự kiện nhận diện giọng nói vào nút
+        $('.speech-recognition-btn').click(startRecognition);
+                        });
     </script>
 </body>
 </html>
