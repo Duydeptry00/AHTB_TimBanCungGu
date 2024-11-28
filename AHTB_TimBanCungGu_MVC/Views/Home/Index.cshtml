@@ -165,7 +165,7 @@
                     @foreach (var phim in Model.OrderByDescending(p => p.NgayPhatHanh).Take(5))
                     {
                     <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
-                        <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim">
+                        <img src="/Uploads/@phim.HinhAnh" alt="@phim.TenPhim">
                     </a>
                     }
                 </div>
@@ -178,7 +178,7 @@
                     @foreach (var phim in Model.OrderByDescending(p => p.DanhGia).Take(5))
                     {
                     <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
-                        <img src="/images/@phim.HinhAnh" alt="@phim.TenPhim">
+                        <img src="/Uploads/@phim.HinhAnh" alt="@phim.TenPhim">
                     </a>
                     }
                 </div>

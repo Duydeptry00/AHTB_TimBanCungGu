@@ -24,41 +24,39 @@
     .btn i {
         margin-right: 5px;
     }
-
 </style>
 <div class="container mt-4" style="padding-bottom: 40px">
     <h1 class="mb-4 text-white text-center" style="text-transform:uppercase; font-weight: bold">Thêm Mới Phim</h1>
     <div class="card shadow">
         <div class="card-body">
-            <p>Được thêm bởi: @ViewData["IDAdmin"]</p>
+            <h1>Được thêm bởi: @ViewData["IDAdmin"]</h1>
             <form asp-action="Create" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label asp-for="IDPhim" class="form-label">IDPhim</label>
-                        <input asp-for="IDPhim" class="form-control" />
-                        <span asp-validation-for="IDPhim" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6">
                         <label asp-for="TenPhim" class="form-label">Tên phim</label>
                         <input asp-for="TenPhim" class="form-control" />
                         <span asp-validation-for="TenPhim" class="text-danger"></span>
                     </div>
+                    <div class="col-md-6">
+                        <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                        <input asp-for="TrangThai" class="form-control" />
+                        <span asp-validation-for="TrangThai" class="text-danger"></span>
+                    </div>
                 </div>
-
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label asp-for="NoiDungPremium" class="form-label me-3 mb-0">Premium</label>
+                        <input asp-for="NoiDungPremium" class="form-check-input" type="checkbox" />
+                        <span asp-validation-for="NoiDungPremium" class="text-danger ms-3"></span>
+                    </div>
+                </div>
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <label asp-for="MoTa" class="form-label">Mô tả</label>
                         <textarea asp-for="MoTa" class="form-control"></textarea>
                         <span asp-validation-for="MoTa" class="text-danger"></span>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <label asp-for="NoiDungPremium" class="form-check-label">Premium</label>
-                        <input asp-for="NoiDungPremium" class="form-check-input" type="checkbox" />
-                        <span asp-validation-for="NoiDungPremium" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -81,7 +79,7 @@
                     </div>
                     <div class="col-md-6">
                         <label asp-for="DanhGia" class="form-label">Đánh giá</label>
-                        <input asp-for="DanhGia" class="form-control" />
+                        <input asp-for="DanhGia" class="form-control" type="number"/>
                         <span asp-validation-for="DanhGia" class="text-danger"></span>
                     </div>
                 </div>
@@ -129,13 +127,6 @@
                         <span class="text-danger" data-valmsg-for="soluongtap"></span>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label asp-for="TrangThai" class="form-label">Trạng thái</label>
-                        <input asp-for="TrangThai" class="form-control" />
-                        <span asp-validation-for="TrangThai" class="text-danger"></span>
-                    </div>
-                </div>
                 <div class="form-group d-flex justify-content-between">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-save"></i> Lưu
@@ -148,7 +139,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
     function previewImage(event) {

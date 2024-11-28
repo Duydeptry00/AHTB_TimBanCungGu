@@ -54,25 +54,23 @@
         position: relative;
         overflow: hidden;
         transition: transform 0.3s ease-in-out;
-        background-color: #343a40; /* Màu nền cho thẻ card */
-        color: #f8f9fa; /* Màu chữ cho thẻ card */
-        border-radius: 8px; /* Bo tròn các góc của thẻ */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Đổ bóng để thẻ nổi bật */
+        background-color: #343a40;
+        color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
         .card-hover img {
             width: 100%;
             height: 350px;
-            object-fit: cover; /* Ảnh sẽ được cắt theo tỷ lệ và không bị biến dạng */
+            object-fit: cover;
             transition: filter 0.3s ease-in-out;
         }
 
-        /* Khi hover vào ảnh, độ sáng giảm để tạo hiệu ứng nổi bật */
         .card-hover:hover img {
             filter: brightness(80%);
         }
 
-        /* Phóng to nhẹ thẻ card khi hover để tạo hiệu ứng nổi bật */
         .card-hover:hover {
             transform: scale(1.05);
         }
@@ -82,14 +80,13 @@
         text-align: center;
     }
 
-    /* Nút "Xem ngay" chỉ hiển thị khi hover vào thẻ card */
     .btn-xem-ngay {
         position: absolute;
         transition: opacity 0.3s ease-in-out;
         opacity: 0;
         pointer-events: none;
         display: flex;
-        align-items: center; /* Giúp biểu tượng và chữ nằm cùng hàng */
+        align-items: center;
         justify-content: center;
         top: 50%;
         left: 50%;
@@ -99,42 +96,27 @@
         color: white;
         padding: 12px 24px;
         border-radius: 50px;
-        /-strong/-heart:>:o:-((:-h font-size: 16px;
-            cursor: pointer;
-            text-align: center;
-            white-space: nowrap;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center;
+        white-space: nowrap;
     }
 
         .btn-xem-ngay i {
-            font-size: 1em; /* Giảm kích thước icon để vừa với chữ */
-            margin-right: 8px; /* Khoảng cách giữa biểu tượng và chữ */
-            vertical-align: middle; /* Căn chỉnh biểu tượng theo chiều dọc */
+            font-size: 1em;
+            margin-right: 8px;
+            vertical-align: middle;
         }
 
-
-
-    /* Khi hover vào thẻ card, nút sẽ hiện lên */
     .card-hover:hover .btn-xem-ngay {
         opacity: 1;
-        pointer-events: auto; /* Cho phép click khi hover */
+        pointer-events: auto;
     }
 
-    /* Tạo biểu tượng cho nút "Xem ngay" */
-    .card-hover .btn-xem-ngay i {
-        margin-right: 8px;
-    }
-
-    /* Điều chỉnh font và màu cho tiêu đề */
     .card-title {
         font-size: 18px;
         font-weight: bold;
         color: #f8f9fa;
-    }
-
-    /* Căn chỉnh phân trang */
-    .pagination {
-        margin-top: 20px;
-        justify-content: center;
     }
 </style>
 <body>
@@ -186,11 +168,12 @@
             <div class="row">
                 @foreach (var phimdecu in phimDeCu)
                 {
+
                     <div class="col-md-3 mb-4">
                         <div class="card-hover">
-                            <img src="/images/@phimdecu.HinhAnh" alt="@phimdecu.TenPhim" class="card-img-top">
+                            <img src="/Uploads/@phimdecu.HinhAnh" alt="@phimdecu.TenPhim" class="card-img-top">
                             <div class="card-body">
-                                /-strong/-heart:>:o:-((:-h <h5 class="card-title">@phimdecu.TenPhim</h5>
+                                 <h5 class="card-title">@phimdecu.TenPhim</h5>
                                 <button class="btn-xem-ngay">
                                     <a asp-controller="Phim" asp-action="ChiTietPhim" asp-route-id="@phimdecu.IDPhim" style="text-decoration: none; color: white;">
                                         <i class="bi bi-play-fill"></i> Xem ngay

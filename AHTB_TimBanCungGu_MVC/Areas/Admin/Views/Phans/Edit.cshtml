@@ -47,13 +47,13 @@
 
                 <div class="form-group mb-3">
                     <label asp-for="SoPhan" class="form-label">Số Phần</label>
-                    <input asp-for="SoPhan" class="form-control" required />
+                    <input asp-for="SoPhan" class="form-control" required readonly />
                     <span asp-validation-for="SoPhan" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
                     <label asp-for="NgayCongChieu" class="form-label">Ngày Công Chiếu</label>
-                    <input asp-for="NgayCongChieu" type="date" class="form-control" required />
+                    <input asp-for="NgayCongChieu" type="date" class="form-control" id="NgayCongChieu" required />
                     <span asp-validation-for="NgayCongChieu" class="text-danger"></span>
                 </div>
 
@@ -67,11 +67,11 @@
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="PhimID" class="form-label">Chọn Phim</label>
-                    <select asp-for="PhimID" class="form-control" asp-items="ViewBag.PhimID"></select>
+                    <label asp-for="PhimID" class="form-label">Tên Phim</label>
+                    <input type="text" class="form-control" value="@ViewData["PhimName"]" readonly />
+                    <input type="hidden" asp-for="PhimID" />
                     <span asp-validation-for="PhimID" class="text-danger"></span>
                 </div>
-
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" onclick="window.location.href='@Url.Action("Index", "Phans")'">Đóng</button>
                     <button type="submit" class="btn btn-primary" id="btnSave">Lưu</button>
@@ -82,6 +82,11 @@
 </div>
 
 <script>
+    // Thiết lập min ngày công chiếu là ngày hiện tại
+    document.addEventListener("DOMContentLoaded", function () {
+        var today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại và định dạng lại (YYYY-MM-DD)
+        document.getElementById("NgayCongChieu").setAttribute("min", today); // Cập nhật thuộc tính min
+    });
     document.getElementById("btnAddEpisode").addEventListener("click", function () {
         // Tăng giá trị trường SoLuongTap thêm 1
         const input = document.querySelector("input[name='SoLuongTap']");

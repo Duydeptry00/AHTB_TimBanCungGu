@@ -31,9 +31,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
-
+            
             if (!string.IsNullOrEmpty(token))
             {
+            
                 var userName = HttpContext.Session.GetString("TempUserName");
 
                 var userInfo = await _context.ThongTinCN

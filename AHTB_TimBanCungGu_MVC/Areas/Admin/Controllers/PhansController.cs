@@ -88,9 +88,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SoPhan,NgayCongChieu,SoLuongTap,PhimId")] Phan phan)
+        public async Task<IActionResult> Create([Bind("SoPhan,NgayCongChieu,SoLuongTap,PhimID")] Phan phan)
         {
-
             if (ModelState.IsValid)
             {
                 // Kiểm tra xem phim đã có phần với số phần này chưa
@@ -105,7 +104,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 }
                 else
                 {
-                    // Tính toán IDPhan tiếp theo và đảm bảo không bị trùng lặp
+                    // Tính toán IDPhan và đảm bảo không bị trùng lặp
                     string lastphanId = await _context.Phan
                         .OrderByDescending(kh => kh.IDPhan)
                         .Select(kh => kh.IDPhan)
@@ -121,13 +120,14 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                         newIDPhan = "PH" + nextphanId.ToString();
                     }
 
-                    // Tạo phần mới
+                    // Đặt IDPhan cho phần phim mới
                     phan.IDPhan = newIDPhan;
 
+                    // Lưu phần phim vào cơ sở dữ liệu
                     _context.Phan.Add(phan);
                     await _context.SaveChangesAsync();
 
-                    // Tính toán IDTap tiếp theo và đảm bảo không bị trùng lặp
+                    // Tạo các tập phim
                     string lasttapId = _context.Tap.OrderByDescending(t => t.IDTap).Select(t => t.IDTap).FirstOrDefault();
                     int nexttapId = (lasttapId == null) ? 1 : int.Parse(lasttapId.Substring(1)) + 1;
                     string newIDTap = "T" + nexttapId.ToString();
@@ -139,7 +139,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                         newIDTap = "T" + nexttapId.ToString();
                     }
 
-                    // Tạo các tập phim
+                    // Tạo các tập phim liên quan đến phần phim này
                     for (int i = 1; i <= phan.SoLuongTap; i++)
                     {
                         var tap = new Tap
@@ -151,21 +151,16 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                         _context.Tap.Add(tap);
                         nexttapId++; // Tăng IDTap tiếp theo
                         newIDTap = "T" + nexttapId.ToString();
-
-                        // Đảm bảo IDTap không bị trùng lặp
-                        while (await _context.Tap.AnyAsync(t => t.IDTap == newIDTap))
-                        {
-                            nexttapId++;
-                            newIDTap = "T" + nexttapId.ToString();
-                        }
                     }
 
+                    // Lưu tất cả vào cơ sở dữ liệu
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
             }
 
-            ViewData["PhimId"] = new SelectList(_context.Phim, "IDPhim", "TenPhim", phan.Phim);
+            // Nếu có lỗi, trả lại view và gắn lại danh sách phim cho dropdown
+            ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim", phan.PhimID);
             return View(phan);
         }
         [HttpGet]
@@ -178,9 +173,9 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             // Lấy dữ liệu Phan từ cơ sở dữ liệu
             var phan = await _context.Phan
-                .Include(p => p.Phim).
-                Include(p => p.Tap)
-                 .OrderBy(p => p.SoPhan)// Nếu cần thông tin liên kết
+                .Include(p => p.Phim)
+                .Include(p => p.Tap)
+                .OrderBy(p => p.SoPhan)
                 .FirstOrDefaultAsync(m => m.IDPhan == id);
 
             if (phan == null)
@@ -188,16 +183,18 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            // Truyền danh sách Phim vào ViewBag
-            ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim", phan.PhimID);
-
-            // Trả dữ liệu về View
+            // Kiểm tra xem phim có liên kết hay không
+            if (phan.Phim == null)
+            {
+                ModelState.AddModelError("", "Phim không có liên kết với Phan này.");
+                return View(phan);
+            }
+            ViewData["PhimName"] = phan.Phim.TenPhim;  // Truyền tên phim vào ViewData
+            ViewData["PhimID"] = phan.PhimID;
             return View(phan);
         }
 
-        // POST: Admin/Phans/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("IDPhan,SoPhan,NgayCongChieu,SoLuongTap,PhimID")] Phan phan)
@@ -211,7 +208,11 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             {
                 try
                 {
-                    var existingPhan = await _context.Phan.Include(p => p.Tap).FirstOrDefaultAsync(p => p.IDPhan == id);
+                    var existingPhan = await _context.Phan
+                        .Include(p => p.Phim)
+                        .Include(p => p.Tap)
+                        .FirstOrDefaultAsync(p => p.IDPhan == id);
+
                     if (existingPhan == null)
                     {
                         return NotFound();
@@ -273,9 +274,15 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim", phan.PhimID);
+            // Truyền lại tên phim vào ViewData
+            var phimName = await _context.Phim
+                .Where(p => p.IDPhim == phan.PhimID)
+                .Select(p => p.TenPhim)
+                .FirstOrDefaultAsync();
+
             return View(phan);
         }
+
 
 
 

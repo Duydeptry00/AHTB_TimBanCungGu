@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using AHTB_TimBanCungGu_API.Models;
 using AHTB_TimBanCungGu_API.Data;
 using Microsoft.AspNetCore.Http;
+using AHTB_TimBanCungGu_MVC.Models;
 
 namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 {
@@ -20,7 +21,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> XemPhim([FromQuery] string idPhim)
+        public async Task<IActionResult> XemPhim([FromQuery] string idPhim, [FromQuery] string Phan)
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
@@ -29,8 +30,9 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
             {
                 // Truy vấn thông tin phim từ bảng Phim
                 var phim = await _context.Phim
-                .Include(p => p.TheLoai) // Bao gồm thông tin thể loại của phim
-                .FirstOrDefaultAsync(p => p.IDPhim == idPhim);
+                    .Include(p => p.Phan)
+                    .Include(p => p.TheLoai) // Bao gồm thông tin thể loại của phim
+                    .FirstOrDefaultAsync(p => p.IDPhim == idPhim);
 
                 if (phim == null)
                 {
@@ -48,13 +50,21 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                     var phan = await _context.Phan
                         .Include(p => p.Phim) // Bao gồm thông tin phim
                         .ThenInclude(p => p.TheLoai) // Bao gồm thông tin thể loại của phim
-                        .FirstOrDefaultAsync(p => p.Phim.IDPhim == idPhim);
+                        .FirstOrDefaultAsync(p => p.IDPhan == Phan && p.Phim.IDPhim == idPhim);
+
                     if (phan == null)
                     {
                         return NotFound();
                     }
 
-                    return RedirectToAction("PhimBo", "Phim", new { idPhim });
+                    // Lấy số lượng tập từ thông tin phần
+                    var soLuongTap = phan.SoLuongTap;
+
+                    // Truyền thông tin số lượng tập qua ViewBag (hoặc ViewData)
+                    ViewBag.SoLuongTap = soLuongTap;
+
+                    // Redirect đến action PhimBo kèm thông tin idPhim
+                    return RedirectToAction("PhimBo", "Phim", new { idPhim, Phan });
                 }
             }
             else
@@ -63,8 +73,8 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 ViewBag.Message = "Bạn chưa đăng nhập.";
                 return RedirectToAction("Login", "LoginvsRegister");
             }
-
         }
+
 
         public async Task<IActionResult> PhimLe(string idPhim)
         {
@@ -101,7 +111,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
-        public async Task<IActionResult> PhimBo(string idPhim)
+        public async Task<IActionResult> PhimBo(string idPhim, string Phan)
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
@@ -111,7 +121,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 var phan = await _context.Phan
     .Include(p => p.Phim)
     .ThenInclude(p => p.TheLoai)
-    .FirstOrDefaultAsync(p => p.Phim.IDPhim == idPhim);
+    .FirstOrDefaultAsync(p => p.Phim.IDPhim == idPhim && p.IDPhan == Phan);
 
                 if (phan == null)
                 {
@@ -119,8 +129,9 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 }
 
                 var phimBo = await _context.Phim
+                    .Include(p => p.Phan)
                     .Include(p => p.TheLoai)
-                    .FirstOrDefaultAsync(p => p.IDPhim == idPhim && p.DangPhim == "Phim Bộ");
+                    .FirstOrDefaultAsync(p => p.IDPhim == idPhim && p.DangPhim.ToLower() == "Phim Bộ".ToLower());
 
                 var phimDeCu = await _context.Phim
                     .Where(p => p.TheLoai.TenTheLoai == phan.Phim.TheLoai.TenTheLoai)
@@ -175,7 +186,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
             else
             {
                 // Nếu chưa có, thêm vào danh sách yêu thích
-                var newFavorite = new PhimYeuThich
+                var newFavorite = new AHTB_TimBanCungGu_API.Models.PhimYeuThich
                 {
                     NguoiDungYT = user.UsID,  // Sử dụng UsID thay vì username
                     PhimYT = movieId
@@ -192,9 +203,6 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
             // Chuyển hướng về chi tiết phim
             return RedirectToAction("ChiTietPhim", new { id = movieId });
         }
-
-
-
 
 
         public IActionResult ChiTietPhim(string id)
@@ -218,16 +226,18 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 
                 var isSingleMovie = movie.DangPhim.Trim().Equals("Phim Lẻ", StringComparison.OrdinalIgnoreCase);
 
+                // Lọc phần phim theo ngày công chiếu
                 var danhSachPhan = _context.Phan
-                                    .Where(p => p.PhimID == id)
-                                    .OrderBy(p => p.SoPhan)
-                                    .ToList();
+                    .Where(p => p.PhimID == id && p.NgayCongChieu <= DateTime.Now)  // Chỉ lấy các phần phim có ngày công chiếu hiện tại hoặc trong quá khứ
+                    .OrderBy(p => p.SoPhan)
+                    .ToList();
 
                 var phimDeCu = _context.Phim
                     .Include(p => p.TheLoai)
                     .Include(p => p.Phan)
                     .Where(p => p.TheLoai.TenTheLoai == movie.TheLoai.TenTheLoai && p.IDPhim != movie.IDPhim)
                     .ToList();
+
                 var user = _context.Users.FirstOrDefault(u => u.UserName == username);
                 if (user == null)
                 {
@@ -239,7 +249,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 
                 ViewBag.PhimDeCu = phimDeCu;
                 ViewBag.PhimLe = movie;
-                ViewBag.DanhSachPhan = danhSachPhan;
+                ViewBag.DanhSachPhan = danhSachPhan; // Chỉ truyền những phần phim đã có thể xem
                 ViewBag.Username = username;
                 ViewBag.IsSingleMovie = isSingleMovie;
                 ViewBag.IsFavorite = isFavorite;
@@ -253,6 +263,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
+
 
         // GET: Phim
         public async Task<IActionResult> Index()
