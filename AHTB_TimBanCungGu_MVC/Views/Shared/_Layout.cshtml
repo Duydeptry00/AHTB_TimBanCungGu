@@ -18,11 +18,9 @@
             transition: background-color 0.3s ease; /* Thêm hiệu ứng khi hover */
         }
 
-            /* Màu nền khi hover */
-            .dropdown-item:hover {
-                background-color: #f1f1f1; /* Màu nền khi hover vào thông báo */
-            }
-
+        .dropdown-menu-end{
+            padding : 0px;
+        }
             /* Khoảng cách giữa các thông báo */
             .dropdown-item + .dropdown-item {
                 margin-top: 5px; /* Khoảng cách giữa các thông báo */
@@ -40,7 +38,7 @@
 
         /* Tăng cường hiển thị badge */
         #notificationBadge {
-            font-size: 1.5rem;
+            font-size: 0.9rem;
             padding: 3px 8px;
             border-radius: 50%;
             background-color: #dc3545;
@@ -166,8 +164,7 @@
                         <i class="bi bi-bell-fill bell-icon" id="dropdownNotification" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <span id="notificationBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none;"></span>
                         </i>
-                        <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownNotification" id="notificationList">
-
+                        <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownNotification" id="notificationList" style="max-height: 300px; overflow-y: auto;">
                         </ul>
                     </div>
                     <div class="dropdown">
