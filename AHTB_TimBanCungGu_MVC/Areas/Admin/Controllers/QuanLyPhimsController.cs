@@ -28,7 +28,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             // Lấy token JWT và UserType từ session
             var token = HttpContext.Session.GetString("JwtToken");
             var userType = HttpContext.Session.GetString("UserType");
-
+            
             if (userType == "Admin" && token != null)
             {
                 var dBAHTBContext = _context.Phim.Include(p => p.TheLoai).Include(p => p.User).Where(p => p.TrangThai != "Ẩn");
@@ -80,12 +80,13 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             // Lấy token JWT và UserType từ session
             var token = HttpContext.Session.GetString("JwtToken");
             var userType = HttpContext.Session.GetString("UserType");
-
+            var userName = HttpContext.Session.GetString("TempUserName");
             if (userType == "Admin" && token != null)
             {
+                ViewData["IDAdmin"] = userName;
                 ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai");
-                ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UserName");
-                ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
+               
+          ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" });
                 return View();
             }
 
@@ -103,8 +104,10 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
       IFormFile ImageFile,
       int? soluongtap)
         {
+            
             if (ModelState.IsValid)
             {
+                var userName = HttpContext.Session.GetString("TempUserName");
                 if (ImageFile == null || ImageFile.Length == 0)
                 {
                     ModelState.AddModelError(string.Empty, "Cần phải chọn tệp hình ảnh.");
@@ -141,48 +144,82 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     PopulateViewData(phim);
                     return View(phim);
                 }
+                string newPhimId = await GenerateUniquePhimId();
+                // Tìm người dùng từ UsID
+                var admin = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
 
+                if (admin != null)
+                {
+                    phim.IDAdmin = admin.UsID; ;  // Gán UserName vào IDAdmin
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Không tìm thấy người dùng với UsID.");
+                    return View(phim);
+                }
+                // Gán IDPhim cho phim
+                phim.IDPhim = newPhimId;
+             
                 // Lưu thông tin phim trước
                 _context.Add(phim);
                 await _context.SaveChangesAsync(); // Lưu để lấy IDPhim đã được tạo
 
                 // Nếu là Phim Bộ, thêm Phan và các Tập
-                if (phim.DangPhim == "Phim Bộ" && soluongtap.HasValue)
+                if (phim.DangPhim == "Phim Bộ" && soluongtap.HasValue && soluongtap.Value > 0)
                 {
-                    // Tính toán IDPhan mới
-                    string lastphanId = _context.Phan.OrderByDescending(kh => kh.IDPhan).Select(kh => kh.IDPhan).FirstOrDefault();
-                    int nextphanId = (lastphanId == null) ? 1 : int.Parse(lastphanId.Substring(2)) + 1;
+                    // Tạo IDPhan mới và tự động sửa nếu bị trùng
+                    string newPhanId;
+                    int nextphanId = 1;
 
+                    do
+                    {
+                        newPhanId = "PH" + nextphanId.ToString();
+                        nextphanId++;
+                    } while (_context.Phan.Any(p => p.IDPhan == newPhanId));
+
+                    // Tạo đối tượng Phan
                     var phan = new Phan
                     {
-                        IDPhan = "PH" + nextphanId.ToString(),
+                        IDPhan = newPhanId,
                         SoPhan = 1,
                         SoLuongTap = soluongtap.Value,
-                        PhimID = phim.IDPhim // Đảm bảo IDPhim đã tồn tại
+                        PhimID = phim.IDPhim
                     };
 
                     _context.Phan.Add(phan);
-                    await _context.SaveChangesAsync(); // Lưu để tạo khóa chính cho phần
+                    await _context.SaveChangesAsync(); // Lưu Phần để lấy ID
 
-                    // Tính toán IDTap mới
-                    string lasttapId = _context.Tap.OrderByDescending(t => t.IDTap).Select(t => t.IDTap).FirstOrDefault();
-                    int nexttapId = (lasttapId == null) ? 1 : int.Parse(lasttapId.Substring(1)) + 1;
+                    // Tạo IDTap mới và tự động sửa nếu bị trùng
+                    int nexttapId = 1;
+                    var taps = new List<Tap>();
 
-                    // Tạo các tập phim
                     for (int i = 1; i <= soluongtap.Value; i++)
                     {
-                        var tap = new Tap
+                        string newTapId;
+
+                        do
                         {
-                            IDTap = "T" + nexttapId,
+                            newTapId = "T" + nexttapId.ToString();
+                            nexttapId++;
+                        } while (_context.Tap.Any(t => t.IDTap == newTapId));
+
+                        taps.Add(new Tap
+                        {
+                            IDTap = newTapId,
                             SoTap = i,
                             PhanPhim = phan.IDPhan // Liên kết với phần vừa tạo
-                        };
-                        _context.Tap.Add(tap);
-                        nexttapId++;
+                        });
                     }
 
+                    // Thêm tất cả các tập vào context
+                    _context.Tap.AddRange(taps);
                     await _context.SaveChangesAsync(); // Lưu các tập phim
                 }
+                else
+                {
+                    throw new ArgumentException("Số lượng tập không hợp lệ hoặc phim không phải là Phim Bộ.");
+                }
+
 
                 return RedirectToAction(nameof(Index));
             }
@@ -200,7 +237,20 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UserName", phim.IDAdmin);
             ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" }, phim.DangPhim);
         }
+        private async Task<string> GenerateUniquePhimId()
+        {
+            // Tìm IDPhim lớn nhất trong cơ sở dữ liệu bắt đầu với "P"
+            var maxPhimId =  _context.Phim
+                .Where(p => p.IDPhim.StartsWith("P"))
+                .AsEnumerable() // Chuyển sang client-side để sử dụng Substring
+                .Max(p => (int?)int.Parse(p.IDPhim.Substring(1))) ?? 0;
 
+            // Tăng IDPhim lên 1
+            int newId = maxPhimId + 1;
+
+            // Trả về IDPhim mới theo định dạng P1, P2, P3, ...
+            return "P" + newId.ToString();
+        }
 
         // GET: Admin/QuanLyPhims/Edit/5
         public async Task<IActionResult> Edit(string id)
@@ -208,6 +258,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             // Lấy token JWT và UserType từ session
             var token = HttpContext.Session.GetString("JwtToken");
             var userType = HttpContext.Session.GetString("UserType");
+            var userName = HttpContext.Session.GetString("TempUserName");
 
             if (userType == "Admin" && token != null)
             {
@@ -224,7 +275,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
                 // Populate dropdowns for the form
                 ViewData["TheLoaiPhim"] = new SelectList(_context.TheLoai, "IdTheLoai", "TenTheLoai", phim.TheLoaiPhim);
-                ViewData["IDAdmin"] = new SelectList(_context.Users, "UsID", "UserName", phim.IDAdmin);
+                ViewData["IDAdmin"] = userName;
                 ViewData["DangPhimOptions"] = new SelectList(new[] { "Phim lẻ", "Phim bộ" }, phim?.DangPhim);
                 return View(phim);
             }

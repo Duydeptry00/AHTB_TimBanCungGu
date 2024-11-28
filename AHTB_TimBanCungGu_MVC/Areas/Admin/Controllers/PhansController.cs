@@ -30,7 +30,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             if (userType == "Admin" && token != null)
             {
-                var dBAHTBContext = _context.Phan.Include(p => p.Phim);
+                var dBAHTBContext = _context.Phan.Include(p => p.Phim)  .OrderBy(p => p.SoPhan);
                 return View(await dBAHTBContext.ToListAsync());
             }
 
@@ -178,7 +178,9 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             // Lấy dữ liệu Phan từ cơ sở dữ liệu
             var phan = await _context.Phan
-                .Include(p => p.Phim) // Nếu cần thông tin liên kết
+                .Include(p => p.Phim).
+                Include(p => p.Tap)
+                 .OrderBy(p => p.SoPhan)// Nếu cần thông tin liên kết
                 .FirstOrDefaultAsync(m => m.IDPhan == id);
 
             if (phan == null)
@@ -219,19 +221,28 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     existingPhan.SoPhan = phan.SoPhan;
                     existingPhan.NgayCongChieu = phan.NgayCongChieu;
                     existingPhan.PhimID = phan.PhimID;
-                    existingPhan.SoLuongTap = phan.SoLuongTap; // Cập nhật SoLuongTap trong bảng Phan
+                    existingPhan.SoLuongTap = phan.SoLuongTap;
 
-                    // Kiểm tra và thêm các tập mới nếu SoLuongTap tăng
+                    // Lấy danh sách tất cả IDTap hiện có trong database để đảm bảo không bị trùng
+                    var existingTapIds = _context.Tap.Select(t => t.IDTap).ToList();
+
+                    // Chỉ thêm tập mới nếu SoLuongTap tăng
                     int currentEpisodeCount = existingPhan.Tap.Count;
                     if (phan.SoLuongTap > currentEpisodeCount)
                     {
-                        int nextEpisodeNumber = currentEpisodeCount + 1;
-
-                        // Thêm các tập mới
-                        for (int i = nextEpisodeNumber; i <= phan.SoLuongTap; i++)
+                        for (int i = currentEpisodeCount + 1; i <= phan.SoLuongTap; i++)
                         {
-                            string newIDTap = "T" + i;
+                            string newIDTap;
+                            int nextTapId = i;
 
+                            // Tạo IDTap duy nhất
+                            do
+                            {
+                                newIDTap = "T" + nextTapId;
+                                nextTapId++;
+                            } while (existingTapIds.Contains(newIDTap));  // Kiểm tra trong danh sách IDTap đã tồn tại
+
+                            // Thêm tập mới vào DbContext
                             var newTap = new Tap
                             {
                                 IDTap = newIDTap,
@@ -240,6 +251,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                             };
 
                             _context.Tap.Add(newTap);
+                            existingTapIds.Add(newIDTap);  // Thêm vào danh sách IDTap đã tạo
                         }
                     }
 
@@ -264,6 +276,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim", phan.PhimID);
             return View(phan);
         }
+
+
 
         // GET: Admin/Phans/Delete/5
         public async Task<IActionResult> Delete(string id)

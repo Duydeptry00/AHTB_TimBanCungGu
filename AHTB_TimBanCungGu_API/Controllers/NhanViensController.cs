@@ -37,7 +37,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 .Include(u => u.User_Role)  // Giả sử User_Role là bảng trung gian kết nối với Role
                 .ThenInclude(ur => ur.Role) // Nạp dữ liệu từ bảng Role qua quan hệ trung gian
                 .ToListAsync();
-
             // Map to NhanVienVM
             var userViewModels = users
                 .Where(user => user.TrangThai == "Chờ Xác Thực" || user.TrangThai == "Đang Làm Việc" || user.TrangThai == "Đình Chỉ")
