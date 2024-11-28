@@ -68,26 +68,6 @@ svg {
             color: #ff4500; /* Màu cam khi hover */
         }
 
-/* Dropdown Menu */
-.dropdown-menu {
-    min-width: 200px; /* Chiều rộng tối thiểu */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng */
-    background-color: #fff; /* Màu nền trắng */
-    border: none; /* Bỏ viền */
-    border-radius: 8px; /* Bo tròn các góc */
-}
-
-.dropdown-item {
-    color: #000; /* Màu chữ */
-    padding: 8px 16px; /* Padding cho item */
-    font-size: 16px; /* Kích thước chữ */
-    transition: background-color 0.3s ease; /* Hiệu ứng hover */
-}
-
-    .dropdown-item:hover {
-        background-color: #f0f0f0; /* Màu nền khi hover */
-    }
-
 /* Badge Notification */
 #notificationBadge {
     display: none; /* Ẩn mặc định */
