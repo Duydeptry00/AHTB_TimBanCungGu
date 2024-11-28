@@ -3,6 +3,7 @@
     ViewData["Title"] = "Danh sách cuộc trò chuyện";
     Layout = null;
 }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 <!-- Giao diện chính -->
 <div class="messenger-container">
@@ -13,10 +14,10 @@
         {
             @foreach (var conversation in Model)
             {
-                <div class="conversation-item" onclick="openConversation('@conversation.user2')">
-                    <strong>Cuộc trò chuyện với:</strong> @conversation.user2
+                <div class="conversation-item" onclick="openConversation('@conversation.user2', '@conversation.hotenuser2')">
+                    <strong>Cuộc trò chuyện với:</strong> @conversation.hotenuser2
                     <br />
-                    <span>Last Message Time: @conversation.LastMessageTimestamp?.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                    <span>@conversation.contentnew</span>
                     <br />
                 </div>
             }
@@ -37,40 +38,57 @@
         </div>
         <div class="chat-footer">
             <textarea id="messageContent" placeholder="Gõ tin nhắn..."></textarea>
-            <button onclick="sendMessage()">Gửi</button>
+            <button onclick="sendMessage()" style="background: none; border: none; cursor: pointer;">
+                <i class="fas fa-paper-plane" style="font-size: 24px; color: #0078D4;"></i>
+            </button>
         </div>
     </div>
 </div>
 
 <style>
+    /* Cấu hình cơ bản cho toàn bộ trang */
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    /* Phần chứa chính của messenger */
     .messenger-container {
         display: flex;
         height: 100vh;
     }
 
+    /* Danh sách cuộc trò chuyện */
     .conversations-list {
         width: 30%;
         padding: 10px;
         border-right: 1px solid #ddd;
-        overflow-y: auto;
+        overflow-y: auto; /* Thanh cuộn dọc nếu cần */
+        height: 100%; /* Chiếm toàn bộ chiều cao */
     }
 
+    /* Mỗi mục cuộc trò chuyện */
     .conversation-item {
         padding: 10px;
         border-bottom: 1px solid #ddd;
         cursor: pointer;
+        transition: background-color 0.3s ease;
     }
 
         .conversation-item:hover {
             background-color: #f5f5f5;
         }
 
+    /* Cửa sổ trò chuyện */
     .chat-window {
         width: 70%;
         display: flex;
         flex-direction: column;
     }
 
+    /* Đầu của cửa sổ trò chuyện */
     .chat-header {
         background-color: #0078D4;
         color: white;
@@ -78,19 +96,56 @@
         font-size: 18px;
     }
 
+    /* Phần nội dung của cửa sổ trò chuyện */
     .chat-body {
         flex-grow: 1;
         padding: 10px;
         background-color: #f0f0f0;
-        overflow-y: auto;
+        overflow-y: auto; /* Thanh cuộn dọc nếu cần */
+        height: calc(100% - 50px); /* Để lại khoảng trống cho phần footer */
     }
 
+        /* Thanh cuộn của chat-body */
+        .chat-body::-webkit-scrollbar {
+            width: 8px; /* Chiều rộng của thanh cuộn dọc */
+            height: 8px; /* Chiều cao của thanh cuộn ngang */
+        }
+
+        .chat-body::-webkit-scrollbar-track {
+            background: transparent; /* Nền trong suốt */
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+            background: #0078D4; /* Màu của thanh cuộn */
+            border-radius: 10px; /* Bo tròn các góc */
+            border: 2px solid transparent; /* Đường viền trong suốt */
+        }
+
+        .chat-body::-webkit-scrollbar-corner {
+            display: none; /* Ẩn phần giao nhau */
+        }
+
+        .chat-body::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        /* Ẩn các mũi tên cuộn (trong trường hợp có) */
+        .chat-body::-webkit-scrollbar-button {
+            display: none; /* Ẩn các nút cuộn */
+        }
+    .chat-body {
+        scrollbar-width: thin; /* Thanh cuộn mỏng */
+        scrollbar-color: #0078D4 transparent; /* Màu thanh cuộn và nền */
+    }
+
+    /* Phần footer của cửa sổ trò chuyện */
     .chat-footer {
         padding: 10px;
         display: flex;
         align-items: center;
     }
 
+        /* Ô nhập liệu */
         .chat-footer textarea {
             width: 100%;
             height: 50px;
@@ -100,6 +155,7 @@
             margin-right: 10px;
         }
 
+        /* Nút gửi */
         .chat-footer button {
             padding: 10px 20px;
             background-color: #0078D4;
@@ -107,27 +163,40 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
             .chat-footer button:hover {
-                background-color: #005a8e;
+                background-color: #005a8e; /* Hiệu ứng khi hover */
             }
 
+    /* Tin nhắn của người dùng và người nhận */
+    .user-message, .receiver-message {
+        padding: 5px;
+        margin: 5px 0;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Tên người gửi */
+    .message-sender {
+        font-weight: bold;
+        margin-bottom: 3px;
+    }
+
+    /* Tin nhắn của người dùng */
     .user-message {
         text-align: right;
         background-color: #d0f0c0;
-        padding: 5px;
-        margin: 5px 0;
-        border-radius: 10px;
     }
 
+    /* Tin nhắn của người nhận */
     .receiver-message {
         text-align: left;
         background-color: #f0f0f0;
-        padding: 5px;
-        margin: 5px 0;
-        border-radius: 10px;
     }
+
 </style>
 
 <script>
@@ -142,23 +211,38 @@
         console.log("WebSocket connected.");
     };
 
-    // Khi nhận được tin nhắn từ WebSocket
+    // When a message is received from the WebSocket
     socket.onmessage = function (event) {
-        const message = JSON.parse(event.data);  // Parse JSON từ server
+        const message = JSON.parse(event.data);  // Parse JSON from server
         const chatBody = document.getElementById("chatBody");
 
-        // Kiểm tra xem tin nhắn có thuộc cuộc trò chuyện hiện tại không
+        // Check if the message belongs to the current conversation
         if (message.receiverUsername === currentConversation || message.senderUsername === currentConversation) {
-            let messageElement = document.createElement("div");
-            messageElement.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
-            messageElement.innerText = `${message.senderUsername}: ${message.content}`;
-            chatBody.appendChild(messageElement);
+            // Create a container for the message
+            let messageContainer = document.createElement("div");
+            messageContainer.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
 
-            // Cuộn tới cuối cùng khi có tin nhắn mới
+            // Create the sender's name element
+            let senderNameElement = document.createElement("div");
+            senderNameElement.classList.add("message-sender");
+            senderNameElement.innerText = message.senderName;
+
+            // Create the message content element
+            let messageContentElement = document.createElement("div");
+            messageContentElement.innerText = message.content;
+
+            // Append the sender's name and message content to the container
+            messageContainer.appendChild(senderNameElement);
+            messageContainer.appendChild(messageContentElement);
+
+            // Append the message container to the chat body
+            chatBody.appendChild(messageContainer);
+
+            // Scroll to the bottom of the chat body when a new message is added
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
-        // Tải lại tin nhắn từ API nếu muốn sau khi nhận tin nhắn mới
+        // Optionally reload messages from the API
         loadMessages(currentConversation);
     };
 
@@ -172,40 +256,76 @@
         console.log("WebSocket Error: " + error);
     };
 
-    // Mở cuộc trò chuyện
-    function openConversation(user2) {
+    // Modify the openConversation function to show the chat footer
+    function openConversation(user2, hoten) {
         currentConversation = user2;
-        document.getElementById("chatTitle").innerText = "Cuộc trò chuyện với: " + user2;
+        document.getElementById("chatTitle").innerText = "Cuộc trò chuyện với: " + hoten;
 
         // Xóa nội dung tin nhắn cũ
         document.getElementById("chatBody").innerHTML = '';
         // Mở API lấy tin nhắn cho user2
-        loadMessages(user2);
-    }
+        loadMessages(user2, hoten);
 
+        // Show the chat footer when a conversation is opened
+        toggleChatFooter(true);
+    }
+    window.onload = function () {
+        toggleChatFooter(false); // Hide chat footer by default
+    };
+    // Thêm sự kiện lắng nghe cho ô nhập liệu để xử lý Enter và Shift + Enter
+    document.getElementById("messageContent").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            if (event.shiftKey) {
+                // Nếu nhấn Shift + Enter, cho phép xuống dòng
+                return;
+            }
+            // Nếu nhấn Enter mà không giữ Shift, gọi hàm gửi tin nhắn
+            event.preventDefault(); // Ngăn chặn hành động mặc định của Enter (ví dụ: gửi form)
+            sendMessage();
+        }
+    });
+    // Function to toggle the visibility of the chat footer
+    function toggleChatFooter(isVisible) {
+        const chatFooter = document.querySelector('.chat-footer');
+        if (isVisible) {
+            chatFooter.style.display = 'flex';
+        } else {
+            chatFooter.style.display = 'none';
+        }
+    }
+    // Function to load messages from the API
     function loadMessages(user2) {
         if (user2) {
-            // Call the API to load messages with user2
             fetch(`/Chats/GetMessages?receiverUsername=${user2}`)
-                .then(response => response.json())  // Convert the response to JSON
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        console.log("Messages:", data.messages);  // Log the actual messages
-
-                        // Kiểm tra nếu 'messages' là mảng và có tin nhắn
                         if (Array.isArray(data.messages) && data.messages.length > 0) {
-                            // Xóa nội dung chat hiện tại
-                            document.getElementById("chatBody").innerHTML = '';
-
-                            // Hiển thị từng tin nhắn
+                            document.getElementById("chatBody").innerHTML = '';  // Clear existing messages
+                            console.log(data.messages);
                             data.messages.forEach(message => {
-                                let messageElement = document.createElement("div");
-                                messageElement.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
-                                messageElement.innerText = `${message.senderUsername}: ${message.content}`;
-                                document.getElementById("chatBody").appendChild(messageElement);
+                                let messageContainer = document.createElement("div");
+                                messageContainer.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
+
+                                // Chỉ thêm nội dung tin nhắn mà không hiển thị tên người gửi
+                                let messageContentElement = document.createElement("div");
+                                messageContentElement.innerText = message.content;
+
+                                // Nếu là tin nhắn gửi từ người nhận, hiển thị tên người nhận
+                                if (message.senderUsername !== sendUser) {
+                                    let senderNameElement = document.createElement("div");
+                                    senderNameElement.classList.add("message-sender");
+
+                                    // Hiển thị tên người nhận nếu không phải người gửi
+                                    senderNameElement.innerText = message.receiverName; 
+                                    messageContainer.appendChild(senderNameElement);
+                                }
+
+                                messageContainer.appendChild(messageContentElement);
+
+                                document.getElementById("chatBody").appendChild(messageContainer);
                             });
 
-                            // Cuộn xuống cuối cùng
                             document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight;
                         } else {
                             console.log("No messages available.");
@@ -213,6 +333,7 @@
                     } else {
                         console.error("Error loading messages:", data.message);
                     }
+
                 })
                 .catch(error => {
                     console.error("Error loading messages:", error);
@@ -240,7 +361,7 @@
         let chatBody = document.getElementById("chatBody");
         let messageElement = document.createElement("div");
         messageElement.classList.add("user-message");
-        messageElement.innerText = `${sendUser}: ${messageContent}`;
+        messageElement.innerText = `${messageContent}`;
         chatBody.appendChild(messageElement);
 
         // Cuộn tới cuối cùng khi có tin nhắn mới
