@@ -42,6 +42,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string userName, string password)
         {
+            userName = userName.ToLower();
             if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
             {
                 ViewBag.Message = "Vui lòng nhập tên đăng nhập và mật khẩu.";
@@ -73,6 +74,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                             HttpContext.Session.SetString("JwtToken", tokenResponse.Token);
                             HttpContext.Session.SetString("UserType", tokenResponse.UserType);
                             HttpContext.Session.SetString("TempUserName", userName);
+                            HttpContext.Session.SetString("User", tokenResponse.NameUser);
                             var nguoiTimDoiTuong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
                             if (nguoiTimDoiTuong == null)
                             {
@@ -142,12 +144,14 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(string userName, string password, string email)
         {
+            userName = userName.ToLower();
+            email = email.ToLower();
             if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(email))
             {
                 ViewBag.Message = "Vui lòng nhập tên đăng nhập, mật khẩu và email.";
                 return RedirectToAction("Login");
             }
-
+            
             if (!IsValidEmail(email))
             {
                 ViewBag.Message = "Vui lòng nhập email hợp lệ.";
@@ -188,7 +192,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 ViewBag.Message = $"Đã có lỗi xảy ra: {ex.Message}";
             }
 
-            return RedirectToAction("Login");
+            return Json(new { success = false, message = "Tài khoản hoặc gmail đã tồn tại" });
         }
         public class ResponseData
         {
@@ -220,6 +224,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> VerifyOtp(string email, string otp)
         {
+
             if (string.IsNullOrEmpty(otp))
             {
                 ViewBag.Message = "Vui lòng nhập mã OTP.";
@@ -259,7 +264,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         HttpContext.Session.Remove("TempEmail");
 
                         ViewBag.Message = "Đăng ký thành công! Vui lòng đăng nhập.";
-                        return RedirectToAction("Login");
+                        return View();
                     }
                     else
                     {

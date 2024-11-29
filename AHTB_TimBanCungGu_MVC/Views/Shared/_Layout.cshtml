@@ -1,4 +1,10 @@
-﻿
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    string UserName = HttpContextAccessor.HttpContext.Session.GetString("TempUserName") ?? null;
+    string hoten = HttpContextAccessor.HttpContext.Session.GetString("User") ?? null;
+}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,32 +17,24 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="/css/trangchu.css?v=1.0" rel="stylesheet" />
     <style>
-        /* Cải thiện giao diện của thông báo */
-        .dropdown-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #ddd; /* Đường viền dưới để ngăn cách các thông báo */
-            transition: background-color 0.3s ease; /* Thêm hiệu ứng khi hover */
+        .navbar-icons {
+            gap: 30px; /* Khoảng cách giữa các mục trong navbar-icons */
         }
 
-        .dropdown-menu-end{
-            padding : 0px;
+        /* Icon chuông */
+        .bell-icon {
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
         }
-            /* Khoảng cách giữa các thông báo */
-            .dropdown-item + .dropdown-item {
-                margin-top: 5px; /* Khoảng cách giữa các thông báo */
+
+            .bell-icon:hover {
+                transform: scale(1.2); /* Phóng to khi hover */
+                color: #ff5733;
             }
 
-            /* Thông báo chưa đọc */
-            .dropdown-item.unread {
-                background-color: #e7f3fe; /* Màu nền nhẹ cho thông báo chưa đọc */
-            }
-
-            /* Thông báo đã đọc */
-            .dropdown-item.read {
-                background-color: #fff; /* Màu nền trắng cho thông báo đã đọc */
-            }
-
-        /* Tăng cường hiển thị badge */
+        /* Badge thông báo */
         #notificationBadge {
             font-size: 0.9rem;
             padding: 3px 8px;
@@ -46,13 +44,30 @@
             font-weight: bold;
         }
 
-        /* Hiệu ứng của SweetAlert */
-        .swal2-popup-custom {
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
+        /* Dropdown ảnh đại diện */
+        #dropdownAccount {
+            cursor: pointer;
         }
 
+            #dropdownAccount img {
+                border: 2px solid #fff; /* Viền trắng quanh ảnh */
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Tạo bóng mờ */
+            }
+
+            #dropdownAccount:hover img {
+                border-color: #ff5733; /* Đổi màu viền khi hover */
+            }
+
+            #dropdownAccount span {
+                font-size: 1rem;
+                font-weight: 500;
+                color: white;
+                transition: color 0.3s;
+            }
+
+                #dropdownAccount span:hover {
+                    color: #ff5733;
+                }
     </style>
 </head>
 <style>
@@ -159,25 +174,60 @@
                         <a class="nav-link text-white" asp-area="" asp-controller="LichSuXem" asp-action="Index">lichsu</a>
                     </li>
                 </ul>
-                <div class="navbar-icons d-flex align-items-center">
-                    <div class="dropdown">
-                        <i class="bi bi-bell-fill bell-icon" id="dropdownNotification" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="navbar-icons d-flex align-items-center justify-content-between">
+                    <!-- Icon chuông -->
+                    <div class="dropdown me-4">
+                        <i class="bi bi-bell-fill bell-icon position-relative" id="dropdownNotification" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <span id="notificationBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none;"></span>
                         </i>
                         <ul class="dropdown-menu dropdown-menu-end bg-white" aria-labelledby="dropdownNotification" id="notificationList" style="max-height: 300px; overflow-y: auto;">
                         </ul>
                     </div>
+
+                    <!-- Ảnh đại diện và tên -->
                     <div class="dropdown">
-                        <i class="bi bi-person-fill person-icon ms-3" id="dropdownAccount" role="button" data-bs-toggle="dropdown" aria-expanded="false"></i>
-                        <ul class="dropdown-menu dropdown-menu-end bg-white text-white" aria-labelledby="dropdownAccount">
-                            <li><a class="dropdown-item" asp-controller="ThongTinCaNhans" asp-action="Index" asp-route-id="@ViewBag.IdThongTinCaNhan">Thông tin tài khoản</a></li>
-                            <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Logout">Đăng xuất</a></li>
+                        <div id="dropdownAccount" role="button" class="d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/images/anhCN.jpg" alt="Ảnh đại diện" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                            <span class="ms-2">@hoten</span>
+                            <i class="bi bi-chevron-down ms-2"></i>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end bg-white text-dark" aria-labelledby="dropdownAccount">
+                            <li>
+                                <a class="dropdown-item" asp-controller="ThongTinCaNhans" asp-action="Index" asp-route-id="@UserName">
+                                    Thông tin tài khoản
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Logout">
+                                    Đăng xuất
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
+    @if (string.IsNullOrWhiteSpace(hoten))
+    {
+        <script type="text/javascript">
+            if (!window.location.href.includes("/ThongTinCaNhans/Edit/")) {
+                // Thực hiện hiển thị thông báo nếu URL chứa "/ThongTinCaNhans/Edit/"
+                Swal.fire({
+                    title: 'Bạn bị thiếu thông tin!',
+                    text: 'Vui lòng cập nhật để sử dụng hệ thống!',
+                    icon: 'warning',
+                    showConfirmButton: false, // Ẩn nút OK
+                    timer: 3000, // Thời gian tự động đóng (3 giây)
+                    timerProgressBar: true // Hiển thị thanh tiến trình
+                }).then((result) => {
+                    // Chuyển hướng sau khi thông báo tự động kết thúc
+                    window.location.href = '/ThongTinCaNhans/Edit/@UserName';
+                });
+            }
+        </script>
+
+    }
         <main role="main">
             @RenderBody()
         </main>

@@ -19,11 +19,17 @@
         <form asp-action="DoiMatKhau" method="post">
             <input type="hidden" name="email" value="@ViewData["Email"]" />
             <div class="input-group">
-                <input type="password" name="newPassword" class="input-field" required placeholder="Mật khẩu mới">
+                <input type="password" id="newPassword" name="newPassword" class="input-field" required
+                       placeholder="Mật khẩu mới" pattern="^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,20}$"
+                       title="Mật khẩu phải chứa ít nhất 6 ký tự, tối đa 20 ký tự, bao gồm cả chữ cái và số.">
             </div>
             <div class="input-group">
-                <input type="password" name="confirmPassword" class="input-field" required placeholder="Xác nhận mật khẩu">
+                <input type="password" id="confirmPassword" name="confirmPassword" class="input-field" required
+                       placeholder="Xác nhận mật khẩu"
+                       pattern="^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,20}$"
+                       title="Mật khẩu phải chứa ít nhất 6 ký tự, tối đa 20 ký tự, bao gồm cả chữ cái và số.">
             </div>
+
             <button type="submit" class="button">Đổi Mật Khẩu</button>
         </form>
     </div>
@@ -31,6 +37,17 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        document.addEventListener('input', function () {
+            const newPassword = document.getElementById('newPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+
+            if (newPassword.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity("Mật khẩu không khớp. Vui lòng nhập lại.");
+            } else {
+                confirmPassword.setCustomValidity("");
+            }
+        });
+
         document.addEventListener("DOMContentLoaded", function () {
             // Kiểm tra nếu có thông báo từ ViewBag và hiển thị thông báo tương ứng
         @if (ViewBag.Message == "Xác minh thành công! Bạn có thể đặt lại mật khẩu.")
