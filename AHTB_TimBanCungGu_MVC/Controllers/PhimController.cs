@@ -25,6 +25,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
+            var username = HttpContext.Session.GetString("TempUserName");
 
             if (!string.IsNullOrEmpty(token))
             {
@@ -37,6 +38,26 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 if (phim == null)
                 {
                     return NotFound();
+                }
+
+                var user = await _context.Users
+                    .Include(u => u.ThongTinCN) // Bao gồm thông tin cá nhân
+                    .FirstOrDefaultAsync(u => u.UserName == username);
+
+                if (user == null)
+                {
+                    TempData["ErrorMessage"] = "Người dùng không tồn tại.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // Kiểm tra nếu người dùng có trạng thái Premium
+                var isPremium = user.ThongTinCN.IsPremium; // Giả sử có thuộc tính IsPremium trong bảng Users
+
+                // Nếu người dùng không phải Premium, chuyển hướng về trang chủ
+                if (!isPremium)
+                {
+                    TempData["ErrorMessage"] = "Bạn cần nâng cấp lên tài khoản Premium để xem phim.";
+                    return RedirectToAction("Index", "Home");
                 }
 
                 // Nếu là Phim Lẻ, không cần truy vấn thêm Phan, chỉ cần chuyển hướng tới action PhimLe
@@ -57,23 +78,18 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                         return NotFound();
                     }
 
-                    // Lấy số lượng tập từ thông tin phần
-                    var soLuongTap = phan.SoLuongTap;
-
-                    // Truyền thông tin số lượng tập qua ViewBag (hoặc ViewData)
-                    ViewBag.SoLuongTap = soLuongTap;
-
-                    // Redirect đến action PhimBo kèm thông tin idPhim
+                    // Redirect đến action PhimBo kèm thông tin idPhim và Phan
                     return RedirectToAction("PhimBo", "Phim", new { idPhim, Phan });
                 }
             }
             else
             {
-                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                // Nếu không có token, chuyển đến trang đăng nhập
                 ViewBag.Message = "Bạn chưa đăng nhập.";
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
+
 
 
         public async Task<IActionResult> PhimLe(string idPhim)
@@ -238,7 +254,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                     .Where(p => p.TheLoai.TenTheLoai == movie.TheLoai.TenTheLoai && p.IDPhim != movie.IDPhim)
                     .ToList();
 
-                var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+                var user = _context.Users.Include(p =>p.ThongTinCN).FirstOrDefault(u => u.UserName == username);
                 if (user == null)
                 {
                     return RedirectToAction("Login", "LoginvsRegister");
@@ -246,14 +262,14 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 
                 var isFavorite = _context.PhimYeuThich
                     .Any(py => py.NguoiDungYT == user.UsID && py.PhimYT == id);
-
+                var isPremium = user.ThongTinCN.IsPremium;
                 ViewBag.PhimDeCu = phimDeCu;
                 ViewBag.PhimLe = movie;
                 ViewBag.DanhSachPhan = danhSachPhan; // Chỉ truyền những phần phim đã có thể xem
                 ViewBag.Username = username;
                 ViewBag.IsSingleMovie = isSingleMovie;
                 ViewBag.IsFavorite = isFavorite;
-
+                ViewBag.IsPremium = isPremium;
                 return View(movie);
             }
             else

@@ -6,7 +6,7 @@
     var phimDeCu = ViewBag.PhimDeCu as List<AHTB_TimBanCungGu_API.Models.Phim>;
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
+@using Newtonsoft.Json
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -199,6 +199,56 @@
                 iframe.src = `https://vidsrc.me/embed/tv?imdb=${sourcePhim}&season=${soPhan}&episode=${soTap}`;
             }
         }
+      
     </script>
+    <script>
+        const socket = new WebSocket('http://localhost:60771/Admin/QuanLyPhim/ConnectWebSocket');
+
+        socket.onmessage = function (event) {
+            console.log("Message received: ", event.data);  // In dữ liệu nhận được
+
+            if (event.data) {
+                // Kiểm tra nếu người dùng là Premium
+                const isPremium = @Html.Raw(JsonConvert.SerializeObject(ViewBag.IsPremium));  // Kiểm tra trạng thái Premium
+
+                if (!isPremium) {
+                    Swal.fire({
+                        title: 'Thông Báo',
+                        html: event.data,  // Hiển thị thông báo phim đã được nâng cấp
+                        icon: 'warning',
+                        confirmButtonText: 'Đóng',
+                        timer: 5000,  // Tự động đóng sau 5 giây
+                        timerProgressBar: true,
+                        position: 'center',
+                        showConfirmButton: false,
+                        customClass: {
+                            popup: 'swal2-popup-custom',
+                        }
+                    }).then(() => {
+                        // Chuyển hướng về trang chủ sau khi thông báo đóng
+                        window.location.href = "/";
+                    });
+                } else {
+                    // Nếu là Premium, không hiển thị thông báo
+                    console.log("Người dùng là Premium, không hiển thị thông báo.");
+                }
+            } else {
+                console.log("Không có dữ liệu trong thông báo.");
+            }
+        };
+
+        socket.onopen = function () {
+            console.log("WebSocket is open.");
+        };
+
+        socket.onclose = function () {
+            console.log("WebSocket closed.");
+        };
+
+        socket.onerror = function (error) {
+            console.log("WebSocket error:", error);
+        };
+    </script>
+
 </body>
 </html>

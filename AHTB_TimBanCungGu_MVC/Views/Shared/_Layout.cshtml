@@ -184,7 +184,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const socket = new WebSocket('http://localhost:60771/Admin/ThongTinCaNhans/ConnectWebSocket');
-
         socket.onmessage = function (event) {
             console.log("Message received: ", event.data);  // In dữ liệu nhận được
             if (event.data) {

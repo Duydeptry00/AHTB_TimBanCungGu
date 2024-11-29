@@ -1,4 +1,5 @@
 ﻿@model AHTB_TimBanCungGu_API.Models.Phim
+@using Newtonsoft.Json
 
 @{
     ViewData["Title"] = "Chi Tiết Phim";
@@ -190,24 +191,22 @@
                 <strong>Dạng Phim:</strong> <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
                 <strong>Đánh giá:</strong> <b>@Model.DanhGia / 10</b>
             </p>
-
             <div class="btn-container">
                 @if (ViewBag.IsSingleMovie)
                 {
-                    <button class="btn-watch" data-phim-id="@Model.IDPhim" onclick="luuLichSuXem(event)">
-                        <a href="@Url.Action("XemPhim", "Phim", new { idPhim = ViewBag.PhimLe.IDPhim })">Xem ngay</a>
+                    <button id="btnXemNgay" class="btn-watch" data-phim-id="@Model.IDPhim" onclick="luuLichSuXem(event)">
+                        <a href="#" class="xem-ngay-link" data-phim-id="@Model.IDPhim">Xem ngay</a>
                     </button>
                 }
                 else
                 {
                     @foreach (var phan in ViewBag.DanhSachPhan)
                     {
-                        <button class="btn-watch" data-phim-id="@Model.IDPhim" data-phan-id="@phan.SoPhan" onclick="luuLichSuXem(event)">
-                            <a href="@Url.Action("XemPhim", "Phim", new { idPhim = Model.IDPhim, Phan = phan.IDPhan })">Phần @phan.SoPhan</a>
+                        <button id="btnXemNgay" class="btn-watch" data-phim-id="@Model.IDPhim" data-phan-id="@phan.SoPhan" onclick="luuLichSuXem(event)">
+                            <a href="#" class="xem-ngay-link" data-phim-id="@Model.IDPhim" data-phan-id="@phan.IDPhan">Phần @phan.SoPhan</a>
                         </button>
                     }
                 }
-
                 <form asp-action="ToggleFavorite" method="post" style="display: inline;">
                     <input type="hidden" name="movieId" value="@Model.IDPhim" />
                     <button type="submit" class="btn-watch">
@@ -247,9 +246,6 @@
         </div>
     </div>
 </div>
-
-
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
 <script>
     window.onload = function () {
         var alert = document.querySelector('.alert-success');
@@ -259,6 +255,7 @@
             }, 2000);
         }
     };
+
     function luuLichSuXem(event) {
         event.preventDefault();  // Ngừng hành động mặc định
 
@@ -273,28 +270,51 @@
             return;
         }
 
-        // Gửi yêu cầu AJAX
-        $.ajax({
-            url: '/LichSuXem/LuuLichSuXem',
-            type: 'POST',
-            data: {
-                phimId: phimId  // Chỉ truyền phimId
-            },
-            headers: {
-                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()  // CSRF token
-            },
-            success: function (response) {
-                // Nếu lưu thành công, chuyển đến trang phim (hoặc thực hiện hành động khác)
-                var link = button.find('a').attr('href');
-                if (link) {
-                    window.location.href = link;
-                } else {
-                    alert("Không tìm thấy liên kết để chuyển hướng.");
+        // Kiểm tra trạng thái Premium trước khi gửi AJAX
+        const isPremium = @Html.Raw(JsonConvert.SerializeObject(ViewBag.IsPremium));  // Kiểm tra nếu là Premium
+
+        if (!isPremium) {
+            // Nếu không phải là Premium, hiển thị thông báo yêu cầu nâng cấp
+            Swal.fire({
+                title: 'Yêu cầu Premium',
+                text: 'Bạn cần nâng cấp lên tài khoản Premium để xem phim này!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Nâng cấp ngay',
+                cancelButtonText: 'Hủy',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Nếu người dùng xác nhận nâng cấp, chuyển đến trang nâng cấp
+                    window.location.href = '/premium';
                 }
-            },
-            error: function (xhr, status, error) {
-                alert("Có lỗi xảy ra: " + error);
-            }
-        });
+            });
+        } else {
+            // Nếu là Premium, tiếp tục lưu lịch sử xem và chuyển hướng đến trang phim
+            $.ajax({
+                url: '/LichSuXem/LuuLichSuXem',
+                type: 'POST',
+                data: {
+                    phimId: phimId  // Chỉ truyền phimId
+                },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()  // CSRF token
+                },
+                success: function (response) {
+                    // Nếu lưu thành công, chuyển đến trang phim (hoặc thực hiện hành động khác)
+                    var link = button.find('a').attr('href');
+                    if (link) {
+                        window.location.href = link;  // Chuyển hướng tới liên kết của phim
+                    } else {
+                        alert("Không tìm thấy liên kết để chuyển hướng.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert("Có lỗi xảy ra: " + error);
+                }
+            });
+        }
     }
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
