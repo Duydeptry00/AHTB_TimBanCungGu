@@ -15,6 +15,8 @@ using AHTB_TimBanCungGu_API.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using AHTB_TimBanCungGu_MVC.Service;
+using AHTB_TimBanCungGu_MVC.Models;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -24,6 +26,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         private readonly IMongoCollection<BsonDocument> _MatchNguoiDung;
         private readonly IMongoCollection<BsonDocument> _ThongBao;
         private readonly IMongoCollection<BsonDocument> _SoLuotVuot;
+        private readonly IMongoCollection<BsonDocument> _messages;
+        private readonly IMongoCollection<BsonDocument> _filter;
         private static Dictionary<string, WebSocket> _userWebSockets = new Dictionary<string, WebSocket>();
 
         public TimBanCungGuController(DBAHTBContext context)
@@ -37,6 +41,267 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _MatchNguoiDung = database.GetCollection<BsonDocument>("MatchNguoiDung");
             _ThongBao = database.GetCollection<BsonDocument>("Thongbao");
             _SoLuotVuot = database.GetCollection<BsonDocument>("SoLuotVuot");
+            _messages = database.GetCollection<BsonDocument>("NhanTin");
+            _filter = database.GetCollection<BsonDocument>("Filter");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConnectMessageWebSocket()
+        {
+            if (HttpContext.WebSockets.IsWebSocketRequest)
+            {
+                WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                var userName = HttpContext.Session.GetString("TempUserName");
+
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    _userWebSockets[userName] = webSocket;
+                }
+                else
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "TempUserName không có trong session", CancellationToken.None);
+                    return BadRequest("TempUserName không có trong session.");
+                }
+
+                var buffer = new byte[1024 * 4];
+                while (webSocket.State == WebSocketState.Open)
+                {
+                    var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                    if (result.MessageType == WebSocketMessageType.Text)
+                    {
+                        var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                        await HandleReceivedMessage(userName, message);
+                    }
+                }
+
+                _userWebSockets.Remove(userName);
+            }
+            return BadRequest();
+        }
+
+        public async Task<IActionResult> NguoiDungDaMatch()
+        {
+            try
+            {
+                // Lấy tên người dùng từ session
+                var userName = HttpContext.Session.GetString("TempUserName");
+
+                // Kiểm tra nếu người dùng chưa đăng nhập
+                if (string.IsNullOrEmpty(userName))
+                {
+                    return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+                }
+
+                // Lấy thông tin người dùng từ cơ sở dữ liệu
+                var nguoiTimDoiTuong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
+                if (nguoiTimDoiTuong == null)
+                {
+                    return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+                }
+
+                // Truy vấn MongoDB để lấy danh sách người dùng đã "like" nhau
+                var matchedUsers = await _MatchNguoiDung
+                    .Find(x =>
+                        (x["User1"] == nguoiTimDoiTuong.UserName && x["SwipeAction"] == "Like") ||
+                        (x["User2"] == nguoiTimDoiTuong.UserName && x["SwipeAction"] == "Like"))
+                    .ToListAsync();
+
+                // Kiểm tra xem có người dùng nào đã match
+                var matchedUsernames = matchedUsers
+                    .Where(x => (x["SwipeAction"] == "Like" &&
+                                ((x["User1"] == nguoiTimDoiTuong.UserName && _MatchNguoiDung.Find(y => y["User1"] == x["User2"] && y["User2"] == nguoiTimDoiTuong.UserName && y["SwipeAction"] == "Like").Any()) ||
+                                 (x["User2"] == nguoiTimDoiTuong.UserName && _MatchNguoiDung.Find(y => y["User1"] == x["User1"] && y["User2"] == nguoiTimDoiTuong.UserName && y["SwipeAction"] == "Like").Any()))))
+                    .Select(x => x["User1"] == nguoiTimDoiTuong.UserName ? x["User2"].ToString() : x["User1"].ToString())
+                    .Distinct()
+                    .ToList();
+
+                // Lấy thông tin người dùng đã "match" (Tên và tên đầy đủ)
+                var matchedUserProfiles = await _context.Users
+                    .Where(x => matchedUsernames.Contains(x.UserName))
+                    .Join(_context.ThongTinCN,
+                        user => user.UsID,
+                        thongTin => thongTin.UsID,
+                        (user, thongTin) => new MatchedUser
+                        {
+                            UserName = user.UserName,
+                            HoTen = thongTin.HoTen
+                        })
+                    .ToListAsync();
+
+                // Lưu danh sách người dùng đã "match" vào ViewData
+                ViewData["MatchedUsers"] = matchedUserProfiles;
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi chi tiết để dễ dàng gỡ lỗi
+                Console.WriteLine($"Lỗi: {ex.Message}");
+                return StatusCode(500, new { success = false, message = $"Lỗi hệ thống: {ex.Message}" });
+            }
+        }
+
+
+        public async Task<IActionResult> Chat(string receiverUserName)
+        {
+            // Kiểm tra người dùng đã đăng nhập chưa
+            var userName = HttpContext.Session.GetString("TempUserName");
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+            }
+
+            // Truy vấn MongoDB để lấy các tin nhắn giữa người gửi và người nhận
+            var filter = Builders<BsonDocument>.Filter.Or(
+                Builders<BsonDocument>.Filter.And(
+                    Builders<BsonDocument>.Filter.Eq("Sender", userName),
+                    Builders<BsonDocument>.Filter.Eq("Receiver", receiverUserName)
+                ),
+                Builders<BsonDocument>.Filter.And(
+                    Builders<BsonDocument>.Filter.Eq("Sender", receiverUserName),
+                    Builders<BsonDocument>.Filter.Eq("Receiver", userName)
+                )
+            );
+
+            var messages = await _messages.Find(filter).SortBy(m => m["Timestamp"]).ToListAsync();
+
+            // Truyền danh sách tin nhắn vào ViewData để hiển thị trên giao diện
+            ViewData["Messages"] = messages;
+
+            ViewData["ReceiverUserName"] = receiverUserName; // Truyền tên người nhận vào view
+
+            return View(model: userName);
+        }
+
+
+        // Chức năng gửi tin nhắn và lưu vào MongoDB
+        private async Task HandleReceivedMessage(string senderUserName, string messageJson)
+        {
+            var messageData = JsonConvert.DeserializeObject<Message>(messageJson);
+            var receiverUserName = messageData.ReceiverUserName;
+
+            // Kiểm tra WebSocket người nhận có kết nối hay không
+            if (_userWebSockets.TryGetValue(receiverUserName, out var receiverSocket) && receiverSocket.State == WebSocketState.Open)
+            {
+                var buffer = Encoding.UTF8.GetBytes(messageJson);
+                var segment = new ArraySegment<byte>(buffer);
+
+                // Gửi tin nhắn tới người nhận
+                try
+                {
+                    await receiverSocket.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
+                    Console.WriteLine($"Message sent to {receiverUserName}: {messageData.Content}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending message to {receiverUserName}: {ex.Message}");
+                }
+            }
+
+            // Lưu tin nhắn vào MongoDB
+            var tinnhan = new BsonDocument
+            {
+                { "Sender", messageData.SenderUserName },
+                { "Receiver", messageData.ReceiverUserName },
+                { "Message", messageData.Content },
+                { "Timestamp", messageData.Timestamp }
+            };
+
+            try
+            {
+                await _messages.InsertOneAsync(tinnhan);  // Lưu tin nhắn vào MongoDB
+                Console.WriteLine("Message inserted into MongoDB successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting message into MongoDB: {ex.Message}");
+            }
+        }
+
+        public class Message
+        {
+            [BsonId] 
+            public ObjectId Id { get; set; }  
+
+            public string SenderUserName { get; set; }
+            public string ReceiverUserName { get; set; }
+            public string Content { get; set; }
+            public DateTime Timestamp { get; set; }
+
+            // Constructor to initialize the message with necessary details
+            public Message(string senderUserName, string receiverUserName, string content)
+            {
+                SenderUserName = senderUserName;
+                ReceiverUserName = receiverUserName;
+                Content = content;
+                Timestamp = DateTime.Now;  // Automatically set the timestamp when message is created
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConnectWebSocket()
+        {
+            if (HttpContext.WebSockets.IsWebSocketRequest)
+            {
+                var userName = HttpContext.Session.GetString("TempUserName");
+                if (string.IsNullOrEmpty(userName))
+                {
+                    return Unauthorized();
+                }
+
+                var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                _userWebSockets[userName] = webSocket;
+
+                // Xử lý kết nối WebSocket cho người dùng
+                await HandleWebSocketConnection(userName, webSocket);
+
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new { message = "Yêu cầu không phải WebSocket." });
+            }
+        }
+
+        // Xử lý kết nối WebSocket
+        private async Task HandleWebSocketConnection(string userName, WebSocket webSocket)
+        {
+            var buffer = new byte[1024 * 4];
+            WebSocketReceiveResult result;
+
+            // Nhận và xử lý tin nhắn WebSocket
+            while (true)
+            {
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    break;
+                }
+
+                var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                Console.WriteLine($"Received from {userName}: {message}");
+
+                // Gửi tin nhắn đến tất cả người dùng đang kết nối
+                await SendMessageToAllUsers(userName, message);
+            }
+
+            // Đóng kết nối WebSocket
+            _userWebSockets.Remove(userName);
+            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
+        }
+
+        // Gửi tin nhắn đến tất cả người dùng kết nối
+        private async Task SendMessageToAllUsers(string sender, string message)
+        {
+            foreach (var webSocket in _userWebSockets.Values)
+            {
+                if (webSocket.State == WebSocketState.Open)
+                {
+                    var encodedMessage = Encoding.UTF8.GetBytes($"{sender}: {message}");
+                    await webSocket.SendAsync(new ArraySegment<byte>(encodedMessage, 0, encodedMessage.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+                }
+            }
         }
 
         public async Task<IActionResult> TrangChu()
@@ -157,48 +422,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         }
 
 
-        // Kết nối WebSocket
-        [HttpGet]
-        public async Task<IActionResult> ConnectWebSocket()
-        {
-            if (HttpContext.WebSockets.IsWebSocketRequest)
-            {
-                var userName = HttpContext.Session.GetString("TempUserName");
-                if (string.IsNullOrEmpty(userName))
-                {
-                    return Unauthorized();
-                }
 
-                var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                _userWebSockets[userName] = webSocket;
-
-                await HandleWebSocketConnection(userName, webSocket);
-
-                return Ok();
-            }
-            else
-            {
-                return BadRequest(new { message = "Yêu cầu không phải WebSocket." });
-            }
-        }
-
-        // Xử lý WebSocket
-        private async Task HandleWebSocketConnection(string userName, WebSocket webSocket)
-        {
-            var buffer = new byte[1024 * 4];
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-            while (!result.CloseStatus.HasValue)
-            {
-                var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                Console.WriteLine($"Received from {userName}: {message}");
-
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-
-            _userWebSockets.Remove(userName);
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-        }
 
         [HttpPost]
         public async Task<IActionResult> LuuSwipeAction([FromBody] SwipeRequest request)
@@ -286,25 +510,25 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                     // Thông báo cho người A rằng họ đã matched với người B
                     var thongBaoA = new BsonDocument
-            {
-                { "NguoiGui", nguoiTimDoiTuong.UserName },
-                { "NguoiNhan", doiTuong.UserName },
-                { "NoiDung", $" đã matched với bạn!" },
-                { "ThoiGian", DateTime.UtcNow },
-                { "Read", false }
-            };
+                    {
+                        { "NguoiGui", nguoiTimDoiTuong.UserName },
+                        { "NguoiNhan", doiTuong.UserName },
+                        { "NoiDung", $" đã matched với bạn!" },
+                        { "ThoiGian", DateTime.UtcNow },
+                        { "Read", false }
+                    };
 
                     await _ThongBao.InsertOneAsync(thongBaoA);
 
-                    // Thông báo cho người B rằng họ đã matched với người A
-                    var thongBaoB = new BsonDocument
-            {
-                { "NguoiGui", doiTuong.UserName },
-                { "NguoiNhan", nguoiTimDoiTuong.UserName },
-                { "NoiDung", $" đã matched với bạn!" },
-                { "ThoiGian", DateTime.UtcNow },
-                { "Read", false }
-            };
+                            // Thông báo cho người B rằng họ đã matched với người A
+                            var thongBaoB = new BsonDocument
+                    {
+                        { "NguoiGui", doiTuong.UserName },
+                        { "NguoiNhan", nguoiTimDoiTuong.UserName },
+                        { "NoiDung", $" đã matched với bạn!" },
+                        { "ThoiGian", DateTime.UtcNow },
+                        { "Read", false }
+                    };
 
                     await _ThongBao.InsertOneAsync(thongBaoB);
 
@@ -333,6 +557,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         var bufferB = Encoding.UTF8.GetBytes(jsonMessage);
                         await webSocketB.SendAsync(new ArraySegment<byte>(bufferB), WebSocketMessageType.Text, true, CancellationToken.None);
                     }
+                    return RedirectToAction("Chat", new { matchedUserName = doiTuong.UserName });
                 }
 
                 return Ok(new { success = true, message = "Đã lưu hành động swipe." });
@@ -341,8 +566,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 return StatusCode(500, new { success = false, message = $"Lỗi hệ thống: {ex.Message}" });
             }
-        }
 
+        }
 
         public class SwipeRequest
         {

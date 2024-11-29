@@ -30,6 +30,7 @@ namespace AHTB_TimBanCungGu_API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<MongoDbContext>();
             // C?u hình xác th?c JWT
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>

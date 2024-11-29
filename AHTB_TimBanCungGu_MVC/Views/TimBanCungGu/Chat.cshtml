@@ -1,0 +1,132 @@
+﻿@using MongoDB.Bson
+
+@{
+    var receiverUserName = ViewData["ReceiverUserName"] as string;
+    var userName = Model; // Gán từ model nếu cần
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div id="chatBox" style="border: 1px solid #ccc; height: 400px; padding: 10px; overflow-y: auto;">
+    @foreach (var message in (List<BsonDocument>)ViewData["Messages"])
+    {
+        var sender = message["Sender"].ToString();
+        var content = message["Message"].ToString();
+        var timestamp = message["Timestamp"].ToUniversalTime().ToString("HH:mm:ss");
+
+        var style = sender == ViewData["ReceiverUserName"].ToString() ? "color: blue; text-align: left;" : "color: green; text-align: right;";
+
+        <div style="@style">
+            <strong>@sender:</strong> @content <small>(@timestamp)</small>
+        </div>
+    }
+</div>
+
+<input type="text" id="messageInput" placeholder="Nhập tin nhắn..." style="width: 80%; padding: 5px;">
+<button id="sendButton" style="padding: 5px 10px;">Gửi</button>
+
+@section Scripts {
+    <script>
+        var receiverUserName = '@receiverUserName';
+        var userName = '@userName';
+
+        console.log("receiverUserName:", receiverUserName);
+        console.log("userName:", userName);
+
+        // Hàm khởi tạo WebSocket
+        function initializeWebSocket() {
+            const socketnhantin = new WebSocket("ws://localhost:60771/TimBanCungGu/ConnectMessageWebSocket");
+
+            socketnhantin.onopen = function () {
+                console.log("WebSocket connection established.");
+            };
+
+            socketnhantin.onmessage = function (event) {
+                try {
+                    var messageData = JSON.parse(event.data);
+                    if (!messageData || !messageData.SenderUserName || !messageData.Content) {
+                        console.warn("Invalid message format:", event.data);
+                        return;
+                    }
+                    // Lấy tên người nhận từ tin nhắn
+                    var receiver = messageData.ReceiverUserName;
+                    var chatBox = document.getElementById("chatBox");
+                    var messageElement = document.createElement("div");
+
+                    if (messageData.ReceiverUserName === receiverUserName || messageData.SenderUserName === userName) {
+                        messageElement.textContent = `${messageData.SenderUserName}: ${messageData.Content}`;
+                        messageElement.style.color = messageData.SenderUserName === receiverUserName ? "blue" : "green";
+                        messageElement.style.textAlign = messageData.SenderUserName === receiverUserName ? "left" : "right";
+                        chatBox.appendChild(messageElement);
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+                    loadMessages(receiver);
+                } catch (e) {
+                    console.error("Error parsing message:", e, event.data);
+                }
+            };
+
+            socketnhantin.onclose = function (event) {
+                console.warn("WebSocket connection closed. Reason:", event.reason || "No reason provided.");
+                setTimeout(initializeWebSocket, 3000);
+            };
+
+            socketnhantin.onerror = function (error) {
+                console.error("WebSocket error:", error);
+            };
+            function loadMessages(receiver) {
+                fetch('/TimBanCungGuController/chat?receiverUserName=' + encodeURIComponent(receiverUserName))
+                    .then(response => {
+                        if (!response.ok) {
+                            console.error("Failed to fetch messages. Status:", response.status);
+                            return null;
+                        }
+                        return response.text(); // Lấy HTML trả về từ server
+                    })
+                    .then(html => {
+                        if (html) {
+                            const chatBox = document.getElementById("chatBox");
+                            chatBox.innerHTML = html; // Cập nhật nội dung chatBox
+                            chatBox.scrollTop = chatBox.scrollHeight; // Cuộn xuống cuối
+                        }
+                    })
+                    .catch(error => console.error("Error loading messages:", error));
+            }
+            // Gửi tin nhắn khi bấm nút
+            document.getElementById("sendButton").onclick = function () {
+                var messageContent = document.getElementById("messageInput").value;
+                if (messageContent.trim() && socketnhantin.readyState === WebSocket.OPEN) {
+                    var message = {
+                        ReceiverUserName: receiverUserName,
+                        Content: messageContent,
+                        SenderUserName: userName,
+                        Timestamp: new Date().toISOString()
+                    };
+
+                    console.log("Sending message:", JSON.stringify(message));
+                    socketnhantin.send(JSON.stringify(message));
+
+                    var chatBox = document.getElementById("chatBox");
+                    var messageElement = document.createElement("div");
+                    messageElement.textContent = `Bạn: ${messageContent}`;
+                    messageElement.style.color = "green";
+                    messageElement.style.textAlign = "right";
+                    chatBox.appendChild(messageElement);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    document.getElementById("messageInput").value = "";
+                } else {
+                    console.error("WebSocket is not open. Current state:", socketnhantin.readyState);
+                }
+            };
+
+            // Gửi ping mỗi 30 giây để giữ kết nối
+            setInterval(() => {
+                if (socketnhantin.readyState === WebSocket.OPEN) {
+                    socketnhantin.send(JSON.stringify({ type: "ping" }));
+                }
+            }, 30000);
+        }
+
+        initializeWebSocket();
+    </script>
+}
