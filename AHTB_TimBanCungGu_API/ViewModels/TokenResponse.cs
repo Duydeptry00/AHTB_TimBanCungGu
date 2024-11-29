@@ -14,5 +14,7 @@ namespace AHTB_TimBanCungGu_API.ViewModels
                                                   // Thêm thuộc tính UserType
         [JsonPropertyName("userType")]
         public string UserType { get; set; }
+        [JsonPropertyName("nameUser")]
+        public string NameUser { get; set; }
     }
 }

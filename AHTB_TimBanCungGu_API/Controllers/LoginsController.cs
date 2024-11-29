@@ -46,7 +46,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             // Kiểm tra trạng thái tài khoản
             if (user.ThongTinCN.TrangThai == "Không Hoạt Động")
-                return Ok(new { IsValid = false, Message = "Tài khoản hiện đang bị khóa." + user.NgayMoKhoa + user.LyDoKhoa });
+                return Ok(new { IsValid = false, Message = $"Tài khoản hiện đang bị khóa.<br>Ngày mở khóa: {user.NgayMoKhoa}<br>Lý do khóa: {user.LyDoKhoa}" });
 
             // Kiểm tra mật khẩu
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
@@ -143,7 +143,8 @@ namespace AHTB_TimBanCungGu_API.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("UserType", request.UserType) // Thêm loại người dùng vào token
+                new Claim("UserType", request.UserType), // Thêm loại người dùng vào token
+                new Claim("NameUser", user.ThongTinCN.HoTen) // Thêm loại người dùng vào token
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
@@ -159,7 +160,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return Ok(new { token = tokenString, expiration = expiration , userType = request.UserType });
+            return Ok(new { token = tokenString, expiration = expiration , userType = request.UserType, nameUser = user.ThongTinCN.HoTen});
         }
         [HttpGet("UserPermissions")]
         public async Task<ActionResult> GetPermissionsByUsername(string username)

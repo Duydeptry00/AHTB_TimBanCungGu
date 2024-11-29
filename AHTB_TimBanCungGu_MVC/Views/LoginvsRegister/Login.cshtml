@@ -36,11 +36,10 @@
                 <!-- Thông báo lỗi -->
                 @if (!string.IsNullOrEmpty(ViewBag.Message))
                 {
-                    <span id="errorMessage" class="error-message">@ViewBag.Message</span>
+                    <span id="errorMessage" class="error-message">@Html.Raw(ViewBag.Message)</span>
                 }
             </form>
         </div>
-
 
         <!-- Đăng ký Form -->
         <div class="form-container sign-up-container">
@@ -51,7 +50,7 @@
                 </div>
                 <span>Vui lòng nhập thông tin của bạn tại đây</span>
                 <div class="infield">
-                    <input type="text" placeholder="UserName" asp-for="UserName" name="UserName" required />
+                    <input type="text" placeholder="UserName" asp-for="UserName" name="UserName" required pattern="^[A-Za-z0-9]+$" title="Chỉ cho phép ký tự chữ và số, không có ký tự đặc biệt." />
                     <label></label>
                 </div>
                 <div class="infield">
@@ -59,7 +58,7 @@
                     <label></label>
                 </div>
                 <div class="infield">
-                    <input type="password" asp-for="Password" placeholder="Password" name="Password" required minlength="6" pattern="^(?=.*[a-zA-Z])(?=.*\d).+$" title="Mật khẩu phải chứa ít nhất 6 ký tự, bao gồm cả chữ và số." />
+                    <input type="password" asp-for="Password" placeholder="Password" name="Password" required minlength="6" maxlength="20" pattern="^(?=.*[a-zA-Z])(?=.*\d).+$" title="Mật khẩu phải chứa ít nhất 6 ký tự và tối đa 20 ký tự, bao gồm cả chữ và số." />
                     <label></label>
                 </div>
                 <button type="submit">Đăng ký</button>
@@ -128,6 +127,74 @@
         }
         });
 
+    </script>
+    <script>
+        function convertToNonDiacritics(input) {
+            const vietnameseMap = {
+                'a': ['á', 'à', 'ả', 'ã', 'ạ', 'â', 'ầ', 'ấ', 'ẩ', 'ẫ', 'ậ', 'ă', 'ằ', 'ắ', 'ẳ', 'ẵ', 'ặ'],
+                'e': ['é', 'è', 'ẻ', 'ẽ', 'ẹ', 'ê', 'ề', 'ế', 'ể', 'ễ', 'ệ'],
+                'i': ['í', 'ì', 'ỉ', 'ĩ', 'ị'],
+                'o': ['ó', 'ò', 'ỏ', 'õ', 'ọ', 'ô', 'ồ', 'ố', 'ổ', 'ỗ', 'ộ', 'ơ', 'ờ', 'ớ', 'ở', 'ỡ', 'ợ'],
+                'u': ['ú', 'ù', 'ủ', 'ũ', 'ụ', 'ư', 'ừ', 'ứ', 'ử', 'ữ', 'ự'],
+                'y': ['ý', 'ỳ', 'ỷ', 'ỹ', 'ỵ'],
+                'd': ['đ']
+            };
+
+            let result = input;
+            for (let key in vietnameseMap) {
+                vietnameseMap[key].forEach(function (char) {
+                    result = result.replace(new RegExp(char, 'g'), key);
+                });
+            }
+            return result;
+        }
+
+        document.addEventListener('input', function (event) {
+            if (event.target.matches('[name="UserName"], [name="Password"]')) {
+                event.target.value = convertToNonDiacritics(event.target.value);
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const signUpForm = document.getElementById("signUpForm");
+
+            signUpForm.addEventListener("submit", function (event) {
+                event.preventDefault(); // Ngừng gửi form mặc định
+
+                const formData = new FormData(signUpForm);
+                const data = {};
+                formData.forEach((value, key) => {
+                    data[key] = value;
+                });
+
+                fetch('/YourController/Register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message); // Hiển thị thông báo thành công
+                            window.location.href = '/YourRedirectPage'; // Chuyển hướng nếu cần
+                        } else {
+                            // Hiển thị thông báo lỗi dưới link "Quên mật khẩu?"
+                            const errorMessageDiv = document.createElement("div");
+                            errorMessageDiv.classList.add("error-message");
+                            errorMessageDiv.textContent = data.message;
+
+                            const forgotPasswordLink = document.querySelector(".forgot-password-link");
+                            forgotPasswordLink.parentNode.insertBefore(errorMessageDiv, forgotPasswordLink.nextSibling);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+        });
     </script>
 
     <script>
