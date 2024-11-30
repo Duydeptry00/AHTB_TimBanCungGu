@@ -11,6 +11,7 @@ using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
+using AHTB_TimBanCungGu_API.ViewModels;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -37,7 +38,23 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             public string Message { get; set; }
             public List<string> MatchedUsers { get; set; }
         }
+        // GET: Profile/Details
+        [HttpGet]
+        public async Task<ActionResult> Profiles(string username)
+        {
 
+            // Gọi API để lấy thông tin profile
+            var response = await _httpClient.GetAsync($"http://localhost:15172/api/Chats/Profiles?username={username}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                string content = await response.Content.ReadAsStringAsync();
+                var profile = JsonConvert.DeserializeObject<Profile>(content);
+
+                return View(profile);
+            }
+            return BadRequest();
+        }
         [HttpGet]
         public async Task<IActionResult> GetMessages(string receiverUsername)
         {
@@ -113,6 +130,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return View();
             }
         }
+        
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] MessageVM message)
         {

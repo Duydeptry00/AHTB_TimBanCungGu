@@ -10,14 +10,19 @@
     <!-- Danh sách cuộc trò chuyện -->
     <div class="conversations-list">
         <h3>Danh sách cuộc trò chuyện</h3>
-        <!-- Danh sách trò chuyện sẽ được thêm vào đây -->
+        <div id="conversationList" class="conversation-list">
+            <!-- Danh sách trò chuyện sẽ được thêm vào đây -->
+        </div>
+        <a href="/TimBanCungGu/TrangChu" class="back-to-home">Quay lại trang chủ</a>
     </div>
 
     <!-- Cửa sổ trò chuyện -->
     <div class="chat-window">
-        <div class="chat-header">
+        <div class="chat-header ">
+            <div id="chatHeader"></div>
             <span id="chatTitle">Chọn cuộc trò chuyện để bắt đầu</span>
         </div>
+        <a href="/TimBanCungGu/TrangChu"></a>
         <div class="chat-body" id="chatBody">
             <!-- Tin nhắn sẽ được thêm vào đây -->
         </div>
@@ -37,6 +42,7 @@
         padding: 0;
         overflow: hidden;
         height: 100%;
+        font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
     }
 
     /* Phần chứa chính của messenger */
@@ -47,28 +53,164 @@
 
     /* Danh sách cuộc trò chuyện */
     .conversations-list {
-        width: 30%;
+        width: 300px;
         padding: 10px;
         border-right: 1px solid #ddd;
-        overflow-y: auto; /* Thanh cuộn dọc nếu cần */
         height: 100%; /* Chiếm toàn bộ chiều cao */
+        background-color: #f9f9f9; /* Nền màu sáng */
+        overflow: hidden; /* Ẩn thanh cuộn của toàn bộ container */
     }
 
-    /* Mỗi mục cuộc trò chuyện */
+        /* Tiêu đề danh sách cuộc trò chuyện */
+        .conversations-list h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+    /* Phần tử cho mỗi mục trò chuyện */
     .conversation-item {
+        display: flex;
+        align-items: center;
         padding: 10px;
         border-bottom: 1px solid #ddd;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        background-color: #fff;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
 
+        /* Hiệu ứng hover cho mục trò chuyện */
         .conversation-item:hover {
             background-color: #f5f5f5;
         }
 
+    /* Ảnh đại diện */
+    .conversation-avatar {
+        margin-right: 10px;
+        flex-shrink: 0; /* Không co giãn khi không gian nhỏ */
+    }
+
+    .avatar-image {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%; /* Hình tròn */
+        object-fit: cover;
+        border: 2px solid #0078D4; /* Viền ảnh */
+    }
+
+    /* Thông tin trò chuyện */
+    .conversation-info {
+        flex-grow: 1;
+        margin-left: 12px;
+        display: flex;
+        flex-direction: column;
+    }
+
+        /* Tên người trò chuyện */
+        .conversation-info strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        /* Nội dung tin nhắn */
+        .conversation-info p {
+            margin: 0;
+            color: #555;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2; /* Hiện tối đa 2 dòng */
+        }
+
+        /* Thời gian tin nhắn */
+        .conversation-info small {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+    /* Thanh cuộn của danh sách cuộc trò chuyện */
+    .conversation-list {
+        overflow-y: auto; /* Thêm thanh cuộn dọc nếu nội dung vượt quá chiều cao */
+        max-height: calc(100vh - 130px); /* Chiều cao tối đa, có thể điều chỉnh theo nhu cầu */
+    }
+
+        /* Thanh cuộn khi chưa hoạt động */
+        .conversation-list::-webkit-scrollbar {
+            width: 8px; /* Chiều rộng thanh cuộn */
+        }
+
+        .conversation-list::-webkit-scrollbar-track {
+            background: transparent; /* Nền trong suốt khi không hoạt động */
+        }
+
+        .conversation-list::-webkit-scrollbar-thumb {
+            background: rgba(0, 120, 212, 0.3); /* Thanh cuộn mờ khi chưa cuộn */
+            border-radius: 10px; /* Bo tròn các góc */
+            transition: background-color 0.3s ease; /* Hiệu ứng mờ */
+        }
+
+        /* Thanh cuộn khi đang hoạt động */
+        .conversation-list:hover::-webkit-scrollbar-thumb {
+            background: rgba(0, 120, 212, 0.3);
+        }
+
+        .conversation-list::-webkit-scrollbar-corner {
+            display: none; /* Ẩn phần giao nhau */
+        }
+
+        .conversation-list::-webkit-scrollbar-button {
+            display: none; /* Ẩn các nút cuộn */
+        }
+
+    .conversation-list {
+        scrollbar-width: thin; /* Thanh cuộn mỏng */
+        scrollbar-color: rgba(0, 120, 212, 0.3) transparent; /* Màu thanh cuộn và nền khi chưa cuộn */
+    }
+
+        .conversation-list:hover {
+            scrollbar-color: #0078D4 transparent; /* Màu thanh cuộn khi cuộn */
+        }
+
+
+
+    /* Định dạng liên kết để nó ở cuối dòng */
+    .back-to-home {
+        display: block;
+        margin-top: 10px; /* Khoảng cách trên */
+        margin-bottom: 20px; /* Khoảng cách dưới để không bị chồng chéo */
+        padding: 8px 12px; /* Khoảng cách bên trong */
+        text-align: center; /* Canh giữa */
+        color: #fff; /* Màu chữ */
+        text-decoration: none; /* Bỏ gạch chân */
+        font-weight: bold; /* In đậm */
+        background-color: #0078D4; /* Nền sáng để dễ nhìn */
+        border-radius: 5px; /* Bo góc */
+        transition: background-color 0.3s ease, color 0.3s ease; /* Hiệu ứng chuyển màu */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+    }
+
+        .back-to-home:hover {
+            background-color: #0085E3; /* Nền khi hover */
+            color: #fff; /* Màu chữ khi hover */
+        }
+
+
+
     /* Cửa sổ trò chuyện */
     .chat-window {
-        width: 70%;
+        width: -webkit-fill-available;
         display: flex;
         flex-direction: column;
     }
@@ -81,6 +223,12 @@
         font-size: 18px;
     }
 
+    .chat-header {
+        display: flex;
+        align-items: center; /* Canh chỉnh các phần tử theo chiều dọc */
+        gap: 10px; /* Khoảng cách giữa các phần tử */
+    }
+
     /* Phần nội dung của cửa sổ trò chuyện */
     .chat-body {
         flex-grow: 1;
@@ -90,6 +238,12 @@
         height: calc(100% - 50px); /* Để lại khoảng trống cho phần footer */
     }
 
+    .chat-avatar {
+        width: 40px; /* Hoặc chiều rộng mong muốn */
+        height: 40px; /* Hoặc chiều cao mong muốn */
+        border-radius: 50%; /* Để avatar thành hình tròn */
+        margin-right: 10px; /* Khoảng cách giữa avatar và tên */
+    }
         /* Thanh cuộn của chat-body */
         .chat-body::-webkit-scrollbar {
             width: 8px; /* Chiều rộng của thanh cuộn dọc */
@@ -155,14 +309,17 @@
                 background-color: #005a8e; /* Hiệu ứng khi hover */
             }
 
-    /* Tin nhắn của người dùng và người nhận */
     .user-message, .receiver-message {
         padding: 5px;
         margin: 5px 0;
         border-radius: 10px;
         display: flex;
         flex-direction: column;
+        word-wrap: break-word; /* Ngắt từ để xuống dòng nếu cần */
+        word-break: break-all; /* Ngắt từ ở bất kỳ điểm nào để tránh tràn ra ngoài */
+        overflow-wrap: break-word; /* Cách khác để ngắt từ */
     }
+
 
     /* Tên người gửi */
     .message-sender {
@@ -209,6 +366,8 @@
         border-radius: 10px;
         font-weight: bold;
     }
+
+
 
 
 </style>
@@ -282,19 +441,43 @@
         console.log("WebSocket Error: " + error);
     };
 
-    // Modify the openConversation function to show the chat footer
-    function openConversation(user2, hoten) {
+    function openConversation(user2, hoten, anh) {
         currentConversation = user2;
-        document.getElementById("chatTitle").innerText = "Cuộc trò chuyện với: " + hoten;
+
+        // Lấy phần tử tiêu đề chat và avatar
+        const chatTitleElement = document.getElementById("chatTitle");
+        const chatHeader = document.getElementById("chatHeader");
+
+        // Tạo phần tử hình ảnh avatar và liên kết
+        const avatarLink = document.createElement("a");
+        avatarLink.href = `/Chats/Profiles?username=${user2}`; // Đường dẫn tới trang Profiles của người dùng
+        avatarLink.target = "_blank"; // Mở liên kết trong tab mới nếu cần
+
+        const avatarElement = document.createElement("img");
+        avatarElement.classList.add("chat-avatar");
+        avatarElement.src = `/Uploads/${anh}`; // Thay đổi đường dẫn phù hợp
+
+        // Thêm avatar vào liên kết
+        avatarLink.appendChild(avatarElement);
+
+        // Xóa nội dung hiện tại của phần tiêu đề để chèn avatar mới
+        chatHeader.innerHTML = '';
+        chatHeader.appendChild(avatarLink);
+
+        // Thêm tên vào tiêu đề chat
+        chatTitleElement.innerText = hoten;
 
         // Xóa nội dung tin nhắn cũ
         document.getElementById("chatBody").innerHTML = '';
-        // Mở API lấy tin nhắn cho user2
-        loadMessages(user2, hoten);
 
-        // Show the chat footer when a conversation is opened
+        // Mở API lấy tin nhắn cho user2
+        loadMessages(user2);
+
+        // Hiện footer của cuộc trò chuyện
         toggleChatFooter(true);
     }
+
+
     window.onload = function () {
         toggleChatFooter(false); // Hide chat footer by default
     };
@@ -444,42 +627,41 @@
 
 
 
-    // Function to load conversation list from the API
+    // Hàm để tải danh sách cuộc trò chuyện từ API
     function loadConversations() {
         fetch(`/Chats/GetConversation?username=${sendUser}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    console.log(data);
-                    const conversationList = document.querySelector('.conversations-list');
-                    conversationList.innerHTML = ''; // Clear existing conversation list
+                    const conversationList = document.getElementById('conversationList');
+                    conversationList.innerHTML = ''; // Xóa danh sách cũ
 
-                    // Thêm tiêu đề "Danh sách cuộc trò chuyện"
-                    const titleElement = document.createElement('h3');
-                    titleElement.innerText = "Danh sách cuộc trò chuyện";
-                    conversationList.appendChild(titleElement);
-
-                    // Thêm các mục trò chuyện
+                    // Thêm các mục trò chuyện vào danh sách
                     data.conversations.forEach(conversation => {
-                        // Xác định tên hiển thị của người đối thoại
+                        const avatar = conversation.avatar || "default_image.jpg";
                         const otherUser = sendUser === conversation.user1 ? conversation.hotenuser2 : conversation.hotenuser1;
                         const otherUsername = sendUser === conversation.user1 ? conversation.user2 : conversation.user1;
 
-                        // Tạo phần tử cho mỗi cuộc trò chuyện
                         const conversationItem = document.createElement('div');
                         conversationItem.classList.add('conversation-item');
                         conversationItem.innerHTML = `
-                            <strong>${otherUser}</strong>
-                            <p>${conversation.contentnew}</p>
-                            <small>${new Date(conversation.lastMessageTimestamp).toLocaleString()}</small>
+                            <img src="/Uploads/${avatar}" alt="${otherUser}'s avatar" class="avatar-image">
+                            <div class="conversation-info">
+                                <strong>${otherUser}</strong>
+                                <p>${conversation.contentnew && conversation.contentnew.length > 15
+                                ? conversation.contentnew.substring(0, 15) + '...'
+                                : (conversation.contentnew || 'Không có nội dung')}</p>
+                                <small>${new Date(conversation.lastMessageTimestamp).toLocaleString()}</small>
+                            </div>
                         `;
 
                         // Gắn sự kiện onclick để mở cuộc trò chuyện khi được nhấn
-                        conversationItem.onclick = () => openConversation(otherUsername, otherUser);
+                        conversationItem.onclick = () => openConversation(otherUsername, otherUser, avatar);
 
                         // Thêm mục này vào danh sách
                         conversationList.appendChild(conversationItem);
                     });
+
                 } else {
                     console.error("Failed to load conversations:", data.message);
                 }
@@ -488,7 +670,6 @@
                 console.error("Error loading conversations:", error);
             });
     }
-
 
 
     // Gọi loadConversations khi trang tải

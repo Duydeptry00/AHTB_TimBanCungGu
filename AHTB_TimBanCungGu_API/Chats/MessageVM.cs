@@ -9,6 +9,7 @@ namespace AHTB_TimBanCungGu_API.Chats
         public string ReceiverUsername { get; set; }
         public string ReceiverName { get; set; }
         public string Content { get; set; }
+        public string Avt2 { get; set; }
         public DateTime Timestamp { get; set; }
     }
 }
