@@ -37,5 +37,32 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             return NotFound();
          
         }
-    } 
+        [HttpPost]
+        public async Task<IActionResult> XacNhan(int id)
+        {
+            // Kiểm tra quyền
+            var token = HttpContext.Session.GetString("JwtToken");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (userType != "Admin" || token == null)
+            {
+                return Unauthorized();
+            }
+
+            // Tìm báo cáo dựa trên ID
+            var baoCao = await _context.BaoCaoNguoiDung.FindAsync(id);
+            if (baoCao == null)
+            {
+                return NotFound();
+            }
+
+            // Cập nhật trạng thái
+            baoCao.TrangThai = "Đã xử lý";
+            _context.Update(baoCao);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+    }
 }

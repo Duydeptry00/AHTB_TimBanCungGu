@@ -15,7 +15,7 @@ using AHTB_TimBanCungGu_API.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using AHTB_TimBanCungGu_MVC.Service;
-using AHTB_TimBanCungGu_MVC.Models;
+using AHTB_TimBanCungGu_API.Models;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
@@ -44,6 +44,52 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _messages = database.GetCollection<BsonDocument>("NhanTin");
             _filter = database.GetCollection<BsonDocument>("Filter");
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateReport([FromBody] BaoCaoRequest request)
+        {
+            try
+            {
+                var userName = HttpContext.Session.GetString("TempUserName");
+
+                if (string.IsNullOrEmpty(userName))
+                {
+                    return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+                }
+
+                var nguoiTimDoiTuong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
+                if (nguoiTimDoiTuong == null)
+                {
+                    return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+                }
+                var nguoibao = _context.Users.FirstOrDefault(u => u.UserName == userName);
+                var user = _context.ThongTinCN.FirstOrDefault(u => u.IDProfile == request.DoiTuongBaoCao);
+                var report = new BaoCaoNguoiDung
+                {
+                    NguoiBaoCao = nguoibao.UsID,
+                    DoiTuongBaoCao = user.UsID,  // Lấy từ request
+                    LyDoBaoCao = request.LyDoBaoCao,          // Lấy từ request
+                    NgayBaoCao = DateTime.Now,
+                    TrangThai = "Chờ xử lý"
+                };
+
+                _context.BaoCaoNguoiDung.Add(report);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Báo cáo đã được gửi thành công." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi: {ex.Message}");
+                return StatusCode(500, new { success = false, message = $"Lỗi hệ thống: {ex.Message}" });
+            }
+        }
+
+        public class BaoCaoRequest
+        {
+            public int DoiTuongBaoCao { get; set; }
+            public string LyDoBaoCao { get; set; }
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> ConnectMessageWebSocket()
