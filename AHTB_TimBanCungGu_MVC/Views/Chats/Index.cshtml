@@ -182,6 +182,35 @@
         background-color: #f0f0f0;
     }
 
+    /* Thời gian tin nhắn chung */
+    .message-timestamp {
+        font-size: 12px;
+        color: #888;
+        margin-top: 5px;
+    }
+
+    /* Đối với tin nhắn của người nhận */
+    .receiver-message .message-timestamp {
+        text-align: left; /* Canh trái */
+    }
+
+    .container {
+        display: flex;
+        justify-content: center; /* Căn giữa theo chiều ngang */
+        margin: 10px 0; /* Khoảng cách trên dưới */
+    }
+
+    .date-separator {
+        text-align: center;
+        padding: 5px 10px;
+        font-size: 14px;
+        color: white;
+        background-color: #80808075; /* Nền xám */
+        border-radius: 10px;
+        font-weight: bold;
+    }
+
+
 </style>
 
 <script>
@@ -195,7 +224,6 @@
     socket.onopen = function () {
         console.log("WebSocket connected.");
     };
-
     // When a message is received from the WebSocket
     socket.onmessage = function (event) {
         const message = JSON.parse(event.data);  // Parse JSON from server
@@ -216,9 +244,21 @@
             let messageContentElement = document.createElement("div");
             messageContentElement.innerText = message.content;
 
-            // Append the sender's name and message content to the container
+            // Create the timestamp element
+            let messageTimestampElement = document.createElement("div");
+            messageTimestampElement.classList.add("message-timestamp");
+
+            // Format the timestamp
+            const messageTime = new Date(message.timestamp); // Assuming `message.timestamp` is an ISO string
+            messageTimestampElement.innerText = messageTime.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Append the sender's name, message content, and timestamp to the container
             messageContainer.appendChild(senderNameElement);
             messageContainer.appendChild(messageContentElement);
+            messageContainer.appendChild(messageTimestampElement);
 
             // Append the message container to the chat body
             chatBody.appendChild(messageContainer);
@@ -226,8 +266,9 @@
             // Scroll to the bottom of the chat body when a new message is added
             chatBody.scrollTop = chatBody.scrollHeight;
         }
+
+        // Optionally reload conversations and messages
         loadConversations();
-        // Optionally reload messages from the API
         loadMessages(currentConversation);
     };
 
@@ -278,47 +319,119 @@
             chatFooter.style.display = 'none';
         }
     }
-    // Function to load messages from the API
     function loadMessages(user2) {
         if (user2) {
+            // Fetch messages from the server for the selected user
             fetch(`/Chats/GetMessages?receiverUsername=${user2}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        if (Array.isArray(data.messages) && data.messages.length > 0) {
-                            document.getElementById("chatBody").innerHTML = '';  // Clear existing messages
-                            console.log(data.messages);
-                            data.messages.forEach(message => {
-                                let messageContainer = document.createElement("div");
-                                messageContainer.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
+                        // Clear the chat body to prepare for new messages
+                        const chatBody = document.getElementById("chatBody");
+                        chatBody.innerHTML = ''; // Remove old messages
 
-                                // Chỉ thêm nội dung tin nhắn mà không hiển thị tên người gửi
-                                let messageContentElement = document.createElement("div");
+                        // Helper function to format the date
+                        function getDateLabel(date) {
+                            const today = new Date();
+                            const yesterday = new Date(today);
+                            yesterday.setDate(today.getDate() - 1);
+
+                            today.setHours(0, 0, 0, 0);
+                            yesterday.setHours(0, 0, 0, 0);
+
+                            const dateOnly = new Date(date);
+                            dateOnly.setHours(0, 0, 0, 0);
+
+                            if (dateOnly.getTime() === today.getTime()) {
+                                return "Hôm nay";
+                            } else if (dateOnly.getTime() === yesterday.getTime()) {
+                                return "Hôm qua";
+                            } else {
+                                return `${getShortDayName(dateOnly)} ${dateOnly.toLocaleDateString('vi-VN', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: '2-digit'
+                                })}`;
+                            }
+                        }
+
+                        // Helper function to get short day names
+                        function getShortDayName(date) {
+                            const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                            return dayNames[date.getDay()];
+                        }
+
+                        // Check if there are messages to display
+                        if (Array.isArray(data.messages) && data.messages.length > 0) {
+                            console.log(data.messages);
+
+                            let lastMessageDate = null; // To keep track of the last message date
+
+                            // Loop through each message and create corresponding elements
+                            data.messages.forEach(message => {
+                                const messageDate = new Date(message.timestamp);
+
+                                // Check if the current message date is a different day from the last message
+                                if (!lastMessageDate || messageDate.toDateString() !== lastMessageDate.toDateString()) {
+                                    const containerDiv = document.createElement("div");
+                                    containerDiv.classList.add("container");
+
+                                    const dateSeparator = document.createElement("div");
+                                    dateSeparator.classList.add("date-separator");
+                                    dateSeparator.innerText = getDateLabel(message.timestamp);
+
+                                    containerDiv.appendChild(dateSeparator);
+                                    chatBody.appendChild(containerDiv);
+
+                                    lastMessageDate = messageDate;
+                                }
+
+                                const messageContainer = document.createElement("div");
+                                messageContainer.classList.add(
+                                    message.senderUsername === sendUser ? "user-message" : "receiver-message"
+                                );
+
+                                // Create message content element
+                                const messageContentElement = document.createElement("div");
                                 messageContentElement.innerText = message.content;
 
-                                // Nếu là tin nhắn gửi từ người nhận, hiển thị tên người nhận
-                                if (message.senderUsername !== sendUser) {
-                                    let senderNameElement = document.createElement("div");
-                                    senderNameElement.classList.add("message-sender");
+                                // Create message timestamp element
+                                const messageTimestampElement = document.createElement("div");
+                                messageTimestampElement.classList.add("message-timestamp");
+                                messageTimestampElement.innerText = messageDate.toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
 
-                                    // Hiển thị tên người nhận nếu không phải người gửi
-                                    senderNameElement.innerText = message.receiverName; 
+                                // If the message is from the receiver, include their name
+                                if (message.senderUsername !== sendUser) {
+                                    const senderNameElement = document.createElement("div");
+                                    senderNameElement.classList.add("message-sender");
+                                    senderNameElement.innerText = message.receiverName; // Adjust to correct name
                                     messageContainer.appendChild(senderNameElement);
                                 }
 
+                                // Append message content and timestamp to the container
                                 messageContainer.appendChild(messageContentElement);
+                                messageContainer.appendChild(messageTimestampElement);
 
-                                document.getElementById("chatBody").appendChild(messageContainer);
+                                // Add the container to the chat body
+                                chatBody.appendChild(messageContainer);
                             });
 
-                            document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight;
+                            // Scroll to the bottom of the chat body
+                            chatBody.scrollTop = chatBody.scrollHeight;
                         } else {
+                            // If no messages are found, show a placeholder
                             console.log("No messages available.");
+                            const noMessagesElement = document.createElement("div");
+                            noMessagesElement.classList.add("no-messages");
+                            noMessagesElement.innerText = "Chưa có tin nhắn nào trong cuộc trò chuyện này.";
+                            chatBody.appendChild(noMessagesElement);
                         }
                     } else {
                         console.error("Error loading messages:", data.message);
                     }
-
                 })
                 .catch(error => {
                     console.error("Error loading messages:", error);
@@ -327,6 +440,10 @@
             console.error("Invalid user2.");
         }
     }
+
+
+
+
     // Function to load conversation list from the API
     function loadConversations() {
         fetch(`/Chats/GetConversation?username=${sendUser}`)
@@ -389,23 +506,43 @@
             senderUsername: sendUser,  // Thay thế với thông tin người dùng thực tế
             receiverUsername: currentConversation,
             content: messageContent,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString()  // Thời gian hiện tại
         };
 
         socket.send(JSON.stringify(message));  // Gửi tin nhắn tới server qua WebSocket
 
         // Hiển thị tin nhắn đã gửi trong cửa sổ trò chuyện
         let chatBody = document.getElementById("chatBody");
-        let messageElement = document.createElement("div");
-        messageElement.classList.add("user-message");
-        messageElement.innerText = `${messageContent}`;
-        chatBody.appendChild(messageElement);
+        let messageContainer = document.createElement("div");
+        messageContainer.classList.add("user-message");
+
+        // Tạo phần tử hiển thị nội dung tin nhắn
+        let messageContentElement = document.createElement("div");
+        messageContentElement.innerText = messageContent;
+
+        // Tạo phần tử hiển thị thời gian tin nhắn
+        let messageTimestampElement = document.createElement("div");
+        messageTimestampElement.classList.add("message-timestamp");
+        const messageTime = new Date(message.timestamp);
+        messageTimestampElement.innerText = messageTime.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Thêm các phần tử vào container tin nhắn
+        messageContainer.appendChild(messageContentElement);
+        messageContainer.appendChild(messageTimestampElement);
+
+        // Thêm container tin nhắn vào phần tử chat body
+        chatBody.appendChild(messageContainer);
 
         // Cuộn tới cuối cùng khi có tin nhắn mới
         chatBody.scrollTop = chatBody.scrollHeight;
 
         // Xóa nội dung tin nhắn trong textarea
         document.getElementById("messageContent").value = '';
-        loadConversations()
+
+        // Tải lại danh sách cuộc trò chuyện
+        loadConversations();
     }
 </script>
