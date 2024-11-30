@@ -44,16 +44,15 @@
             <form asp-action="Edit" method="post" id="editForm">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                 <input type="hidden" asp-for="IDPhan" />
-
                 <div class="form-group mb-3">
                     <label asp-for="SoPhan" class="form-label">Số Phần</label>
-                    <input asp-for="SoPhan" class="form-control" required readonly />
-                    <span asp-validation-for="SoPhan" class="text-danger"></span>
+                    <!-- Đặt min="1" để ngăn không cho nhập giá trị nhỏ hơn 1 -->
+                    <input asp-for="SoPhan" class="form-control" min="1" readonly />
                 </div>
-
                 <div class="form-group mb-3">
                     <label asp-for="NgayCongChieu" class="form-label">Ngày Công Chiếu</label>
-                    <input asp-for="NgayCongChieu" type="date" class="form-control" id="NgayCongChieu" required />
+                    <input asp-for="NgayCongChieu" type="date" class="form-control" required
+                           min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     <span asp-validation-for="NgayCongChieu" class="text-danger"></span>
                 </div>
 
@@ -82,11 +81,6 @@
 </div>
 
 <script>
-    // Thiết lập min ngày công chiếu là ngày hiện tại
-    document.addEventListener("DOMContentLoaded", function () {
-        var today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại và định dạng lại (YYYY-MM-DD)
-        document.getElementById("NgayCongChieu").setAttribute("min", today); // Cập nhật thuộc tính min
-    });
     document.getElementById("btnAddEpisode").addEventListener("click", function () {
         // Tăng giá trị trường SoLuongTap thêm 1
         const input = document.querySelector("input[name='SoLuongTap']");
@@ -98,4 +92,18 @@
         event.preventDefault(); // Ngăn chặn hành động mặc định của form
         this.submit(); // Gửi form khi nhấn nút "Lưu"
     };
+</script>
+<script>
+    // Lấy ngày hiện tại tương đương DateTime.Now
+    var currentDate = new Date();
+
+    // Định dạng thành yyyy-MM-dd
+    var year = currentDate.getFullYear();
+    var month = ("0" + (currentDate.getMonth() + 1)).slice(-2); // Tháng bắt đầu từ 0
+    var day = ("0" + currentDate.getDate()).slice(-2); // Ngày đảm bảo 2 chữ số
+
+    var formattedDate = `${year}-${month}-${day}`;
+
+    // Đặt giá trị min cho input NgayPhatHanh
+    document.getElementById('NgayCongChieu').setAttribute('min', formattedDate);
 </script>

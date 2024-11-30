@@ -30,13 +30,17 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             if (userType == "Admin" && token != null)
             {
-                var dBAHTBContext = _context.Phan.Include(p => p.Phim)  .OrderBy(p => p.SoPhan);
-                return View(await dBAHTBContext.ToListAsync());
+                var phimData = await _context.Phan
+                    .Include(p => p.Phim)  // Bao gồm thông tin về phim
+                    .OrderBy(p => p.PhimID).ThenBy(p => p.SoPhan)  // Sắp xếp theo IDPhim và SoPhan
+                    .ToListAsync(); // Lấy danh sách tất cả các phần phim
+
+                return View(phimData); // Trả về View với dữ liệu Phan
             }
 
             return NotFound();
-          
         }
+
 
         // GET: Admin/Phans/Details/5
         public async Task<IActionResult> Details(string id)
@@ -100,7 +104,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 if (existingPhan != null)
                 {
                     // Phim đã có phần với số phần này, không cho phép thêm phần mới
-                    ModelState.AddModelError(string.Empty, "Phim đã có phần này, không thể thêm phần mới.");
+                    ModelState.AddModelError("SoPhan", "Số phần này đã tồn tại. Vui lòng chọn số khác.");
                 }
                 else
                 {

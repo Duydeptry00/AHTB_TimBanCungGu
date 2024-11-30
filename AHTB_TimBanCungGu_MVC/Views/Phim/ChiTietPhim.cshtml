@@ -194,16 +194,20 @@
             <div class="btn-container">
                 @if (ViewBag.IsSingleMovie)
                 {
-                    <button id="btnXemNgay" class="btn-watch" data-phim-id="@Model.IDPhim" onclick="luuLichSuXem(event)">
-                        <a href="#" class="xem-ngay-link" data-phim-id="@Model.IDPhim">Xem ngay</a>
+                    <button class="btn-watch" data-phim-id="@Model.IDPhim" onclick="luuLichSuXem(event)">
+                        <a class="btn-watch" href="@Url.Action("XemPhim", "Phim", new { idPhim = @Model.IDPhim })">
+                            Xem ngay
+                        </a>
                     </button>
                 }
                 else
                 {
                     @foreach (var phan in ViewBag.DanhSachPhan)
                     {
-                        <button id="btnXemNgay" class="btn-watch" data-phim-id="@Model.IDPhim" data-phan-id="@phan.SoPhan" onclick="luuLichSuXem(event)">
-                            <a href="#" class="xem-ngay-link" data-phim-id="@Model.IDPhim" data-phan-id="@phan.IDPhan">Phần @phan.SoPhan</a>
+                        <button class="btn-watch" data-phim-id="@Model.IDPhim" data-phan-id="@phan.SoPhan" onclick="luuLichSuXem(event)">
+                            <a class="btn-watch" href="@Url.Action("XemPhim", "Phim", new { idPhim = @Model.IDPhim, Phan = @phan.IDPhan })">
+                                Phần @phan.SoPhan
+                            </a>
                         </button>
                     }
                 }
@@ -257,7 +261,7 @@
     };
 
     function luuLichSuXem(event) {
-        event.preventDefault();  // Ngừng hành động mặc định
+        event.preventDefault();  // Ngừng hành động mặc định của link
 
         // Tìm button hoặc phần tử gần nhất có data- thuộc tính
         var button = $(event.target).closest('button');
@@ -270,50 +274,71 @@
             return;
         }
 
-        // Kiểm tra trạng thái Premium trước khi gửi AJAX
-        const isPremium = @Html.Raw(JsonConvert.SerializeObject(ViewBag.IsPremium));  // Kiểm tra nếu là Premium
+        // Gọi hàm xử lý việc phát phim
+        handlePlayButtonClick(button, phimId);
+    }
+    function handlePlayButtonClick(button, phimId) {
+        const isPremiumUser = @Html.Raw(JsonConvert.SerializeObject(ViewBag.IsPremium)) === true; // Kiểm tra người dùng Premium
+        const isPremiumMovie = @Html.Raw(JsonConvert.SerializeObject(ViewBag.PhimLe.NoiDungPremium)) === true; // Kiểm tra phim Premium
 
-        if (!isPremium) {
-            // Nếu không phải là Premium, hiển thị thông báo yêu cầu nâng cấp
+        if (isPremiumMovie && !isPremiumUser) {
+            // Nếu phim là Premium và người dùng không Premium
             Swal.fire({
                 title: 'Yêu cầu Premium',
-                text: 'Bạn cần nâng cấp lên tài khoản Premium để xem phim này!',
+                text: 'Phim này yêu cầu tài khoản Premium để xem. Vui lòng nâng cấp!',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Nâng cấp ngay',
-                cancelButtonText: 'Hủy',
+                cancelButtonText: 'Hủy'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Nếu người dùng xác nhận nâng cấp, chuyển đến trang nâng cấp
-                    window.location.href = '/premium';
+                    window.location.href = '/ThanhToan/Premium'; // Chuyển đến trang nâng cấp
                 }
             });
-        } else {
-            // Nếu là Premium, tiếp tục lưu lịch sử xem và chuyển hướng đến trang phim
-            $.ajax({
-                url: '/LichSuXem/LuuLichSuXem',
-                type: 'POST',
-                data: {
-                    phimId: phimId  // Chỉ truyền phimId
-                },
-                headers: {
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()  // CSRF token
-                },
-                success: function (response) {
-                    // Nếu lưu thành công, chuyển đến trang phim (hoặc thực hiện hành động khác)
-                    var link = button.find('a').attr('href');
-                    if (link) {
-                        window.location.href = link;  // Chuyển hướng tới liên kết của phim
-                    } else {
-                        alert("Không tìm thấy liên kết để chuyển hướng.");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    alert("Có lỗi xảy ra: " + error);
-                }
-            });
+            return; // Dừng nếu người dùng không đủ quyền
         }
+
+        // Tiếp tục nếu người dùng đủ quyền hoặc phim không phải Premium
+        const csrfToken = $('input[name="__RequestVerificationToken"]').val();
+        if (!csrfToken) {
+            Swal.fire({
+                title: 'Lỗi',
+                text: 'Không tìm thấy token bảo mật.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        $.ajax({
+            url: '/LichSuXem/LuuLichSuXem',
+            type: 'POST',
+            data: { phimId: phimId },
+            headers: { 'RequestVerificationToken': csrfToken },
+            success: function (response) {
+                const link = $(button).find('a').attr('href');
+                if (link) {
+                    window.location.href = link; // Chuyển hướng tới trang phim
+                } else {
+                    Swal.fire({
+                        title: 'Lỗi',
+                        text: 'Không tìm thấy liên kết để chuyển hướng.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                Swal.fire({
+                    title: 'Lỗi',
+                    text: 'Có lỗi xảy ra: ' + error,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
     }
+
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

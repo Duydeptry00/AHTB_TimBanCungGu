@@ -9,8 +9,10 @@ namespace AHTB_TimBanCungGu_API.Models
     {
         [Key]
         public string IDPhan { get; set; }
+
         public int SoPhan { get; set; }
         public DateTime NgayCongChieu { get; set; }
+        [Required(ErrorMessage = "Vui lòng không được để trống Số lượng tập")]
         public int SoLuongTap { get; set; }
         [ForeignKey("Phim")]
         public string PhimID { get; set; }

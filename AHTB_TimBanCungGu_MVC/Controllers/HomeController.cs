@@ -49,11 +49,12 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
                 }
 
-                // Lấy danh sách phim từ cơ sở dữ liệu
+                // Lấy danh sách 6 phim gần nhất từ cơ sở dữ liệu
                 var phimList = await _context.Phim
                     .Include(p => p.TheLoai)
-                    .OrderByDescending(p => p.NgayCapNhat)
-                    .Take(6)
+                    .Where(p => p.NgayPhatHanh <= DateTime.Now) // Chỉ lấy phim đã phát hành
+                    .OrderByDescending(p => p.NgayPhatHanh)    // Sắp xếp theo Ngày Phát Hành (mới nhất ở trên)
+                    .Take(6)                                   // Giới hạn 6 phim
                     .ToListAsync();
 
                 return View(phimList);

@@ -150,13 +150,16 @@
                         <a class="nav-link text-white" asp-area="" asp-controller="Movies" asp-action="Movies">Phim</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-white" asp-area="" asp-controller="PhimYeuThich" asp-action="Index">Phim yêu thích</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-white" asp-area="" asp-controller="ThanhToan" asp-action="Premium">Premium</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-white" asp-area="" asp-controller="TimBanCungGu" asp-action="TrangChu">Tìm bạn cùng gu</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" asp-area="" asp-controller="LichSuXem" asp-action="Index">lichsu</a>
+                        <a class="nav-link text-white" asp-area="" asp-controller="LichSuXem" asp-action="Index">Lịch sử xem</a>
                     </li>
                 </ul>
                 <div class="navbar-icons d-flex align-items-center">
@@ -361,3 +364,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+    

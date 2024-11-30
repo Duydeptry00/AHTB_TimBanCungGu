@@ -42,27 +42,34 @@
         </div>
         <div class="modal-body">
             <form asp-action="Create" method="post" id="createForm">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-
-                <div class="form-group mb-3">
+              <div class="form-group mb-3">
                     <label asp-for="SoPhan" class="form-label">Số Phần</label>
-                    <input asp-for="SoPhan" class="form-control" required />
+                    <input asp-for="SoPhan" class="form-control" required min="1" />
                     <span asp-validation-for="SoPhan" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
                     <label asp-for="NgayCongChieu" class="form-label">Ngày Công Chiếu</label>
-                    <input asp-for="NgayCongChieu" type="date" class="form-control" required />
+                    <input asp-for="NgayCongChieu" type="date" class="form-control" required
+                           min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     <span asp-validation-for="NgayCongChieu" class="text-danger"></span>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label asp-for="SoLuongTap" class="control-label">Số Lượng Tập</label>
+                    <label asp-for="SoLuongTap" class="form-label">Số Lượng Tập</label>
                     <div class="input-group">
-                        <input asp-for="SoLuongTap" class="form-control" readonly />
-                        <button type="button" id="btnAddEpisode" class="btn btn-success">+1 Tập</button>
+                        <!-- Input readonly để hiển thị số lượng tập -->
+                        <input asp-for="SoLuongTap" class="form-control" readonly required min="1" />
+
+                        <!-- Nút thêm tập -->
+                        <button type="button" id="btnAddEpisode" class="btn btn-success">
+                            +1 Tập
+                        </button>
                     </div>
-                    <span asp-validation-for="SoLuongTap" class="text-danger"></span>
+                    @if (ViewData.ModelState["SoLuongTap"]?.Errors.Count > 0)
+                    {
+                        <span class="text-danger">Vui lòng nhập số lượng tập .</span>
+                    }
                 </div>
 
                 <div class="form-group mb-3">
@@ -81,6 +88,20 @@
 </div>
 
 <script>
+    // Lấy ngày hiện tại tương đương DateTime.Now
+    var currentDate = new Date();
+
+    // Định dạng thành yyyy-MM-dd
+    var year = currentDate.getFullYear();
+    var month = ("0" + (currentDate.getMonth() + 1)).slice(-2); // Tháng bắt đầu từ 0
+    var day = ("0" + currentDate.getDate()).slice(-2); // Ngày đảm bảo 2 chữ số
+
+    var formattedDate = `${year}-${month}-${day}`;
+
+    // Đặt giá trị min cho input NgayPhatHanh
+    document.getElementById('NgayCongChieu').setAttribute('min', formattedDate);
+
+
     document.getElementById("btnAddEpisode").addEventListener("click", function () {
         // Tăng giá trị trường SoLuongTap thêm 1
         const input = document.querySelector("input[name='SoLuongTap']");

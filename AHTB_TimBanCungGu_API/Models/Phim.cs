@@ -17,6 +17,7 @@ namespace AHTB_TimBanCungGu_API.Models
         public string TheLoaiPhim { get; set; }
         public TheLoai TheLoai { get; set; }
         public DateTime NgayPhatHanh { get; set; }
+        [Range(0, 10, ErrorMessage = "Đánh giá phải nằm trong khoảng từ 0 đến 10.")]
         public double DanhGia { get; set; }
         public string TrailerURL { get; set; }
         public bool NoiDungPremium { get; set; }

@@ -111,7 +111,19 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 return Unauthorized();
             }
+         
 
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+            if (userInfo != null)
+            {
+                // Truyền thông tin người dùng vào ViewBag
+                ViewBag.HoTen = userInfo.HoTen;
+                ViewBag.GioiTinh = userInfo.GioiTinh;
+                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+            }
             // Kiểm tra lỗi validation ngày sinh và số điện thoại trước khi tiếp tục
             if (thongTinCaNhan.NgaySinh >= DateTime.Now)
             {
