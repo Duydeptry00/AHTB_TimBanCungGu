@@ -28,57 +28,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         public async Task<IActionResult> Index()
         {
             string username = HttpContext.Session.GetString("TempUserName");
-
-            try
-            {
-                var response = await _httpClient.GetAsync($"http://localhost:15172/api/Chats/CheckMatchSwipeAction?username={username}");
-                response.EnsureSuccessStatusCode();
-
-                // Đọc nội dung JSON từ phản hồi
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                // Deserialize JSON thành đối tượng CheckMatchResponse
-                var result = JsonConvert.DeserializeObject<CheckMatchResponse>(jsonResponse);
-                if (result.Success)
-                {
-                    foreach (string ReceiverUsername in result.MatchedUsers)
-                    {
-                        var requestBody = new
-                        {
-                            SenderUsername = username,
-                            ReceiverUsername = ReceiverUsername
-                        };
-
-                        var startConversationResponse = await _httpClient.PostAsJsonAsync($"http://localhost:15172/api/Chats/StartConversation",requestBody);
-
-                        if (!startConversationResponse.IsSuccessStatusCode)
-                        {
-                            var errorMessage = await startConversationResponse.Content.ReadAsStringAsync();
-                            throw new Exception($"Failed to start conversation with {ReceiverUsername}. Status: {startConversationResponse.StatusCode}. Details: {errorMessage}");
-                        }
-                    }
-
-                }
-                // Call the API to get the list of conversations
-                var responsDS = await _httpClient.GetAsync($"http://localhost:15172/api/Chats/Conversations?username={username}");
-                response.EnsureSuccessStatusCode();
-
-                var responseContent = await responsDS.Content.ReadAsStringAsync();
-                var conversations = JsonConvert.DeserializeObject<List<ConversationVM>>(responseContent);
-
-                ViewBag.CurrentUser = username;
-                return View(conversations);
-            }
-            catch (HttpRequestException ex)
-            {
-                ModelState.AddModelError("", $"Error calling API: {ex.Message}");
-                return View();
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Unexpected error: {ex.Message}");
-                return View();
-            }
+            ViewBag.CurrentUser = username;
+            return View();
         }
         public class CheckMatchResponse
         {
@@ -107,6 +58,59 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 var errorResponse = new { success = true, message = "Gửi lời chào đến bạn mới!" };
                 return Json(errorResponse);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetConversation(string username)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"http://localhost:15172/api/Chats/CheckMatchSwipeAction?username={username}");
+                response.EnsureSuccessStatusCode();
+
+                // Đọc nội dung JSON từ phản hồi
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+
+                // Deserialize JSON thành đối tượng CheckMatchResponse
+                var result = JsonConvert.DeserializeObject<CheckMatchResponse>(jsonResponse);
+                if (result.Success)
+                {
+                    foreach (string ReceiverUsername in result.MatchedUsers)
+                    {
+                        var requestBody = new
+                        {
+                            SenderUsername = username,
+                            ReceiverUsername = ReceiverUsername
+                        };
+
+                        var startConversationResponse = await _httpClient.PostAsJsonAsync($"http://localhost:15172/api/Chats/StartConversation", requestBody);
+
+                        if (!startConversationResponse.IsSuccessStatusCode)
+                        {
+                            var errorMessage = await startConversationResponse.Content.ReadAsStringAsync();
+                            throw new Exception($"Failed to start conversation with {ReceiverUsername}. Status: {startConversationResponse.StatusCode}. Details: {errorMessage}");
+                        }
+                    }
+
+                }
+                // Call the API to get the list of conversations
+                var responsDS = await _httpClient.GetAsync($"http://localhost:15172/api/Chats/Conversations?username={username}");
+                response.EnsureSuccessStatusCode();
+
+                var responseContent = await responsDS.Content.ReadAsStringAsync();
+                var conversations = JsonConvert.DeserializeObject<List<ConversationVM>>(responseContent);
+                return Json(new { success = true, conversations = conversations });
+            }
+            catch (HttpRequestException ex)
+            {
+                ModelState.AddModelError("", $"Error calling API: {ex.Message}");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Unexpected error: {ex.Message}");
+                return View();
             }
         }
         [HttpPost]
