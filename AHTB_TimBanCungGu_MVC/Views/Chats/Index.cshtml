@@ -10,22 +10,7 @@
     <!-- Danh sách cuộc trò chuyện -->
     <div class="conversations-list">
         <h3>Danh sách cuộc trò chuyện</h3>
-        @if (Model != null && Model.Count > 0)
-        {
-            @foreach (var conversation in Model)
-            {
-                <div class="conversation-item" onclick="openConversation('@conversation.user2', '@conversation.hotenuser2')">
-                    <strong>Cuộc trò chuyện với:</strong> @conversation.hotenuser2
-                    <br />
-                    <span>@conversation.contentnew</span>
-                    <br />
-                </div>
-            }
-        }
-        else
-        {
-            <p>Không có bạn bè</p>
-        }
+        <!-- Danh sách trò chuyện sẽ được thêm vào đây -->
     </div>
 
     <!-- Cửa sổ trò chuyện -->
@@ -241,7 +226,7 @@
             // Scroll to the bottom of the chat body when a new message is added
             chatBody.scrollTop = chatBody.scrollHeight;
         }
-
+        loadConversations();
         // Optionally reload messages from the API
         loadMessages(currentConversation);
     };
@@ -342,6 +327,58 @@
             console.error("Invalid user2.");
         }
     }
+    // Function to load conversation list from the API
+    function loadConversations() {
+        fetch(`/Chats/GetConversation?username=${sendUser}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(data);
+                    const conversationList = document.querySelector('.conversations-list');
+                    conversationList.innerHTML = ''; // Clear existing conversation list
+
+                    // Thêm tiêu đề "Danh sách cuộc trò chuyện"
+                    const titleElement = document.createElement('h3');
+                    titleElement.innerText = "Danh sách cuộc trò chuyện";
+                    conversationList.appendChild(titleElement);
+
+                    // Thêm các mục trò chuyện
+                    data.conversations.forEach(conversation => {
+                        // Xác định tên hiển thị của người đối thoại
+                        const otherUser = sendUser === conversation.user1 ? conversation.hotenuser2 : conversation.hotenuser1;
+                        const otherUsername = sendUser === conversation.user1 ? conversation.user2 : conversation.user1;
+
+                        // Tạo phần tử cho mỗi cuộc trò chuyện
+                        const conversationItem = document.createElement('div');
+                        conversationItem.classList.add('conversation-item');
+                        conversationItem.innerHTML = `
+                            <strong>${otherUser}</strong>
+                            <p>${conversation.contentnew}</p>
+                            <small>${new Date(conversation.lastMessageTimestamp).toLocaleString()}</small>
+                        `;
+
+                        // Gắn sự kiện onclick để mở cuộc trò chuyện khi được nhấn
+                        conversationItem.onclick = () => openConversation(otherUsername, otherUser);
+
+                        // Thêm mục này vào danh sách
+                        conversationList.appendChild(conversationItem);
+                    });
+                } else {
+                    console.error("Failed to load conversations:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error loading conversations:", error);
+            });
+    }
+
+
+
+    // Gọi loadConversations khi trang tải
+    window.onload = function () {
+        loadConversations(); // Load danh sách cuộc trò chuyện
+        toggleChatFooter(false); // Ẩn footer cửa sổ chat mặc định
+    };
 
     // Gửi tin nhắn qua WebSocket
     async function sendMessage() {
@@ -369,5 +406,6 @@
 
         // Xóa nội dung tin nhắn trong textarea
         document.getElementById("messageContent").value = '';
+        loadConversations()
     }
 </script>
