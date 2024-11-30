@@ -26,7 +26,19 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
             var username = HttpContext.Session.GetString("TempUserName");
+          
 
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.User.UserName == username);
+
+            if (userInfo != null)
+            {
+                // Truyền thông tin người dùng vào ViewBag
+                ViewBag.HoTen = userInfo.HoTen;
+                ViewBag.GioiTinh = userInfo.GioiTinh;
+                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+            }
             if (!string.IsNullOrEmpty(token))
             {
                 // Truy vấn thông tin phim từ bảng Phim
@@ -39,7 +51,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 {
                     return NotFound();
                 }
-
+              
                 var user = await _context.Users
                     .Include(u => u.ThongTinCN) // Bao gồm thông tin cá nhân
                     .FirstOrDefaultAsync(u => u.UserName == username);
@@ -49,18 +61,6 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                     TempData["ErrorMessage"] = "Người dùng không tồn tại.";
                     return RedirectToAction("Index", "Home");
                 }
-
-                // Kiểm tra nếu người dùng có trạng thái Premium
-                var isPremium = user.ThongTinCN.IsPremium; // Giả sử có thuộc tính IsPremium trong bảng Users
-
-                // Nếu người dùng không phải Premium, chuyển hướng về trang chủ
-                if (!isPremium)
-                {
-                    TempData["ErrorMessage"] = "Bạn cần nâng cấp lên tài khoản Premium để xem phim.";
-                    return RedirectToAction("Index", "Home");
-                }
-
-                // Nếu là Phim Lẻ, không cần truy vấn thêm Phan, chỉ cần chuyển hướng tới action PhimLe
                 if (string.Equals(phim.DangPhim, "Phim Lẻ", StringComparison.OrdinalIgnoreCase))
                 {
                     return RedirectToAction("PhimLe", "Phim", new { idPhim });
@@ -81,6 +81,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                     // Redirect đến action PhimBo kèm thông tin idPhim và Phan
                     return RedirectToAction("PhimBo", "Phim", new { idPhim, Phan });
                 }
+
             }
             else
             {
@@ -88,6 +89,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 ViewBag.Message = "Bạn chưa đăng nhập.";
                 return RedirectToAction("Login", "LoginvsRegister");
             }
+
         }
 
 
@@ -96,7 +98,19 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
+            var userName = HttpContext.Session.GetString("TempUserName");
 
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+            if (userInfo != null)
+            {
+                // Truyền thông tin người dùng vào ViewBag
+                ViewBag.HoTen = userInfo.HoTen;
+                ViewBag.GioiTinh = userInfo.GioiTinh;
+                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+            }
             if (!string.IsNullOrEmpty(token))
             {
                 var phimLe = await _context.Phim
@@ -110,7 +124,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 
                 var phimDeCu = await _context.Phim
                     .Where(p => p.TheLoai.TenTheLoai == phimLe.TheLoai.TenTheLoai)
-                    .Where(p => p.IDPhim != phimLe.IDPhim)
+                    .Where(p => p.IDPhim != phimLe.IDPhim && p.NgayPhatHanh <= DateTime.Now)
                     .ToListAsync();
 
                 ViewBag.PhimLe = phimLe;
@@ -130,6 +144,19 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
         public async Task<IActionResult> PhimBo(string idPhim, string Phan)
         {
             // Lấy JWT token từ Session
+            var userName = HttpContext.Session.GetString("TempUserName");
+
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+            if (userInfo != null)
+            {
+                // Truyền thông tin người dùng vào ViewBag
+                ViewBag.HoTen = userInfo.HoTen;
+                ViewBag.GioiTinh = userInfo.GioiTinh;
+                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+            }
             var token = HttpContext.Session.GetString("JwtToken");
 
             if (!string.IsNullOrEmpty(token))
@@ -151,7 +178,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
 
                 var phimDeCu = await _context.Phim
                     .Where(p => p.TheLoai.TenTheLoai == phan.Phim.TheLoai.TenTheLoai)
-                    .Where(p => p.IDPhim != phan.Phim.IDPhim)
+                    .Where(p => p.IDPhim != phan.Phim.IDPhim && p.NgayPhatHanh <= DateTime.Now)
                     .ToListAsync();
 
                 ViewBag.Phan = phan;
@@ -221,7 +248,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
         }
 
 
-        public IActionResult ChiTietPhim(string id)
+        public async Task<IActionResult> ChiTietPhimAsync(string id)
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
@@ -229,7 +256,18 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
             if (!string.IsNullOrEmpty(token))
             {
                 var username = HttpContext.Session.GetString("TempUserName");
+              
+                var userInfo = await _context.ThongTinCN
+                    .Include(t => t.User)
+                    .FirstOrDefaultAsync(t => t.User.UserName == username);
 
+                if (userInfo != null)
+                {
+                    // Truyền thông tin người dùng vào ViewBag
+                    ViewBag.HoTen = userInfo.HoTen;
+                    ViewBag.GioiTinh = userInfo.GioiTinh;
+                    ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+                }
                 var movie = _context.Phim
                     .Include(p => p.Phan)
                     .Include(p => p.TheLoai)
@@ -251,7 +289,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 var phimDeCu = _context.Phim
                     .Include(p => p.TheLoai)
                     .Include(p => p.Phan)
-                    .Where(p => p.TheLoai.TenTheLoai == movie.TheLoai.TenTheLoai && p.IDPhim != movie.IDPhim)
+                    .Where(p => p.TheLoai.TenTheLoai == movie.TheLoai.TenTheLoai && p.IDPhim != movie.IDPhim && p.NgayPhatHanh <= DateTime.Now)
                     .ToList();
 
                 var user = _context.Users.Include(p =>p.ThongTinCN).FirstOrDefault(u => u.UserName == username);
@@ -259,7 +297,7 @@ namespace HeThongChieuPhimAHTB_TimBanCungGu_MVC.Controllers
                 {
                     return RedirectToAction("Login", "LoginvsRegister");
                 }
-
+                var IsPremiumND = movie.NoiDungPremium;
                 var isFavorite = _context.PhimYeuThich
                     .Any(py => py.NguoiDungYT == user.UsID && py.PhimYT == id);
                 var isPremium = user.ThongTinCN.IsPremium;

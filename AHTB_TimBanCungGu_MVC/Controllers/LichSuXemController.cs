@@ -1,6 +1,7 @@
 ﻿    
 using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models; // Adjust the namespace as necessary
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; // Required for Include extension method
 using System;
@@ -19,8 +20,21 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
+            var userName = HttpContext.Session.GetString("TempUserName");
+
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+            if (userInfo != null)
+            {
+                // Truyền thông tin người dùng vào ViewBag
+                ViewBag.HoTen = userInfo.HoTen;
+                ViewBag.GioiTinh = userInfo.GioiTinh;
+                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+            }
             // Lấy các bản ghi Lịch Sử Xem mới nhất, bao gồm thông tin Phim, sắp xếp theo thời gian xem giảm dần
             var latestItems = _context.LichSuXem
                 .Include(l => l.Phim) // Bao gồm thông tin Phim
@@ -32,13 +46,25 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             return View(latestItems);
         }
         [HttpPost]
-        public IActionResult LuuLichSuXem(string phimId)
+        public async Task<IActionResult> LuuLichSuXemAsync(string phimId)
         {
             if (string.IsNullOrEmpty(phimId))
             {
                 return BadRequest("ID phim không hợp lệ.");
             }
+            var userName = HttpContext.Session.GetString("TempUserName");
 
+            var userInfo = await _context.ThongTinCN
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+            if (userInfo != null)
+            {
+                // Truyền thông tin người dùng vào ViewBag
+                ViewBag.HoTen = userInfo.HoTen;
+                ViewBag.GioiTinh = userInfo.GioiTinh;
+                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+            }
             var phim = _context.Phim.FirstOrDefault(p => p.IDPhim == phimId);
             if (phim == null)
             {

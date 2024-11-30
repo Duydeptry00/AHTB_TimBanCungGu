@@ -26,8 +26,8 @@
                 <input type="hidden" asp-for="IDPhim" />
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label asp-for="TenPhim" class="form-label">Tên Phim</label>
-                        <input asp-for="TenPhim" class="form-control" required />
+                        <label asp-for="TenPhim" class="form-label">Tên phim</label>
+                        <input asp-for="TenPhim" class="form-control" required maxlength="255" title="Tên phim là bắt buộc" />
                         <span asp-validation-for="TenPhim" class="text-danger"></span>
                     </div>
 
@@ -36,16 +36,20 @@
                         <select asp-for="TheLoaiPhim" class="form-control" asp-items="ViewBag.TheLoaiPhim" required></select>
                         <span asp-validation-for="TheLoaiPhim" class="text-danger"></span>
                     </div>
-
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="MoTa" class="form-label">Mô tả</label>
+                        <textarea asp-for="MoTa" class="form-control" required maxlength="255"></textarea>
+                        <span asp-validation-for="MoTa" class="text-danger"></span>
+                    </div>
                     <div class="col-md-6 mb-3">
-                        <label asp-for="DienVien" class="form-label">Diễn Viên</label>
-                        <input asp-for="DienVien" class="form-control" required />
+                        <label asp-for="DienVien" class="form-label">Diễn viên</label>
+                        <input asp-for="DienVien" class="form-control" required maxlength="255" />
                         <span asp-validation-for="DienVien" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label asp-for="NgayPhatHanh" class="form-label">Ngày Phát Hành</label>
-                        <input asp-for="NgayPhatHanh" type="date" class="form-control" required />
+                        <label asp-for="NgayPhatHanh" class="form-label">Ngày phát hành</label>
+                        <input asp-for="NgayPhatHanh" class="form-control" type="date" required id="NgayPhatHanh" />
                         <span asp-validation-for="NgayPhatHanh" class="text-danger"></span>
                     </div>
 
@@ -66,19 +70,17 @@
                         <span asp-validation-for="TrailerURL" class="text-danger"></span>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label asp-for="TrangThai" class="form-label">Trạng Thái</label>
-                        <input asp-for="TrangThai" class="form-control" required />
+                        <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                        <input asp-for="TrangThai" class="form-control" required maxlength="255" />
                         <span asp-validation-for="TrangThai" class="text-danger"></span>
-                    </div>
                     <div class="col-md-6 d-flex align-items-center mb-3">
-                     
                         <label asp-for="NoiDungPremium" class="form-check-label mb-0" for="premiumCheckbox">Premium</label>
                         <input asp-for="NoiDungPremium" class="form-check-input me-2" style="margin: 0 10px;" type="checkbox"  />
                     </div>
-
+                </div>
                     <div class="col-md-6 mb-3">
-                        <label asp-for="NgayCapNhat" class="form-label">Ngày Cập Nhật</label>
-                        <input asp-for="NgayCapNhat" type="date" class="form-control" required />
+                        <label asp-for="NgayCapNhat" class="form-label">Ngày cập nhật</label>
+                        <input asp-for="NgayCapNhat" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" readonly />
                         <span asp-validation-for="NgayCapNhat" class="text-danger"></span>
                     </div>
 
@@ -87,8 +89,9 @@
                         <input asp-for="SourcePhim" class="form-control" required />
                         <span asp-validation-for="SourcePhim" class="text-danger"></span>
                     </div>
-                </div>
-                <div class="form-group mb-3">
+
+
+                    <div class="form-group mb-3">
                     <label>Hình Ảnh Hiện Tại:</label><br />
                     @if (!string.IsNullOrEmpty(Model.HinhAnh))
                     {
@@ -135,4 +138,16 @@
             reader.readAsDataURL(file);
         }
     });
+    // Lấy ngày hiện tại tương đương DateTime.Now
+    var currentDate = new Date();
+
+    // Định dạng thành yyyy-MM-dd
+    var year = currentDate.getFullYear();
+    var month = ("0" + (currentDate.getMonth() + 1)).slice(-2); // Tháng bắt đầu từ 0
+    var day = ("0" + currentDate.getDate()).slice(-2); // Ngày đảm bảo 2 chữ số
+
+    var formattedDate = `${year}-${month}-${day}`;
+
+    // Đặt giá trị min cho input NgayPhatHanh
+    document.getElementById('NgayPhatHanh').setAttribute('min', formattedDate);
 </script>

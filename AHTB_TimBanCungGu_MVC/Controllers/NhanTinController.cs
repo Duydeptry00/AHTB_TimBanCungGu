@@ -27,6 +27,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
         public IActionResult Index()
         {
+
             return View();
         }
 

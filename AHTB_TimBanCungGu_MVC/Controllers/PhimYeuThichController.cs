@@ -33,6 +33,19 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 {
                     return RedirectToAction("Login", "LoginvsRegister"); // Chuyển hướng đến trang đăng nhập
                 }
+               
+
+                var userInfo = await _context.ThongTinCN
+                    .Include(t => t.User)
+                    .FirstOrDefaultAsync(t => t.User.UserName == username);
+
+                if (userInfo != null)
+                {
+                    // Truyền thông tin người dùng vào ViewBag
+                    ViewBag.HoTen = userInfo.HoTen;
+                    ViewBag.GioiTinh = userInfo.GioiTinh;
+                    ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+                }
                 // Lấy thông tin người dùng từ username
                 var user = _context.Users.FirstOrDefault(u => u.UserName == username);
                 // Lấy danh sách phim yêu thích của người dùng

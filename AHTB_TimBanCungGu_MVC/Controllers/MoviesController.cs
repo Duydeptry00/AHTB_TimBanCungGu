@@ -43,7 +43,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                 IQueryable<Phim> moviesQuery = _context.Phim
         .Include(m => m.TheLoai)
-        .AsNoTracking(); // Giúp cải thiện hiệu suất
+        .AsNoTracking().Where(m => m.NgayPhatHanh <= DateTime.Now); // Giúp cải thiện hiệu suất
 
 
                 if (genre != "Tất cả")

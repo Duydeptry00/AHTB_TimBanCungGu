@@ -27,7 +27,7 @@
             @foreach (var item in latestItems)
             {
                 <li class="movie-item" data-url="@Url.Action("ChiTietPhim", "Phim", new { id = item.PhimDaXem })">
-                    <img src="~/images/@item.Phim.HinhAnh" alt="@item.Phim.TenPhim" />
+                    <img src="~/Uploads/@item.Phim.HinhAnh" alt="@item.Phim.TenPhim" />
                     <div class="movie-details">
                         <p class="movie-title">Phim: @item.Phim.TenPhim</p>
                         <p class="movie-date">Thời gian xem: @item.ThoiGianXem.ToString("yyyy-MM-dd HH:mm")</p>

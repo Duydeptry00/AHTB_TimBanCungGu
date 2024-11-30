@@ -136,7 +136,7 @@
             @if (phimLe != null)
             {
                 <div class="film-player">
-                    <iframe id="filmPlayer" src="https://vidsrc.dev/embed/movie/@phimLe.SourcePhim" style="width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
+                    <iframe id="filmPlayer" src="https://vidsrc.in/embed/movie?imdb=@phimLe.SourcePhim" style="width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
                 </div>
             }
             else if (phimBo != null && phan != null)
@@ -168,7 +168,6 @@
             <div class="row">
                 @foreach (var phimdecu in phimDeCu)
                 {
-
                     <div class="col-md-3 mb-4">
                         <div class="card-hover">
                             <img src="/Uploads/@phimdecu.HinhAnh" alt="@phimdecu.TenPhim" class="card-img-top">
@@ -199,56 +198,7 @@
                 iframe.src = `https://vidsrc.me/embed/tv?imdb=${sourcePhim}&season=${soPhan}&episode=${soTap}`;
             }
         }
-      
+
     </script>
-    <script>
-        const socket = new WebSocket('http://localhost:60771/Admin/QuanLyPhim/ConnectWebSocket');
-
-        socket.onmessage = function (event) {
-            console.log("Message received: ", event.data);  // In dữ liệu nhận được
-
-            if (event.data) {
-                // Kiểm tra nếu người dùng là Premium
-                const isPremium = @Html.Raw(JsonConvert.SerializeObject(ViewBag.IsPremium));  // Kiểm tra trạng thái Premium
-
-                if (!isPremium) {
-                    Swal.fire({
-                        title: 'Thông Báo',
-                        html: event.data,  // Hiển thị thông báo phim đã được nâng cấp
-                        icon: 'warning',
-                        confirmButtonText: 'Đóng',
-                        timer: 5000,  // Tự động đóng sau 5 giây
-                        timerProgressBar: true,
-                        position: 'center',
-                        showConfirmButton: false,
-                        customClass: {
-                            popup: 'swal2-popup-custom',
-                        }
-                    }).then(() => {
-                        // Chuyển hướng về trang chủ sau khi thông báo đóng
-                        window.location.href = "/";
-                    });
-                } else {
-                    // Nếu là Premium, không hiển thị thông báo
-                    console.log("Người dùng là Premium, không hiển thị thông báo.");
-                }
-            } else {
-                console.log("Không có dữ liệu trong thông báo.");
-            }
-        };
-
-        socket.onopen = function () {
-            console.log("WebSocket is open.");
-        };
-
-        socket.onclose = function () {
-            console.log("WebSocket closed.");
-        };
-
-        socket.onerror = function (error) {
-            console.log("WebSocket error:", error);
-        };
-    </script>
-
 </body>
 </html>
