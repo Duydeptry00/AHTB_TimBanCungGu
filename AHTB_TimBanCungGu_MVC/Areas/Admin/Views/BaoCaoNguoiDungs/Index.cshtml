@@ -8,7 +8,7 @@
 <div class="background-dark">
     <h1>Quản lý Báo Cáo</h1>
     <div class="table-responsive">
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered text-center">
             <thead>
                 <tr>
                     <th class="table-header"><i class="fas fa-user-tag"></i> Người báo cáo</th>
@@ -16,6 +16,7 @@
                     <th class="table-header"><i class="fas fa-exclamation-circle"></i> Lý do báo cáo</th>
                     <th class="table-header"><i class="fas fa-calendar-alt"></i> Ngày báo cáo</th>
                     <th class="table-header"><i class="fas fa-info-circle"></i> Trạng thái</th>
+                    <th class="table-header"><i class="fas fa-cogs"></i> Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,8 +26,23 @@
                         <td>@Html.DisplayFor(modelItem => item.NguoiBaoCaoUser.UserName)</td>
                         <td>@Html.DisplayFor(modelItem => item.DoiTuongBaoCaoUser.UserName)</td>
                         <td>@Html.DisplayFor(modelItem => item.LyDoBaoCao)</td>
-                        <td>@item.NgayBaoCao.ToString("MM/dd/yyyy")</td>
-                        <td>@Html.DisplayFor(modelItem => item.TrangThai)</td>
+                        <td>@item.NgayBaoCao.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (item.TrangThai == "Đã xử lý")
+                            {
+                                <span class="text-success font-weight-bold">@item.TrangThai</span>
+                            }
+                            else
+                            {
+                                <span class="text-warning font-weight-bold">Chờ xử lý</span>
+                            }
+                        </td>
+                        <td>
+                            <button class="btn btn-success btn-sm btn-confirm"
+                                    data-id="@item.IDReport">
+                                Xác nhận
+                            </button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -116,3 +132,44 @@
             text-decoration: none;
         }
 </style>
+<!-- SweetAlert2 Library -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Lấy danh sách các button "Xác nhận"
+        const confirmButtons = document.querySelectorAll(".btn-confirm");
+
+        confirmButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const reportId = this.getAttribute("data-id");
+
+                Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: "Bạn có muốn xác nhận báo cáo này không?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Xác nhận',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Gửi request xác nhận
+                        const form = document.createElement("form");
+                        form.method = "post";
+                        form.action = "/Admin/BaoCaoNguoiDungs/XacNhan"; // Đường dẫn action
+
+                        const input = document.createElement("input");
+                        input.type = "hidden";
+                        input.name = "id";
+                        input.value = reportId;
+
+                        form.appendChild(input);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>

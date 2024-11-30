@@ -249,7 +249,20 @@
                             <p>Không có hình ảnh phụ.</p>
                         }
                     </div>
+
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown" style="position: absolute; top: 10px; right: 10px;">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#reportModal" data-userid="@thongTin.IDProfile">Báo cáo</a>
+                            </li>
+                            <li><a class="dropdown-item" href="#">Chặn</a></li>
+                        </ul>
+                    </div>
                 </div>
+
             }
         </div>
     </div>
@@ -391,9 +404,87 @@
         }
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const reportButtons = document.querySelectorAll('.dropdown-item[data-bs-toggle="modal"]'); // Lấy tất cả các nút báo cáo
 
+        reportButtons.forEach(button => {
+            button.addEventListener('click', function (event) {
+                const userId = event.target.getAttribute('data-userid'); // Lấy ID người bị báo cáo
 
+                // Hiển thị SweetAlert cho người dùng chọn lý do báo cáo
+                Swal.fire({
+                    title: 'Chọn lý do báo cáo',
+                    input: 'select',
+                    inputOptions: {
+                        'Spam': 'Spam',
+                        'Nội dung xúc phạm': 'Nội dung xúc phạm',
+                        'Nội dung không phù hợp': 'Nội dung không phù hợp',
+                        'Khác': 'Khác'
+                    },
+                    inputPlaceholder: 'Chọn lý do',
+                    showCancelButton: true,
+                    confirmButtonText: 'Gửi báo cáo',
+                    cancelButtonText: 'Hủy',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'Bạn phải chọn lý do báo cáo!';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const reportReason = result.value;
 
+                        // Gửi báo cáo lên server (bao gồm ID người bị báo cáo và lý do)
+                        sendReport(userId, reportReason);
+                    }
+                });
+            });
+        });
+
+        // Hàm gửi báo cáo
+        function sendReport(userId, reason) {
+            // Gửi yêu cầu báo cáo lên server
+            fetch('/TimBanCungGu/CreateReport', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    doiTuongBaoCao: userId,  // Đảm bảo tên này trùng với tham số trên server
+                    lyDoBaoCao: reason       // Đảm bảo tên này trùng với tham số trên server
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Báo cáo đã được gửi!',
+                            text: 'Cảm ơn bạn đã báo cáo. Chúng tôi sẽ kiểm tra và xử lý.',
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Đã có lỗi xảy ra khi gửi báo cáo.',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Đã có lỗi xảy ra khi gửi báo cáo.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+        }
+    });
+</script>
 
 
 </html>
