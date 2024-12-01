@@ -73,7 +73,7 @@
     /* Phần tử cho mỗi mục trò chuyện */
     .conversation-item {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         padding: 10px;
         border-bottom: 1px solid #ddd;
         cursor: pointer;
@@ -82,6 +82,7 @@
         border-radius: 5px;
         margin-bottom: 10px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        position: relative;
     }
 
         /* Hiệu ứng hover cho mục trò chuyện */
@@ -139,6 +140,55 @@
             color: #888;
             margin-top: 5px;
         }
+        /*Menu-icon*/
+        .menu-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .fa-ellipsis-v {
+            font-size: 20px; /* Kích thước biểu tượng */
+            line-height: 1; /* Đảm bảo biểu tượng không bị nghiêng */
+            padding: 5px;
+            text-align: center;
+            transform: none; /* Đảm bảo không bị nghiêng */
+            user-select: none; /* Vô hiệu hóa chọn biểu tượng */
+        }
+
+        .menu-options {
+            position: absolute;
+            top: 100%; /* Vị trí menu ngay bên dưới icon */
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column; /* Sắp xếp các nút theo chiều dọc */
+            z-index: 10;
+            min-width: 100px; /* Đảm bảo kích thước menu đồng nhất */
+        }
+
+        .menu-options.hidden {
+            display: none; /* Ẩn menu khi chưa click */
+        }
+
+        .menu-options button {
+            padding: 10px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+        }
+
+            .menu-options button:hover {
+                background-color: #f5f5f5;
+            }
 
     /* Thanh cuộn của danh sách cuộc trò chuyện */
     .conversation-list {
@@ -653,10 +703,44 @@
                                 : (conversation.contentnew || 'Không có nội dung')}</p>
                                 <small>${new Date(conversation.lastMessageTimestamp).toLocaleString()}</small>
                             </div>
+                                 <div class="menu-icon">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    <div class="menu-options hidden">
+                                        <button class="report-btn">Báo cáo</button>
+                                        <button class="block-btn">Chặn</button>
+                                    </div>
+                                </div>
                         `;
 
                         // Gắn sự kiện onclick để mở cuộc trò chuyện khi được nhấn
                         conversationItem.onclick = () => openConversation(otherUsername, otherUser, avatar);
+
+                        // Gắn sự kiện để hiện/ẩn menu khi click vào icon ba chấm
+                        const menuIcon = conversationItem.querySelector('.fa-ellipsis-v');
+                        const menuOptions = conversationItem.querySelector('.menu-options');
+                        menuIcon.onclick = (event) => {
+                            event.stopPropagation(); // Ngăn không cho sự kiện lan ra ngoài
+
+                            // Đóng tất cả các menu khác trước khi mở menu hiện tại
+                            document.querySelectorAll('.menu-options').forEach(menu => {
+                                if (menu !== menuOptions) {
+                                    menu.classList.add('hidden'); // Đóng menu khác
+                                }
+                            });
+
+                            // Hiện hoặc ẩn menu hiện tại
+                            menuOptions.classList.toggle('hidden');
+                        };
+
+                        // Xử lý sự kiện cho nút Báo cáo
+                        conversationItem.querySelector('.report-btn').onclick = () => {
+                            alert(`Báo cáo người dùng: ${otherUser}`);
+                        };
+
+                        // Xử lý sự kiện cho nút Chặn
+                        conversationItem.querySelector('.block-btn').onclick = () => {
+                            alert(`Chặn người dùng: ${otherUser}`);
+                        };
 
                         // Thêm mục này vào danh sách
                         conversationList.appendChild(conversationItem);
