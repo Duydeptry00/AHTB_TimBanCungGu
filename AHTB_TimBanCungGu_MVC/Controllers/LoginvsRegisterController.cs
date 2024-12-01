@@ -140,18 +140,15 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             public string message { get; set; }
         }
 
-
         [HttpPost]
         public async Task<IActionResult> Register(string userName, string password, string email)
         {
-            userName = userName.ToLower();
-            email = email.ToLower();
             if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(email))
             {
                 ViewBag.Message = "Vui lòng nhập tên đăng nhập, mật khẩu và email.";
                 return RedirectToAction("Login");
             }
-            
+
             if (!IsValidEmail(email))
             {
                 ViewBag.Message = "Vui lòng nhập email hợp lệ.";
@@ -192,7 +189,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 ViewBag.Message = $"Đã có lỗi xảy ra: {ex.Message}";
             }
 
-            return Json(new { success = false, message = "Tài khoản hoặc gmail đã tồn tại" });
+            return RedirectToAction("Login");
         }
         public class ResponseData
         {
