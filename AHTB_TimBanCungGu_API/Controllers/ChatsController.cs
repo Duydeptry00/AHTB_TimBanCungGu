@@ -31,19 +31,19 @@ namespace AHTB_TimBanCungGu_API.Controllers
         public async Task<ActionResult> GetProfiles(string username)
         {
             var profile = await _DBcontext.ThongTinCN
-      .Where(t => t.User.UserName == username) // Lọc theo username
-      .Select(t => new Profile
-      {
-          HoTen = string.IsNullOrEmpty(t.HoTen) ? "Không có thông tin" : t.HoTen,
-          GioiTinh = string.IsNullOrEmpty(t.GioiTinh) ? "Không có thông tin" : t.GioiTinh,
-          NgaySinh = t.NgaySinh,
-          SoDienThoai = string.IsNullOrEmpty(t.SoDienThoai) ? "Không có thông tin" : t.SoDienThoai,
-          IsPremium = t.IsPremium,
-          MoTa = string.IsNullOrEmpty(t.MoTa) ? "Không có thông tin" : t.MoTa,
-          DiaChi = string.IsNullOrEmpty(t.DiaChi) ? "Không có thông tin" : t.DiaChi,
-          Avt = t.AnhCaNhan.Select(a => a.HinhAnh).ToList()
-      })
-      .FirstOrDefaultAsync();
+              .Where(t => t.User.UserName == username) // Lọc theo username
+              .Select(t => new Profile
+              {
+                  HoTen = string.IsNullOrEmpty(t.HoTen) ? "Không có thông tin" : t.HoTen,
+                  GioiTinh = string.IsNullOrEmpty(t.GioiTinh) ? "Không có thông tin" : t.GioiTinh,
+                  NgaySinh = t.NgaySinh,
+                  SoDienThoai = string.IsNullOrEmpty(t.SoDienThoai) ? "Không có thông tin" : t.SoDienThoai,
+                  IsPremium = t.IsPremium,
+                  MoTa = string.IsNullOrEmpty(t.MoTa) ? "Không có thông tin" : t.MoTa,
+                  DiaChi = string.IsNullOrEmpty(t.DiaChi) ? "Không có thông tin" : t.DiaChi,
+                  Avt = t.AnhCaNhan.Select(a => a.HinhAnh).ToList()
+              })
+              .FirstOrDefaultAsync();
 
 
             if (profile == null)
@@ -282,8 +282,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
             public string SenderUsername { get; set; }
             public string ReceiverUsername { get; set; }
         }
-
-
+     
         // GET api/Chats/Conversations?username=username - Lấy danh sách cuộc trò chuyện của người dùng
         [HttpGet("Conversations")]
         public async Task<IActionResult> GetConversations([FromQuery] string username)
@@ -301,7 +300,6 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 .ToList();                       // Chuyển đổi sang List<string>
             var Name1 = _DBcontext.ThongTinCN.FirstOrDefault(N1 => N1.User.UserName == username);
 
-         
 
             // Danh sách ConversationVM để trả về
             var conversationVMs = new List<ConversationVM>();
