@@ -211,7 +211,7 @@
                         </button>
                     }
                 }
-                <form asp-action="ToggleFavorite" method="post" style="display: inline;">
+                <form asp-action="ToggleFavorite" method="post" style="display: inline;margin-bottom: 0px;">
                     <input type="hidden" name="movieId" value="@Model.IDPhim" />
                     <button type="submit" class="btn-watch">
                         @if (ViewBag.IsFavorite)
