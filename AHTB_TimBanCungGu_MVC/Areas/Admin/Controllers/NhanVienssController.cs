@@ -14,6 +14,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 {
@@ -117,7 +118,11 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             {
                 return Json(new { Success = false, Message = "Dữ liệu không hợp lệ." });
             }
-
+           
+            if (string.IsNullOrEmpty(nhanVien.Email) || !IsValidEmail(nhanVien.Email))
+            {
+                return Json(new { Success = false, Message = "Địa chỉ email không đúng định dạng." });
+            }
             try
             {
                 // Ensure username is in lowercase
@@ -164,7 +169,18 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         }
 
 
-
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var mailAddress = new System.Net.Mail.MailAddress(email);
+                return mailAddress.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         public async Task<IActionResult> Edit(string id)
         {
