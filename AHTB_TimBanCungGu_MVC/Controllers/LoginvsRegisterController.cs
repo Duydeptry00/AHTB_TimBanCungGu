@@ -15,6 +15,7 @@ using static AHTB_TimBanCungGu_MVC.Service.CountSwipService;
 using AHTB_TimBanCungGu_API.Data;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using AHTB_TimBanCungGu_API.Controllers;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -302,6 +303,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> QuenMatKhau(string email)
         {
+            email.ToLower();
             if (string.IsNullOrEmpty(email))
             {
                 ModelState.AddModelError(string.Empty, "Vui lòng nhập địa chỉ email.");
@@ -359,7 +361,111 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return View("QuenMatKhau"); // Trả về view hiện tại với lỗi
             }
         }
+        public IActionResult DoiMatKhaucuNV()
+        {
+            return View();
+        }
 
+        // Action để xử lý đổi mật khẩu
+        [HttpPost]
+        public IActionResult DoiMatKhaucuNV(string oldPassword, string newPassword, string confirmPassword)
+        {
+            var userName = HttpContext.Session.GetString("TempUserName");
+            if (string.IsNullOrEmpty(oldPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                ViewBag.Message = "Vui lòng nhập đầy đủ thông tin.";
+                ViewBag.Status = "error";
+                return View();
+            }
+
+            // Kiểm tra mật khẩu mới và mật khẩu xác nhận có khớp không
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Message = "Mật khẩu mới và mật khẩu xác nhận không khớp.";
+                ViewBag.Status = "error";
+                return View();
+            }
+
+            // Giả sử bạn lấy thông tin người dùng từ Session hoặc bất kỳ nguồn nào khác
+            var user = _context.Users.FirstOrDefault(u => u.UserName == userName);
+            if (user == null)
+            {
+                ViewBag.Message = "Người dùng chưa đăng nhập.";
+                return View();
+            }
+
+            // Kiểm tra mật khẩu cũ
+            if (!BCrypt.Net.BCrypt.Verify(oldPassword, user.Password)) // So sánh với mật khẩu đã mã hóa
+            {
+                ViewBag.Message = "Mật khẩu cũ không chính xác.";
+                ViewBag.Status = "success";
+                return View();
+            }
+            else
+            {
+                ViewBag.Status = "success";
+                user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword); // Lưu mật khẩu mới đã mã hóa
+
+            }
+            // Cập nhật mật khẩu mới
+
+            _context.SaveChanges();
+            ViewBag.Message = "Mật khẩu đã được đổi thành công!";
+            return View();
+        }
+
+        public IActionResult DoiMatKhaucu()
+        {
+            return View();
+        }
+
+        // Action để xử lý đổi mật khẩu
+        [HttpPost]
+        public IActionResult DoiMatKhaucu(string oldPassword, string newPassword, string confirmPassword)
+        {
+            var userName = HttpContext.Session.GetString("TempUserName");
+            if (string.IsNullOrEmpty(oldPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                ViewBag.Message = "Vui lòng nhập đầy đủ thông tin.";
+                ViewBag.Status = "error";
+                return View();
+            }
+
+            // Kiểm tra mật khẩu mới và mật khẩu xác nhận có khớp không
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Message = "Mật khẩu mới và mật khẩu xác nhận không khớp.";
+                ViewBag.Status = "error";
+                return View();
+            }
+
+            // Giả sử bạn lấy thông tin người dùng từ Session hoặc bất kỳ nguồn nào khác
+            var user = _context.Users.FirstOrDefault(u => u.UserName == userName); 
+            if (user == null)
+            {
+                ViewBag.Message = "Người dùng chưa đăng nhập.";
+                return View();
+            }
+           
+            // Kiểm tra mật khẩu cũ
+            if (!BCrypt.Net.BCrypt.Verify(oldPassword, user.Password)) // So sánh với mật khẩu đã mã hóa
+            {
+                ViewBag.Message = "Mật khẩu cũ không chính xác.";
+                ViewBag.Status = "success";
+                return View();
+            }
+            else
+            {
+                ViewBag.Status = "success";
+                user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword); // Lưu mật khẩu mới đã mã hóa
+                
+            }
+            // Cập nhật mật khẩu mới
+
+            _context.SaveChanges();
+            ViewBag.Message = "Mật khẩu đã được đổi thành công!";
+            return View();
+        }
 
         [HttpPost]
         public async Task<IActionResult> DoiMatKhau(string email, string newPassword, string confirmPassword)

@@ -1,0 +1,64 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đổi Mật Khẩu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="~/css/DoiMatKhau.css" rel="stylesheet" />
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="form-container">
+        <h1 class="form-title">Đổi Mật Khẩu</h1>
+        <p class="form-description">Vui lòng nhập mật khẩu cũ và mật khẩu mới của bạn</p>
+        <form asp-action="DoiMatKhauCu" method="post">
+            <div class="input-group">
+                <input type="password" id="oldPassword" name="oldPassword" class="input-field" required
+                       placeholder="Mật khẩu cũ"
+                       pattern="^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,20}$"
+                       title="Mật khẩu phải chứa ít nhất 6 ký tự, tối đa 20 ký tự, bao gồm cả chữ cái và số.">
+            </div>
+            <div class="input-group">
+                <input type="password" id="newPassword" name="newPassword" class="input-field" required
+                       placeholder="Mật khẩu mới"
+                       pattern="^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,20}$"
+                       title="Mật khẩu phải chứa ít nhất 6 ký tự, tối đa 20 ký tự, bao gồm cả chữ cái và số.">
+            </div>
+            <div class="input-group">
+                <input type="password" id="confirmPassword" name="confirmPassword" class="input-field" required
+                       placeholder="Xác nhận mật khẩu mới"
+                       pattern="^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,20}$"
+                       title="Mật khẩu phải chứa ít nhất 6 ký tự, tối đa 20 ký tự, bao gồm cả chữ cái và số.">
+            </div>
+
+            <button type="submit" class="button">Đổi Mật Khẩu</button>
+        </form>
+    </div>
+
+    @if (ViewBag.Message != null)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            // Hiển thị thông báo với SweetAlert2
+            Swal.fire({
+                title: '@(ViewBag.Status == "success" ? "Thành công!" : "Thất bại!")',
+                text: '@Html.Raw(ViewBag.Message)',
+                icon: '@(ViewBag.Status == "success" ? "success" : "error")',
+                confirmButtonText: 'OK',
+                backdrop: false,
+            }).then((result) => {
+                // Nếu người dùng nhấn OK, chuyển trang
+                if (result.isConfirmed && '@(ViewBag.Status)' == "success") {
+                    window.location.href = '/Home/Index'; // Chuyển đến trang chủ (hoặc trang bạn muốn)
+                }
+            });
+        </script>
+    }
+
+</body>
+</html>

@@ -372,6 +372,12 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" asp-area="Admin" asp-controller="Thongtin" asp-action="ThongTinNV" asp-route-id="@UserName">Tài khoản</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            
+                            @if(@HttpContextAccessor.HttpContext.Session.GetString("UserType") != "Admin")
+                            {
+                                <li><a class="dropdown-item" asp-area="" asp-controller="LoginvsRegister" asp-action="DoiMatKhaucuNV">Đổi mật khẩu</a></li>
+                            }
+                          
                             <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Logout">Đăng xuất</a></li>
                         </ul>
                     </div>

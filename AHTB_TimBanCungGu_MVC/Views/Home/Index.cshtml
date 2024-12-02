@@ -160,29 +160,61 @@
 
             <!-- Phim mới nhất -->
             <div class="recommended-section">
-                <h2>Mới nhất</h2>
-                <div class="movie-grid">
-                    @foreach (var phim in Model.OrderByDescending(p => p.NgayPhatHanh).Take(5))
+            <h2>Phim Mới Nhất</h2>
+            <div class="movie-grid">
+                @if (ViewBag.PhimMoiNhat != null)
+                {
+                    foreach (var phim in ViewBag.PhimMoiNhat)
                     {
-                    <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
-                        <img src="/Uploads/@phim.HinhAnh" alt="@phim.TenPhim">
-                    </a>
+                        <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
+                            <img src="/Uploads/@phim.HinhAnh" alt="@phim.TenPhim">
+                            <div class="movie-item-content">
+                                <h3 class="movie-item-title">@phim.TenPhim</h3>
+                         
+                            </div>
+                        </a>
                     }
-                </div>
+                }
+            </div>
             </div>
 
             <!-- Phim đánh giá cao nhất -->
             <div class="recommended-section">
-                <h2>Phổ biến</h2>
+                <h2>Phim Thịnh Hành</h2>
                 <div class="movie-grid">
-                    @foreach (var phim in Model.OrderByDescending(p => p.DanhGia).Take(5))
+                    @if (ViewBag.PhimThinhHanh != null)
                     {
-                    <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
-                        <img src="/Uploads/@phim.HinhAnh" alt="@phim.TenPhim">
-                    </a>
+                        foreach (var phim in ViewBag.PhimThinhHanh)
+                        {
+                            <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
+                                <img src="/Uploads/@phim.HinhAnh" alt="@phim.TenPhim">
+                                <div class="movie-item-content">
+                                    <h3 class="movie-item-title">@phim.TenPhim</h3>
+                               
+                                </div>
+                            </a>
+                        }
                     }
                 </div>
             </div>
+        <div class="recommended-section">
+            <h2>Phim Premium</h2>
+            <div class="movie-grid">
+                @if (ViewBag.PhimPremium != null)
+                {
+                    foreach (var phim in ViewBag.PhimPremium)
+                    {
+                        <a href="@Url.Action("ChiTietPhim", "Phim", new { id = phim.IDPhim })" class="movie-item">
+                            <img src="/Uploads/@phim.HinhAnh" alt="@phim.TenPhim">
+                            <div class="movie-item-content">
+                                <h3 class="movie-item-title">@phim.TenPhim</h3>
+                           
+                            </div>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
         </div>
 </body>
     <script>

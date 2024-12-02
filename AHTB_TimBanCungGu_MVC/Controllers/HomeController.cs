@@ -26,15 +26,13 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _logger = logger;
             _httpClient = httpClient;
         }
-
         public async Task<IActionResult> Index()
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
-            
+
             if (!string.IsNullOrEmpty(token))
             {
-            
                 var userName = HttpContext.Session.GetString("TempUserName");
 
                 var userInfo = await _context.ThongTinCN
@@ -49,18 +47,39 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
                 }
 
-                // Lấy danh sách 6 phim gần nhất từ cơ sở dữ liệu
-                var phimList = await _context.Phim
+                // Lấy danh sách 6 phim mới nhất
+                var phimMoiNhat = await _context.Phim
                     .Include(p => p.TheLoai)
-                    .Where(p => p.NgayPhatHanh <= DateTime.Now) // Chỉ lấy phim đã phát hành
-                    .OrderByDescending(p => p.NgayPhatHanh)    // Sắp xếp theo Ngày Phát Hành (mới nhất ở trên)
-                    .Take(6)                                   // Giới hạn 6 phim
+                    .Where(p => p.NgayPhatHanh <= DateTime.Now)
+                    .OrderByDescending(p => p.NgayPhatHanh)
+                    .Take(5)
                     .ToListAsync();
 
-                return View(phimList);
+                // Lấy danh sách phim thịnh hành (xem nhiều nhất)
+                var phimThinhHanh = await _context.LichSuXem
+                    .GroupBy(lsx => lsx.PhimDaXem)
+                    .Select(group => new
+                    {
+                        PhimId = group.Key,
+                        LuotXem = group.Count()
+                    })
+                    .OrderByDescending(g => g.LuotXem)
+                    .Take(5)
+                    .Join(_context.Phim, g => g.PhimId, p => p.IDPhim, (g, p) => p)
+                    .ToListAsync();
+                var phimPremium = await _context.Phim
+                  .Include(p => p.TheLoai)
+                  .Where(p => p.NoiDungPremium == true)
+                  .Take(5)
+                  .ToListAsync();
+                // Truyền dữ liệu vào ViewBag
+                ViewBag.PhimMoiNhat = phimMoiNhat;
+                ViewBag.PhimThinhHanh = phimThinhHanh;
+                ViewBag.PhimPremium = phimPremium;
+                return View();
             }
 
-            return View();
+            return RedirectToAction("Login", "LoginvsRegister");
         }
 
 

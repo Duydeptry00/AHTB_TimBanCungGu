@@ -44,6 +44,138 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _messages = database.GetCollection<BsonDocument>("NhanTin");
             _filter = database.GetCollection<BsonDocument>("Filter");
         }
+        public async Task<IActionResult> TrangChu()
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var userName = HttpContext.Session.GetString("TempUserName");
+
+                var userInfo = await _context.ThongTinCN
+                    .Include(t => t.User)
+                    .FirstOrDefaultAsync(t => t.User.UserName == userName);
+
+                if (userInfo != null)
+                {
+                    // Truyền thông tin người dùng vào ViewBag
+                    ViewBag.HoTen = userInfo.HoTen;
+                    ViewBag.GioiTinh = userInfo.GioiTinh;
+                    ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+                }
+
+                if (string.IsNullOrEmpty(userName))
+                {
+                    return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+                }
+
+                var nguoitimdoituong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
+                if (nguoitimdoituong == null)
+                {
+                    return NotFound(new { success = false, message = "Người dùng không tồn tại." });
+                }
+
+                var userSwipeInfo = await _SoLuotVuot.Find(x => x["Uservuot"] == userName).FirstOrDefaultAsync();
+                if (userSwipeInfo != null)
+                {
+                    ViewBag.SwipeCount = userSwipeInfo["SwipesRemaining"].ToInt32(); // Hoặc ToInt32() để chuyển đổi kiểu nếu cần
+                }
+                else
+                {
+                    ViewBag.SwipeCount = 0; // Giá trị mặc định nếu không tìm thấy
+                }
+                // Retrieve swiped users
+                // Lọc những người dùng đã swipe (bao gồm cả Like và Dislike)
+                var swipedUsers = await _MatchNguoiDung
+                    .Find(x => x["User1"] == userName)
+                    .ToListAsync();
+
+                var likedOrDislikedUsernames = swipedUsers
+                    .Where(x => x["SwipeAction"] == "Like" || x["SwipeAction"] == "Dislike")
+                    .Select(x => x["User2"].ToString())
+                    .ToList();
+
+                // Loại bỏ những người dùng đã bị "Dislike"
+                var dislikedUsernames = swipedUsers
+                    .Where(x => x["SwipeAction"] == "Dislike")
+                    .Select(x => x["User2"].ToString())
+                    .ToList();
+
+                var dBAHTBContext = _context.ThongTinCN
+                    .Include(t => t.User)
+                    .Include(t => t.AnhCaNhan)
+                    .Where(t =>
+                        (t.TrangThai == "Hoạt Động" || t.TrangThai == "Không Hoạt Động") // Lọc theo trạng thái
+                        && !likedOrDislikedUsernames.Contains(t.User.UserName) // Loại bỏ người đã swipe
+                        && !dislikedUsernames.Contains(t.User.UserName)) // Loại bỏ người đã "Dislike"
+                    .AsQueryable();
+
+                // Map user profiles to view model
+
+
+                var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
+                {
+                    IDProfile = t.IDProfile,
+                    UsID = t.UsID,
+                    HoTen = t.HoTen,
+                    Email = t.Email,
+                    GioiTinh = t.GioiTinh,
+                    NgaySinh = (DateTime)t.NgaySinh,
+                    SoDienThoai = t.SoDienThoai,
+                    IsPremium = t.IsPremium,
+                    MoTa = t.MoTa,
+                    NgayTao = t.NgayTao,
+                    TrangThai = t.TrangThai,
+                    HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
+                }).Where(x => x.UsID != nguoitimdoituong.UsID).ToListAsync();
+
+                var usIds = thongTinCaNhanViewModels.Select(x => x.UsID).ToList();
+
+                // Truy vấn các thể loại từ các phim yêu thích của người dùng
+                var guPhim = _context.PhimYeuThich
+                    .Where(pyt => usIds.Contains(pyt.NguoiDungYT)) // Lọc theo UsID của người dùng
+                    .Join(_context.Phim, pyt => pyt.PhimYT, p => p.IDPhim, (pyt, p) => p.TheLoai) // Kết nối với bảng Phim để lấy thể loại
+                    .Distinct() // Loại bỏ thể loại trùng
+                    .ToList(); // Lấy danh sách thể loại
+
+                // Truyền vào ViewBag để sử dụng trong View
+                ViewBag.GuPhim = guPhim;
+                return View(thongTinCaNhanViewModels);
+            }
+            else
+            {
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
+        }
+
+        public IActionResult GetGuPhimByUserId(string userId)
+        {
+            try
+            {
+                // Truy vấn các thể loại từ các phim yêu thích của người dùng
+                var guPhim = _context.PhimYeuThich
+                    .Where(pyt => pyt.NguoiDungYT == userId) // Lọc theo ID người dùng
+                    .Join(_context.Phim, pyt => pyt.PhimYT, p => p.IDPhim, (pyt, p) => p.TheLoai) // Kết nối với bảng Phim để lấy thể loại
+                    .Distinct() // Loại bỏ thể loại trùng
+                    .ToList(); // Lấy danh sách thể loại
+
+                // Kiểm tra nếu không có gu phim
+                if (guPhim == null || !guPhim.Any())
+                {
+                    return Json(new { success = false, message = "Không có gu phim cho người dùng này." });
+                }
+                ViewBag.GuPhim = guPhim;
+                // Trả về dữ liệu thành công
+                return Json(new { success = true, guPhim });
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi và trả về thông báo lỗi
+                return Json(new { success = false, message = "Lỗi xảy ra: " + ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateReport([FromBody] BaoCaoRequest request)
         {
@@ -350,101 +482,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             }
         }
 
-        public async Task<IActionResult> TrangChu()
-        {
-            var token = HttpContext.Session.GetString("JwtToken");
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                var userName = HttpContext.Session.GetString("TempUserName");
-
-                var userInfo = await _context.ThongTinCN
-                    .Include(t => t.User)
-                    .FirstOrDefaultAsync(t => t.User.UserName == userName);
-
-                if (userInfo != null)
-                {
-                    // Truyền thông tin người dùng vào ViewBag
-                    ViewBag.HoTen = userInfo.HoTen;
-                    ViewBag.GioiTinh = userInfo.GioiTinh;
-                    ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
-                }
-
-                if (string.IsNullOrEmpty(userName))
-                {
-                    return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
-                }
-
-                var nguoitimdoituong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
-                if (nguoitimdoituong == null)
-                {
-                    return NotFound(new { success = false, message = "Người dùng không tồn tại." });
-                }
-
-                var userSwipeInfo = await _SoLuotVuot.Find(x => x["Uservuot"] == userName).FirstOrDefaultAsync();
-                if (userSwipeInfo != null)
-                {
-                    ViewBag.SwipeCount = userSwipeInfo["SwipesRemaining"].ToInt32(); // Hoặc ToInt32() để chuyển đổi kiểu nếu cần
-                }
-                else
-                {
-                    ViewBag.SwipeCount = 0; // Giá trị mặc định nếu không tìm thấy
-                }
-                // Retrieve swiped users
-                // Lọc những người dùng đã swipe (bao gồm cả Like và Dislike)
-                var swipedUsers = await _MatchNguoiDung
-                    .Find(x => x["User1"] == userName)
-                    .ToListAsync();
-
-                var likedOrDislikedUsernames = swipedUsers
-                    .Where(x => x["SwipeAction"] == "Like" || x["SwipeAction"] == "Dislike")
-                    .Select(x => x["User2"].ToString())
-                    .ToList();
-
-                // Loại bỏ những người dùng đã bị "Dislike"
-                var dislikedUsernames = swipedUsers
-                    .Where(x => x["SwipeAction"] == "Dislike")
-                    .Select(x => x["User2"].ToString())
-                    .ToList();
-
-                var dBAHTBContext = _context.ThongTinCN
-                    .Include(t => t.User)
-                    .Include(t => t.AnhCaNhan)
-                    .Where(t =>
-                        (t.TrangThai == "Hoạt Động" || t.TrangThai == "Không Hoạt Động") // Lọc theo trạng thái
-                        && !likedOrDislikedUsernames.Contains(t.User.UserName) // Loại bỏ người đã swipe
-                        && !dislikedUsernames.Contains(t.User.UserName)) // Loại bỏ người đã "Dislike"
-                    .AsQueryable();
-
-                // Map user profiles to view model
-
-
-                var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
-                {
-                    IDProfile = t.IDProfile,
-                    UsID = t.UsID,
-                    HoTen = t.HoTen,
-                    Email = t.Email,
-                    GioiTinh = t.GioiTinh,
-                    NgaySinh = (DateTime)t.NgaySinh,
-                    SoDienThoai = t.SoDienThoai,
-                    IsPremium = t.IsPremium,
-                    MoTa = t.MoTa,
-                    NgayTao = t.NgayTao,
-                    TrangThai = t.TrangThai,
-                    HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
-                }).Where(x => x.UsID != nguoitimdoituong.UsID).ToListAsync();
-
-
-                return View(thongTinCaNhanViewModels);
-            }
-            else
-            {
-                ViewBag.Message = "Bạn chưa đăng nhập.";
-                return RedirectToAction("Login", "LoginvsRegister");
-            }
-        }
-
+      
 
 
         // GET: TimBanCungGu/Create
