@@ -27,8 +27,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             // Lấy token JWT và UserType từ session
             var token = HttpContext.Session.GetString("JwtToken");
             var userType = HttpContext.Session.GetString("UserType");
-
-            if (userType == "Admin" && token != null)
+            var tempRole = HttpContext.Session.GetString("TempRole") ?? null;
+            if (userType == "Admin" && token != null || token != null && tempRole.Contains("Quản Lý Người Dùng"))
             {
                 var dBAHTBContext = _context.QuanLyNguoiDung.Include(q => q.AdminUser).Include(q => q.NguoiDungUser);
                 return View(await dBAHTBContext.ToListAsync());

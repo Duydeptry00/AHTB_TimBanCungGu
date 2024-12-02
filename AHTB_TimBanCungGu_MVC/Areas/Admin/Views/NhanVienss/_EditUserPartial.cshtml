@@ -5,10 +5,10 @@
     <button type="button" class="btn-close btn-danger" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-    <form asp-action="Edit" method="post" id="editForm">
+    <form asp-action="Edit" method="post" id="editForm" onsubmit="editUser()">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="IdNhanVien" />
-        
+        @Html.HiddenFor(model => model.IdNhanVien)
+
         <div class="form-group mb-3">
             <label asp-for="UserName" class="form-label">Tên Tài Khoản</label>
             <input asp-for="UserName" class="form-control" disabled />
@@ -29,4 +29,5 @@
             <input type="submit" value="Lưu" class="btn btn-primary" />
         </div>
     </form>
+
 </div>

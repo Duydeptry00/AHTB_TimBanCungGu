@@ -41,7 +41,8 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             var token = HttpContext.Session.GetString("JwtToken");
             var userType = HttpContext.Session.GetString("UserType");
 
-            if (userType == "Admin" && token != null)
+            var tempRole = HttpContext.Session.GetString("TempRole") ?? null;
+            if (userType == "Admin" && token != null || token != null && tempRole.Contains("Quản Lý Người Dùng"))
             {
                 var dBAHTBContext = _context.ThongTinCN
                     .Include(t => t.User)

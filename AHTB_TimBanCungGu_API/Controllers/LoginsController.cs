@@ -39,7 +39,14 @@ namespace AHTB_TimBanCungGu_API.Controllers
             var user = await _context.Users
                 .Include(u => u.ThongTinCN) // Bao gồm thông tin cá nhân
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName || u.ThongTinCN.Email == request.UserName);
-
+            if(user.TrangThai == "Chờ Xác Thực")
+            {
+                return Ok(new { IsValid = false, Message = "Tài khoản hiện đang còn chờ xác thực" });
+            }
+            if (user.TrangThai == "Đình Chỉ")
+            {
+                return Ok(new { IsValid = false, Message = "Tài khoản hiện không được truy cập" });
+            }
             // Kiểm tra người dùng có tồn tại hay không
             if (user == null)
                 return Ok(new { IsValid = false, Message = "Tài khoản hoặc mật khẩu không chính xác." });
@@ -136,13 +143,16 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 .Include(ur => ur.Role) // Bao gồm thông tin bảng Role nếu cần
                 .FirstOrDefaultAsync(u => u.UsID == user.UsID);
 
-            if (userRole != null)
+            if (userRole != null )
             {
                 request.UserType = userRole.Role.TenRole; // Thiết lập UserType theo vai trò tìm thấy
             }
-
-            // Tạo JWT token nếu người dùng hợp lệ
-            var expiration = DateTime.UtcNow.AddMinutes(30); // Hết hạn token sau 30 phút
+            if (user.TrangThai == "Đang Làm Việc" && userRole == null)
+            {
+                request.UserType = "Nhân Viên";
+            }
+                // Tạo JWT token nếu người dùng hợp lệ
+                var expiration = DateTime.UtcNow.AddMinutes(30); // Hết hạn token sau 30 phút
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),

@@ -212,51 +212,56 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.NhanViens)
+                    @if(Model.NhanViens != null)
                     {
-                        <tr>
-                            <td>@item.STT</td>
-                            <td>@item.UserName</td>
-                            <td>@item.Email</td>
-                            <td>
-                                @if (item.Tenrole == "Nhân Viên Hiện Chưa Được Cấp Quyền")
-                                {
-                                    <span class="badge bg-secondary text-white">@item.Tenrole</span>  <!-- Màu nền xám và chữ tối -->
-                                }
-                                else
-                                {
-                                    <span class="badge badge bg-light-blue text-dark">@item.Tenrole</span>  <!-- Ví dụ khác, có thể thay đổi màu sắc theo yêu cầu -->
-                                }
-                            </td>
-                            <td>
-                                @if (item.TrangThai == "Đang Làm Việc")
-                                {
-                                    <span class="badge bg-success">@item.TrangThai</span>
-                                }
-                                else if (item.TrangThai == "Đình Chỉ")
-                                {
-                                    <span class="badge bg-warning">@item.TrangThai</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger">@item.TrangThai</span>
-                                }
-                            </td>
-                            <td>
-                                <div class="d-flex">
-                                    <button class="btn btn-primary me-2" onclick="loadEditUser('@item.IdNhanVien')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <a asp-action="AssignRoles" asp-route-id="@item.IdNhanVien" class="btn btn-secondary me-2">
-                                        <i class="fas fa-user-cog"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-danger" onclick="deleteUser('@item.IdNhanVien')">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        @foreach (var item in Model.NhanViens)
+                        {
+                            <tr>
+                                <td>@item.STT</td>
+                                <td>@item.UserName</td>
+                                <td>@item.Email</td>
+                                <td>
+                                    @if (item.Tenrole == "Nhân Viên Hiện Chưa Được Cấp Quyền")
+                                    {
+                                        <span class="badge bg-secondary text-white">@item.Tenrole</span>  <!-- Màu nền xám và chữ tối -->
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge bg-light-blue text-dark">@item.Tenrole</span>  <!-- Ví dụ khác, có thể thay đổi màu sắc theo yêu cầu -->
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.TrangThai == "Đang Làm Việc")
+                                    {
+                                        <span class="badge bg-success">@item.TrangThai</span>
+                                    }
+                                    else if (item.TrangThai == "Đình Chỉ")
+                                    {
+                                        <span class="badge bg-warning">@item.TrangThai</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">@item.TrangThai</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex">
+                                        <button class="btn btn-primary me-2" onclick="loadEditUser('@item.IdNhanVien')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="deleteUser('@item.IdNhanVien')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
+                    else
+                    {
+
+                    }
+
                 </tbody>
             </table>
         </div>
@@ -434,7 +439,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Lỗi',
-                            text: `Có lỗi xảy ra khi xóa nhân viên: ${xhr.responseText}`
+                            text: `Không thể xóa nhân viên!`
                         });
                     }
                 });
@@ -442,3 +447,94 @@
         });
     }
 </script>
+<script>
+    function addUser() {
+        event.preventDefault(); // Prevent default form submission
+
+        // Serialize the form data
+        const formData = $('#addUserForm').serialize();
+
+        $.ajax({
+            url: '@Url.Action("Create", "NhanVienss")',
+            type: 'POST',
+            data: formData,
+            headers: {
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        window.location.href = '@Url.Action("Index", "NhanVienss")'; // Redirect to Index after success
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: response.message
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Có lỗi xảy ra trong quá trình gửi yêu cầu.'
+                });
+            }
+        });
+    }
+
+
+</script>
+<script>
+    function editUser() {
+        event.preventDefault(); // Prevent default form submission
+
+        // Serialize the form data
+        const formData = $('#editForm').serialize();
+
+        $.ajax({
+            url: '@Url.Action("Edit", "NhanVienss")',
+            type: 'POST',
+            data: formData,
+            headers: {
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        location.reload(); // Refresh the page after successful edit
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: response.message
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Có lỗi xảy ra trong quá trình gửi yêu cầu.'
+                });
+            }
+        });
+    }
+
+
+</script>
+

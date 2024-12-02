@@ -85,7 +85,9 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 UserName = user.UserName,
                 Email = user.ThongTinCN.Email, // Kiểm tra null cho an toàn
                 TrangThai = user.TrangThai,
-            }).ToList();
+                    // Lấy TenRole nếu có, nếu không có thì gán "Nhân Viên Hiện Chưa Được Cấp Quyền"
+                    Tenrole = user.User_Role?.FirstOrDefault()?.Role?.TenRole ?? "Nhân Viên Hiện Chưa Được Cấp Quyền"
+                }).ToList();
 
             return userViewModels;
         }
@@ -95,17 +97,24 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
         // GET: api/NhanViens/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetNhanVien(string id)
+        public async Task<ActionResult<NhanVienVM>> GetNhanVien(string id)
         {
             var nhanVien = await _context.Users.FindAsync(id);
-
             if (nhanVien == null)
             {
                 return NotFound();
             }
 
-            return nhanVien;
+            var nhamvn = new NhanVienVM
+            {
+                IdNhanVien = nhanVien.UsID,
+                UserName = nhanVien.UserName,
+                TrangThai = nhanVien.TrangThai
+            };
+
+            return Ok(nhamvn); // Trả về HTTP 200 với dữ liệu
         }
+
 
         // POST: api/NhanViens
         [HttpPost]
