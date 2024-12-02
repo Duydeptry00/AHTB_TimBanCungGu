@@ -110,6 +110,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                                     var roleDataJson = await getRoleResponse.Content.ReadAsStringAsync();
                                     HttpContext.Session.SetString("TempRole", roleDataJson);
                                 }
+                                else
+                                {
+                                    HttpContext.Session.SetString("TempRole", null);
+                                }
                             }
                             return View();
                         }
@@ -130,7 +134,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             }
             catch (Exception ex)
             {
-                ViewBag.Message = $"Đã có lỗi xảy ra: {ex.Message}";
+                ViewBag.Message = "";
             }
 
             return View();

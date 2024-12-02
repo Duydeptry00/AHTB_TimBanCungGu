@@ -113,33 +113,57 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(NhanVienVM nhanVien)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
+                return Json(new { Success = false, Message = "Dữ liệu không hợp lệ." });
+            }
+
+            try
+            {
+                // Ensure username is in lowercase
+                nhanVien.UserName = nhanVien.UserName.ToLower();
+
+                // Serialize the user object
                 var jsonContent = JsonConvert.SerializeObject(nhanVien);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
+                // Send the user data to the API
                 var response = await _httpClient.PostAsync($"{ApiBaseUrl}", content);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    // Lấy giá trị của Local từ GlobalSettings
+                    // Prepare data for sending an invitation
                     string local = GlobalSettings.MvcBaseUrl;
                     string email = nhanVien.Email;
+                    var inviteData = new { email, local };
                     var content2 = new StringContent(
-                        System.Text.Json.JsonSerializer.Serialize(new { email, local }),
+                        JsonConvert.SerializeObject(inviteData),
                         Encoding.UTF8,
-                        "application/json"); ;
+                        "application/json");
 
-                    // Gửi yêu cầu POST tới API
-                    var respons = await _httpClient.PostAsync($"{_ApiBaseUrl}/Account/SendEmployeeInvite", content2);
-                    TempData["SuccessMessage"] = "Thêm nhân viên thành công!";
-                    return RedirectToAction(nameof(Index)); // Chuyển hướng về danh sách người dùng
+                    // Send the invitation
+                    var inviteResponse = await _httpClient.PostAsync($"{_ApiBaseUrl}/Account/SendEmployeeInvite", content2);
+
+                    if (inviteResponse.IsSuccessStatusCode)
+                    {
+                        return Json(new { Success = true, Message = "Thêm nhân viên và gửi thư mời thành công." });
+                    }
+
+                    return Json(new { Success = false, Message = "Nhân viên đã được thêm, nhưng không thể gửi thư mời." });
                 }
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi thêm nhân viên.";
-            }
 
-            // Nếu không hợp lệ, trả lại Partial View với thông tin đã nhập
-            return RedirectToAction(nameof(Index));
+                return Json(new { Success = false, Message = "Tài khoản hoặc email đã tồn tại." });
+            }
+            catch (Exception ex)
+            {
+                // Log exception (use your logging framework)
+                Console.WriteLine(ex.Message);
+
+                return Json(new { Success = false, Message = "Đã xảy ra lỗi trong quá trình xử lý." });
+            }
         }
+
+
 
 
         public async Task<IActionResult> Edit(string id)
@@ -159,7 +183,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, NhanVienVM nhanVien)
         {
-            nhanVien.IdNhanVien = id;
+             id = nhanVien.IdNhanVien;
             if (ModelState.IsValid)
             {
                 var jsonContent = JsonConvert.SerializeObject(nhanVien);
@@ -168,12 +192,11 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                 var response = await _httpClient.PutAsync($"{ApiBaseUrl}/{id}", content);
                 if (response.IsSuccessStatusCode)
                 {
-                    TempData["SuccessMessage"] = "Sửa nhân viên thành công!";
-                    return RedirectToAction(nameof(Index));
+                    return Json(new { Success = true, Message = "Sửa nhân viên thành công!" });
                 }
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi sửa nhân viên.";
+                return Json(new { Success = false, Message = "Có lỗi xảy ra khi sửa nhân viên." });
             }
-            return View(nhanVien);
+            return Json(new { Success = false, Message = "Dữ liệu không hợp lệ." });
         }
 
         // POST: Admin/NhanVienss/DeleteConfirmed/5
