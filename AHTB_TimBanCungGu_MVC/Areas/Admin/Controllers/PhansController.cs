@@ -228,13 +228,17 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                     existingPhan.PhimID = phan.PhimID;
                     existingPhan.SoLuongTap = phan.SoLuongTap;
 
-                    // Lấy danh sách tất cả IDTap hiện có trong database để đảm bảo không bị trùng
-                    var existingTapIds = _context.Tap.Select(t => t.IDTap).ToList();
+                    // Lấy danh sách tất cả IDTap của phần phim hiện tại (dựa vào IDPhan)
+                    var existingTapIds = _context.Tap
+                        .Where(t => t.PhanPhim == phan.IDPhan)
+                        .Select(t => t.IDTap)
+                        .ToList();
 
                     // Chỉ thêm tập mới nếu SoLuongTap tăng
                     int currentEpisodeCount = existingPhan.Tap.Count;
                     if (phan.SoLuongTap > currentEpisodeCount)
                     {
+                        // Thêm tập mới nếu số lượng tăng
                         for (int i = currentEpisodeCount + 1; i <= phan.SoLuongTap; i++)
                         {
                             string newIDTap;
@@ -259,7 +263,15 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                             existingTapIds.Add(newIDTap);  // Thêm vào danh sách IDTap đã tạo
                         }
                     }
+                    else if (phan.SoLuongTap < currentEpisodeCount)
+                    {
+                        // Xóa các tập dư thừa nếu số lượng giảm
+                        var tapsToDelete = existingPhan.Tap
+                            .Where(t => t.SoTap > phan.SoLuongTap)
+                            .ToList();
 
+                        _context.Tap.RemoveRange(tapsToDelete);  // Xóa các tập thừa
+                    }
                     // Lưu thay đổi
                     _context.Update(existingPhan);
                     await _context.SaveChangesAsync();
@@ -286,9 +298,6 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             return View(phan);
         }
-
-
-
 
         // GET: Admin/Phans/Delete/5
         public async Task<IActionResult> Delete(string id)

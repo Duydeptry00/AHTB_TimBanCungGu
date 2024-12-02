@@ -38,15 +38,20 @@
                             }
                         </td>
                         <td>
-                            @if (item.TrangThai == "Đã xử lý")
+                            @if(item.TrangThai == "Đã xử lý")
                             {
-                                <button class="btn btn-success btn-sm btn-confirm"
-                                        data-id="@item.IDReport"
-                                        disabled>
+                                <button class="btn btn-success btn-sm btn-confirm" data-id="@item.IDReport" disabled>
                                     Xác nhận
                                 </button>
                             }
-                     </td>
+                            else
+                            {
+                                <button class="btn btn-success btn-sm btn-confirm" data-id="@item.IDReport">
+                                    Xác nhận
+                                </button>
+                            }
+
+                        </td>
                  </tr>
                 }
             </tbody>
@@ -136,17 +141,17 @@
             text-decoration: none;
         }
 </style>
-<!-- SweetAlert2 Library -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Lấy danh sách các button "Xác nhận"
-        const confirmButtons = document.querySelectorAll(".btn-confirm");
+        // Lắng nghe sự kiện click vào các nút có class "btn-confirm"
+        document.querySelectorAll(".btn-confirm").forEach(button => {
+            button.addEventListener("click", function (event) {
+                const reportId = event.target.getAttribute("data-id");
 
-        confirmButtons.forEach(button => {
-            button.addEventListener("click", function () {
-                const reportId = this.getAttribute("data-id");
-
+                // Hiển thị SweetAlert2 xác nhận hành động
                 Swal.fire({
                     title: 'Bạn có chắc chắn?',
                     text: "Bạn có muốn xác nhận báo cáo này không?",
@@ -158,22 +163,29 @@
                     cancelButtonText: 'Hủy'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Gửi request xác nhận
-                        const form = document.createElement("form");
-                        form.method = "post";
-                        form.action = "/Admin/BaoCaoNguoiDungs/XacNhan"; // Đường dẫn action
-
-                        const input = document.createElement("input");
-                        input.type = "hidden";
-                        input.name = "id";
-                        input.value = reportId;
-
-                        form.appendChild(input);
-                        document.body.appendChild(form);
-                        form.submit();
+                        // Nếu người dùng xác nhận, gửi yêu cầu xác nhận qua Ajax
+                        $.ajax({
+                            url: "/Admin/BaoCaoNguoiDungs/XacNhan", // Đường dẫn đến action
+                            type: "POST",
+                            data: { id: reportId }, // Truyền ID báo cáo
+                            success: function (response) {
+                                // Xử lý khi xác nhận thành công (nếu có)
+                                Swal.fire('Xác nhận thành công!', '', 'success');
+                                // Tải lại trang sau khi xác nhận thành công
+                                location.reload();
+                            },
+                            error: function (xhr, status, error) {
+                                // Xử lý khi có lỗi
+                                Swal.fire('Có lỗi xảy ra!', '', 'error');
+                            }
+                        });
                     }
                 });
             });
         });
     });
+
 </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- SweetAlert2 Library -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

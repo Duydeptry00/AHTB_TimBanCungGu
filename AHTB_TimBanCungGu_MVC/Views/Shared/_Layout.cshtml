@@ -219,8 +219,8 @@
     @if (string.IsNullOrWhiteSpace(hoten))
     {
         <script type="text/javascript">
-            if (!window.location.href.includes("/ThongTinCaNhans/Edit/")) {
-                // Thực hiện hiển thị thông báo nếu URL chứa "/ThongTinCaNhans/Edit/"
+            if (!window.location.href.includes("/CapNhatThongTin/Edit/")) {
+                // Thực hiện hiển thị thông báo nếu URL chứa "/CapNhatThongTin/Edit/"
                 Swal.fire({
                     title: 'Bạn bị thiếu thông tin!',
                     text: 'Vui lòng cập nhật để sử dụng hệ thống!',
@@ -230,7 +230,7 @@
                     timerProgressBar: true // Hiển thị thanh tiến trình
                 }).then((result) => {
                     // Chuyển hướng sau khi thông báo tự động kết thúc
-                    window.location.href = '/ThongTinCaNhans/Edit/@UserName';
+                    window.location.href = '/CapNhatThongTin/Edit/@UserName';
                 });
             }
         </script>
