@@ -34,7 +34,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             var latestItems = _context.LichSuXem
                 .Include(l => l.Phim) // Bao gồm thông tin Phim
                 .Include(l => l.User)
-                .Where(p => p.NguoiDungXem == Usename.UsID)
+                .Where(p => p.NguoiDungXem == Usename.UsID && p.Phim.TrangThai != "Ẩn")
                 .OrderByDescending(x => x.ThoiGianXem) // Sắp xếp giảm dần theo Thời Gian Xem
                 .Take(8) // Lấy 8 phần tử gần nhất
                 .ToList(); // Chuyển thành danh sách

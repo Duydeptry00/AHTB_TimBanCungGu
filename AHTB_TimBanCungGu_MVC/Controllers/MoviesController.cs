@@ -42,8 +42,9 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 const int itemsPerPage = 8;
 
                 IQueryable<Phim> moviesQuery = _context.Phim
-        .Include(m => m.TheLoai)
-        .AsNoTracking().Where(m => m.NgayPhatHanh <= DateTime.Now); // Giúp cải thiện hiệu suất
+            .Include(m => m.TheLoai)
+            .AsNoTracking()
+            .Where(m => m.NgayPhatHanh <= DateTime.Now && m.TrangThai != "Ẩn"); // Lọc bỏ phim có trạng thái ẩn
 
 
                 if (genre != "Tất cả")
