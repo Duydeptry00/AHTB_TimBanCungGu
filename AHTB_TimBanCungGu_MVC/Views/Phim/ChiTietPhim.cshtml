@@ -27,8 +27,8 @@
 
     /* Hình ảnh phim */
     .movie-poster {
-        width: 100%;
-        max-width: 400px;
+        width: 400px;
+        height: 600px;
         border-radius: 8px;
         object-fit: cover;
     }
@@ -36,21 +36,22 @@
     /* Thông tin phim */
     .movie-info {
         flex: 1;
-        color: #ddd;
+        margin-top: -130px;
     }
 
         .movie-info h2 {
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: #FF4500;
         }
 
         .movie-info p {
-            font-size: 1rem;
+            font-size: 1.3rem;
             color: #ccc;
         }
 
         .movie-info strong {
             color: #FF4500;
+            font-size: 1.3em;
         }
 
     /* Nút Xem Phim và Yêu Thích */
@@ -67,7 +68,7 @@
         border: none;
         color: white;
         padding: 8px 16px;
-        font-size: 14px;
+        font-size: 19px;
         border-radius: 5px;
         cursor: pointer;
         text-align: center;
@@ -157,6 +158,13 @@
         font-weight: bold;
         color: #f8f9fa;
     }
+    .trailer{
+        display: flex;
+        max-width: 100%;
+        overflow: hidden;
+        justify-content: center;
+        align-items: center;
+    }
 </style>
 
 <div class="container">
@@ -185,11 +193,11 @@
                         <h4>Phần @phan.SoPhan (@phan.SoLuongTap Tập)</h4>
                     }
                 }
-                <strong>Diễn Viên:</strong> @Model.DienVien<br>
+                <strong>Diễn viên:</strong> @Model.DienVien<br>
+                <strong>Thể loại:</strong> @Html.DisplayFor(model => model.TheLoai.TenTheLoai)<br />
                 <strong>Ngày phát hành:</strong> @Model.NgayPhatHanh.ToString("dd/MM/yyyy")<br>
-                <strong>Mô tả:</strong> @Model.MoTa<br />
-                <strong>Dạng Phim:</strong> <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
-                <strong>Đánh giá:</strong> <b>@Model.DanhGia / 10</b>
+                <strong>Đánh giá:</strong> @Model.DanhGia / 10<br />
+                <strong>Mô tả:</strong>@Model.MoTa
             </p>
             <div class="btn-container">
                 @if (ViewBag.IsSingleMovie)
@@ -224,10 +232,20 @@
                         }
                     </button>
                 </form>
+                
             </div>
+            
         </div>
+       
     </div>
-
+    <br />
+    @if (!string.IsNullOrEmpty(Model.TrailerURL))
+{
+    <h2 style="color:white">Trailer</h2>
+    <div class="trailer">
+        <iframe width="850" height="355" src="https://www.youtube.com/embed/@Model.TrailerURL" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+}
     <div class="recommended-section">
         <h2 style="color:white">Phim cùng thể loại</h2>
         <div class="row">
