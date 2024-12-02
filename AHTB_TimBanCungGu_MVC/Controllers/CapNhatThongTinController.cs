@@ -23,7 +23,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
 
             if (!string.IsNullOrEmpty(token))
@@ -31,7 +30,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 var userName = HttpContext.Session.GetString("TempUserName");
 
                 var thongTinCaNhan = await _context.ThongTinCN
-              .Include(t => t.User)              // Nạp thông tin người dùng
+              .Include(t => t.User) 
+               .ThenInclude(u => u.HoaDon)// Nạp thông tin người dùng
               .Include(t => t.AnhCaNhan)         // Nạp ảnh cá nhân
               .FirstOrDefaultAsync(t => t.User.UserName == userName);
 
@@ -39,8 +39,68 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 {
                     return NotFound();
                 }
-                ViewBag.ThongTinCaNhan = userName;
-                return View(thongTinCaNhan); // Truyền một đối tượng duy nhất
+                if (thongTinCaNhan == null)
+                {
+                    // Nếu không tìm thấy thông tin cá nhân, điều hướng đến trang đăng nhập
+                    ViewBag.Message = "Không tìm thấy thông tin người dùng.";
+                    return RedirectToAction("Login", "LoginvsRegister");
+                }
+
+                var currentDate = DateTime.Now; // Ngày hiện tại
+
+                if (thongTinCaNhan.IsPremium)
+                {
+                    // Người dùng có trạng thái Premium, kiểm tra gói còn hạn
+                    var activePremium = thongTinCaNhan.User.HoaDon
+                        .Where(h => h.TrangThai == "Đã thanh toán" && h.NgayHetHan > currentDate)
+                        .Select(h => new
+                        {
+                            TenGoiPremium = h.GoiPremium, // Lấy tên gói Premium
+                            NgayHetHan = h.NgayHetHan,
+                        })
+                        .FirstOrDefault();
+                    if (activePremium == null)
+                    {
+                        // Hết hạn hoặc không có Premium
+                        if (thongTinCaNhan.IsPremium)
+                        {
+                            thongTinCaNhan.IsPremium = false;
+                            _context.Update(thongTinCaNhan);
+                            await _context.SaveChangesAsync();
+                        }
+
+                        ViewBag.Message = "Người dùng không có Premium";
+                    }
+                    if (activePremium != null)
+                    {
+                      
+                        // Nếu có gói Premium hợp lệ
+                        ViewBag.Message = null;
+                        ViewBag.TenGoiPremium = activePremium.TenGoiPremium;
+                        ViewBag.NgayHetHan = activePremium.NgayHetHan;
+                    }
+                    else
+                    {
+                      
+                        // Nếu Premium đã hết hạn
+                        ViewBag.Message = "Người dùng không có Premium";
+                        ViewBag.TenGoiPremium = null;
+                        ViewBag.NgayHetHan = null;
+                    }
+                }
+                else
+                {
+                   
+                    // Người dùng không phải là Premium
+                    ViewBag.Message = "Người dùng không có Premium";
+                    ViewBag.TenGoiPremium = null;
+                    ViewBag.NgayHetHan = null;
+                }
+
+                // Trả về View với thông tin cá nhân
+                ViewBag.CaNhan = userName;
+                ViewBag.ThongTinCaNhan = thongTinCaNhan;
+                return View(thongTinCaNhan); ;
             }
             else
             {
@@ -48,10 +108,12 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 ViewBag.Message = "Bạn chưa đăng nhập.";
                 return RedirectToAction("Login", "LoginvsRegister");
             }
+         
         }
 
+
         // GET: ThongTinCaNhans/Edit/5
-        public async Task<IActionResult> Edit(string? id)
+        public async Task<IActionResult> Edit(string id)
         {
             // Lấy JWT token từ Session
             var token = HttpContext.Session.GetString("JwtToken");
@@ -98,38 +160,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             {
                 return Unauthorized();
             }
-         
 
-            var userInfo = await _context.ThongTinCN
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(t => t.User.UserName == userName);
-
-            if (userInfo != null)
-            {
-                // Truyền thông tin người dùng vào ViewBag
-                ViewBag.HoTen = userInfo.HoTen;
-                ViewBag.GioiTinh = userInfo.GioiTinh;
-                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
-            }
-            // Kiểm tra lỗi validation ngày sinh và số điện thoại trước khi tiếp tục
-            if (thongTinCaNhan.NgaySinh >= DateTime.Now)
-            {
-                ModelState.AddModelError("NgaySinh", "Ngày sinh phải nhỏ hơn ngày hiện tại.");
-            }
-
-            if (!string.IsNullOrEmpty(thongTinCaNhan.SoDienThoai) &&
-                (thongTinCaNhan.SoDienThoai.Length < 10 || thongTinCaNhan.SoDienThoai.Length > 11))
-            {
-                ModelState.AddModelError("SoDienThoai", "Số điện thoại phải có độ dài từ 10 đến 11 ký tự.");
-            }
-
-            if (string.IsNullOrEmpty(thongTinCaNhan.HoTen))
-            {
-                ModelState.AddModelError("HoTen", "Vui lòng nhập họ tên");
-            }
-
-            // Nếu có lỗi validation, trả lại form với các lỗi
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 try
                 {
@@ -155,7 +187,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         ViewBag.ErrorMessage = "Bạn chỉ có thể tải tối đa 7 ảnh cá nhân.";
                         return View(existingProfile); // Trả về lại trang Edit với thông báo lỗi
                     }
-
+                   
                     // Lưu ảnh nếu có file được chọn và nếu chưa đạt số lượng ảnh tối đa
                     if (AnhCaNhanFile != null && AnhCaNhanFile.Length > 0 && existingProfile.AnhCaNhan.Count < 7)
                     {
@@ -187,7 +219,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     await _context.SaveChangesAsync();
 
                     // Trả về lại cùng trang Edit sau khi lưu thay đổi
-                    return View(existingProfile);
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {

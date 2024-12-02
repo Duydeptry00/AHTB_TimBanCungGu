@@ -1,4 +1,5 @@
 ﻿@model AHTB_TimBanCungGu_API.Models.ThongTinCaNhan
+
 @{
     ViewData["Title"] = "Chỉnh sửa Thông tin";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -43,7 +44,22 @@
 
                     <div class="info-item">
                         <label class="info-label">Premium:</label>
-                        <span class="info-value">@(Model.IsPremium ? "Có" : "Không")</span>
+                        <span class="info-value">
+                            @if (ViewBag.Message != null)
+                            {
+                                <div class="alert alert-warning">
+                                    @ViewBag.Message
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-success">
+                                    Gói Premium: <strong>@ViewBag.TenGoiPremium</strong><br />
+                                    Ngày hết hạn: @ViewBag.NgayHetHan.ToString("dd/MM/yyyy")
+                                </div>
+                            }
+
+                          </span>
                     </div>
 
                     <div class="info-item">
@@ -79,7 +95,7 @@
                 </div>
 
                 <div class="text-center mt-4">
-                    <a href="@Url.Action("Edit", "ThongTinCaNhans", new { id = ViewBag.ThongTinCaNhan })" class="btn custom-btn">Chỉnh sửa thông tin</a>
+                    <a href="@Url.Action("Edit", "ThongTinCaNhans", new { id = ViewBag.CaNhan })" class="btn custom-btn">Chỉnh sửa thông tin</a>
                 </div>
             </form>
         </div>

@@ -7,12 +7,18 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <link rel="stylesheet" href="~/css/capnhatthongtin.css">
-
 <div class="container mt-5">
     <!-- Phần tiêu đề -->
     <div class="text-center mb-4">
         <h1>Chỉnh sửa Thông tin Cá nhân</h1>
     </div>
+    <style>
+       
+
+        .custom-swal-popup {
+            margin-top: 70px !important; /* Đảm bảo margin-top cho popup */
+        }
+    </style>
 
     <!-- Bố cục chính -->
     <div class="card shadow-lg custom-card">
@@ -44,7 +50,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Ngày sinh:</label>
-                            <input asp-for="NgaySinh" type="datetime" class="form-control" />
+                            <input asp-for="NgaySinh" type="date" class="form-control" id="ngaySinh" />
                             <span asp-validation-for="NgaySinh" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
@@ -121,17 +127,22 @@
     @if (ViewBag.ErrorMessage != null)
     {
         <text>
-            Swal.fire({
-                icon: 'error',
+                Swal.fire({
+                    icon: 'error',
                 title: 'Lỗi',
                 text: 'Bạn chỉ được tối đa là 7 ảnh',
                 position: 'top-end',
                 toast: true,
                 showConfirmButton: false,
-                timer: 3000
-            });
+                timer: 3000,
+                customClass: {
+                    container: 'custom-swal-container',
+                popup: 'custom-swal-popup'
+                    }
+                });
         </text>
     }
+
 
         // Hiển thị nút xóa khi hover vào ảnh
         document.querySelectorAll('.image-frame').forEach(item => {
@@ -171,4 +182,8 @@
             $('.photo-grid').html(data);
         });
     }
+    // Lấy ngày hiện tại
+    const today = new Date().toISOString().split('T')[0];
+    // Gán giá trị max cho input Ngày sinh
+    document.getElementById('ngaySinh').setAttribute('max', today);
 </script>

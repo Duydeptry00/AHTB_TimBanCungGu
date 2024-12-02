@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using MongoDB.Driver;
+using static AHTB_TimBanCungGu_MVC.Service.CountSwipService;
 
 namespace AHTB_TimBanCungGu_MVC.Controllers
 {
@@ -18,12 +20,16 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IVnPayService _vnPayservice;
         private readonly DBAHTBContext _context;
-
+        private readonly IMongoCollection<UserSwipeInfo> _userSwipes;
         public ThanhToanController(ILogger<HomeController> logger, IVnPayService vnPayservice, DBAHTBContext context)
         {
             _logger = logger;
             _vnPayservice = vnPayservice;
             _context = context;
+            var connectionString = "mongodb://localhost:27017";  // MongoDB connection string
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase("AHTBdb");  // Database name
+            _userSwipes = database.GetCollection<UserSwipeInfo>("SoLuotVuot");
         }
 
         [HttpGet]
@@ -83,18 +89,48 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         }
 
 
-        public IActionResult PaymentSuccess()
+        public async Task<IActionResult> PaymentSuccess()
         {
-            // Lấy JWT token từ Session
+            // Lấy JWT token và tên người dùng từ Session
             var token = HttpContext.Session.GetString("JwtToken");
+            var userName = HttpContext.Session.GetString("TempUserName");
 
+            if (string.IsNullOrEmpty(userName))
+            {
+                ViewBag.Message = "Bạn chưa đăng nhập.";
+                return RedirectToAction("Login", "LoginvsRegister");
+            }
+
+            // Tìm thông tin lượt vuốt trong MongoDB
+            var userSwipeInfo = await _userSwipes.Find(u => u.Uservuot == userName).FirstOrDefaultAsync();
+
+            if (userSwipeInfo != null)
+            {
+                // Nếu đã tồn tại, reset lượt vuốt và cập nhật ngày reset
+                userSwipeInfo.SwipesRemaining = 999; // Giá trị mặc định cho số lượt vuốt
+                userSwipeInfo.LastSwipeResetDate = DateTime.UtcNow.Date;
+                await _userSwipes.ReplaceOneAsync(u => u.Uservuot == userName, userSwipeInfo);
+            }
+            else
+            {
+                // Nếu không tồn tại, thêm mới thông tin lượt vuốt
+                var newSwipeInfo = new UserSwipeInfo
+                {
+                    Uservuot = userName,
+                    SwipesRemaining = 999,
+                    LastSwipeResetDate = DateTime.UtcNow.Date
+                };
+                await _userSwipes.InsertOneAsync(newSwipeInfo);
+            }
+
+            // Hiển thị trang thành công nếu có token
             if (!string.IsNullOrEmpty(token))
             {
                 return View();
             }
             else
             {
-                // Nếu không có token, có thể chuyển đến trang đăng nhập
+                // Nếu không có token, chuyển đến trang đăng nhập
                 ViewBag.Message = "Bạn chưa đăng nhập.";
                 return RedirectToAction("Login", "LoginvsRegister");
             }

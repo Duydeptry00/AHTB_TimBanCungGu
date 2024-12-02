@@ -1,5 +1,4 @@
-﻿    
-using AHTB_TimBanCungGu_API.Data;
+﻿using AHTB_TimBanCungGu_API.Data;
 using AHTB_TimBanCungGu_API.Models; // Adjust the namespace as necessary
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,24 +19,22 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> IndexAsync()
+        public IActionResult Index()
         {
-            var userName = HttpContext.Session.GetString("TempUserName");
+            var username = HttpContext.Session.GetString("TempUserName");
 
-            var userInfo = await _context.ThongTinCN
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(t => t.User.UserName == userName);
-
-            if (userInfo != null)
+            // Kiểm tra nếu người dùng chưa đăng nhập
+            if (string.IsNullOrEmpty(username))
             {
-                // Truyền thông tin người dùng vào ViewBag
-                ViewBag.HoTen = userInfo.HoTen;
-                ViewBag.GioiTinh = userInfo.GioiTinh;
-                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+                // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
+                return RedirectToAction("Login", "LoginvsRegister");
             }
             // Lấy các bản ghi Lịch Sử Xem mới nhất, bao gồm thông tin Phim, sắp xếp theo thời gian xem giảm dần
+            var Usename = _context.Users.FirstOrDefault(p => p.UserName == username);
             var latestItems = _context.LichSuXem
                 .Include(l => l.Phim) // Bao gồm thông tin Phim
+                .Include(l => l.User)
+                .Where(p => p.NguoiDungXem == Usename.UsID)
                 .OrderByDescending(x => x.ThoiGianXem) // Sắp xếp giảm dần theo Thời Gian Xem
                 .Take(8) // Lấy 8 phần tử gần nhất
                 .ToList(); // Chuyển thành danh sách
@@ -46,43 +43,48 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             return View(latestItems);
         }
         [HttpPost]
-        public async Task<IActionResult> LuuLichSuXemAsync(string phimId)
+        public IActionResult LuuLichSuXem(string phimId)
         {
             if (string.IsNullOrEmpty(phimId))
             {
                 return BadRequest("ID phim không hợp lệ.");
             }
-            var userName = HttpContext.Session.GetString("TempUserName");
 
-            var userInfo = await _context.ThongTinCN
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(t => t.User.UserName == userName);
+            var username = HttpContext.Session.GetString("TempUserName");
 
-            if (userInfo != null)
+            // Kiểm tra nếu người dùng chưa đăng nhập
+            if (string.IsNullOrEmpty(username))
             {
-                // Truyền thông tin người dùng vào ViewBag
-                ViewBag.HoTen = userInfo.HoTen;
-                ViewBag.GioiTinh = userInfo.GioiTinh;
-                ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
+                return RedirectToAction("Login", "LoginvsRegister"); // Chuyển hướng đến trang đăng nhập
             }
+
+            // Lấy thông tin người dùng từ username
+            var user = _context.Users.FirstOrDefault(u => u.UserName == username);
+            if (user == null)
+            {
+                return NotFound("Người dùng không tồn tại.");
+            }
+
+            // Lấy thông tin phim từ ID
             var phim = _context.Phim.FirstOrDefault(p => p.IDPhim == phimId);
             if (phim == null)
             {
                 return NotFound("Phim không tồn tại.");
             }
 
+            // Tạo bản ghi lịch sử xem
             var lichSuXem = new LichSuXem
             {
-
+                NguoiDungXem = user.UsID, // Gán UsID của người dùng
                 PhimDaXem = phimId,
                 ThoiGianXem = DateTime.Now
             };
 
             try
             {
-                _context.LichSuXem.Add(lichSuXem);
+                    _context.LichSuXem.Add(lichSuXem);
                 _context.SaveChanges();
-                return Ok();  // Không trả về thông báo nào
+                return Ok();  // Trả về phản hồi thành công
             }
             catch (Exception ex)
             {

@@ -2,8 +2,6 @@
 @model List<AHTB_TimBanCungGu_API.Models.LichSuXem>
 
 @{
-    Layout = null;
-
     var latestItems = Model
         .OrderByDescending(x => x.ThoiGianXem) // This will first sort by date, then by time automatically
         .Take(8)

@@ -38,12 +38,16 @@
                             }
                         </td>
                         <td>
-                            <button class="btn btn-success btn-sm btn-confirm"
-                                    data-id="@item.IDReport">
-                                Xác nhận
-                            </button>
-                        </td>
-                    </tr>
+                            @if (item.TrangThai == "Đã xử lý")
+                            {
+                                <button class="btn btn-success btn-sm btn-confirm"
+                                        data-id="@item.IDReport"
+                                        disabled>
+                                    Xác nhận
+                                </button>
+                            }
+                     </td>
+                 </tr>
                 }
             </tbody>
         </table>
