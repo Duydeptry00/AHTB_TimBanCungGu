@@ -16,10 +16,130 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch Sử Xem Phim</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="~/css/lichsuxem.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            font-size: 2.5em;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: calc(290px * 4 + 30px); /* 4 mục (290px mỗi mục) + khoảng cách giữa các mục */
+            max-width: 100%;
+            overflow: hidden; /* Ẩn các mục nằm ngoài khung */
+            margin: 0 auto; /* Căn giữa container */
+        }
+
+        .movie-list {
+            display: flex;
+            gap: 10px; /* Khoảng cách giữa các mục */
+            transition: transform 0.3s ease-in-out;
+            width: max-content; /* Đảm bảo danh sách đủ lớn để cuộn */
+        }
+
+
+        .movie-item {
+            flex-shrink: 0; /* Không cho mục bị thu nhỏ */
+            width: 288px; /* Chiều rộng cố định */
+            height: auto; /* Chiều cao tự động theo nội dung */
+            background-color: #1E1E1E;
+            border-radius: 15px;
+            padding: 20px;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+        }
+
+            .movie-item:hover {
+                box-shadow: 0px 0px 20px 5px rgba(255, 255, 255, 0.2);
+            }
+
+            .movie-item img {
+                width: 250px;
+                height: 410px;
+                border-radius: 10px; /* Nếu muốn thêm bo tròn cho ảnh */
+            }
+
+        .movie-details {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .movie-title {
+            font-size: 1.5em;
+            color: white;
+            white-space: nowrap; /* Ngăn không cho tên phim xuống dòng */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Hiển thị dấu ba chấm nếu tên phim quá dài */
+            width: 100%; /* Đảm bảo tên phim không vượt quá chiều rộng của phần tử chứa */
+            max-width: 250px; /* Giới hạn chiều rộng của tên phim */
+        }
+
+        .movie-date {
+            font-size: 1.2em;
+            color: #B0B0B0;
+            margin-top: 5px;
+            flex-grow: 1; /* Đảm bảo thời gian xem luôn nằm dưới cùng */
+        }
+
+        .carousel-controls {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+            padding: 0 20px;
+        }
+
+        .control-button {
+            position: absolute;
+            top: 50%; /* Đưa nút lên giữa theo chiều dọc */
+            transform: translateY(-50%); /* Căn giữa theo chiều dọc */
+
+            background: transparent; /* Xóa nền trắng */
+            font-size: 40px; /* Làm cho nút lớn hơn */
+            border: none;
+            color: #BB86FC;
+            padding: 15px; /* Tăng kích thước nút */
+            cursor: pointer;
+            z-index: 1; /* Đảm bảo nút hiển thị phía trên */
+        }
+
+
+        #prevButton {
+            left: 31px; /* Đặt nút này cách cạnh trái 10px */
+        }
+
+        #nextButton {
+            right: 1px; /* Đặt nút này cách cạnh phải 10px */
+        }
+
+        .movie-item.filler {
+            visibility: hidden; /* Ẩn mục trống */
+            pointer-events: none; /* Không cho tương tác */
+        }
+
+        ul {
+            list-style-type: none; /* Xóa dấu đầu dòng mặc định */
+            padding: 0;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Lịch Sử Xem Phim</h1>
+    <br />
+    <br />
+    <br />
     <div class="carousel-container">
         <ul id="movieList" class="movie-list">
             @foreach (var item in latestItems)
@@ -27,8 +147,8 @@
                 <li class="movie-item" data-url="@Url.Action("ChiTietPhim", "Phim", new { id = item.PhimDaXem })">
                     <img src="~/Uploads/@item.Phim.HinhAnh" alt="@item.Phim.TenPhim" />
                     <div class="movie-details">
-                        <p class="movie-title">Phim: @item.Phim.TenPhim</p>
-                        <p class="movie-date">Thời gian xem: @item.ThoiGianXem.ToString("yyyy-MM-dd HH:mm")</p>
+                        <p class="movie-title">@item.Phim.TenPhim</p>
+                        <p class="movie-date">Thời gian: @item.ThoiGianXem.ToString("dd-MM-yyyy HH:mm")</p>
                     </div>
                 </li>
             }
@@ -55,7 +175,7 @@
                 window.location.href = redirectUrl;
             });
         });
-        const itemsPerPage = 3;
+        const itemsPerPage = 4;
         let currentIndex = 0;
 
         function updateCarousel() {
