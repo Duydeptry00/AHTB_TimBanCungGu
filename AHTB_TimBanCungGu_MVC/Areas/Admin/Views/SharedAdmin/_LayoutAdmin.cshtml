@@ -1,6 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
 @{
+    string UserName = HttpContextAccessor.HttpContext.Session.GetString("TempUserName") ?? null;
+    string Avt = HttpContextAccessor.HttpContext.Session.GetString("Avt") ?? null;
+    string User = HttpContextAccessor.HttpContext.Session.GetString("User") ?? null;
     var tempRole = HttpContextAccessor.HttpContext.Session.GetString("TempRole") ?? null;
 }
 <!DOCTYPE html>
@@ -359,15 +362,15 @@
                     <!-- Avatar Image -->
                     <div class="dropdown">
                         <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                           Xin Chào! @HttpContextAccessor.HttpContext.Session.GetString("TempUserName")
-                            <img src="@Url.Content($"~/images/{HttpContextAccessor.HttpContext.Session.GetString("TempUserName") ?? "defaultAvatar"}.jpg")"
+                            Xin Chào! @User
+                            <img src="@Url.Content($"~/Uploads/{Avt}")"
                                  alt="Avatar"
                                  class="rounded-circle"
                                  style="width: 30px; height: 30px;"
-                                 onerror="this.onerror=null; this.src='@Url.Content("~/images/defaultAvatar.jpg")';">
+                                 onerror="this.onerror=null; this.src='@Url.Content("~/Uploads/AnhCN.jpg")';">
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="#">Tài khoản</a></li>
+                            <li><a class="dropdown-item" asp-area="Admin" asp-controller="Thongtin" asp-action="ThongTinNV" asp-route-id="@UserName">Tài khoản</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Logout">Đăng xuất</a></li>
                         </ul>

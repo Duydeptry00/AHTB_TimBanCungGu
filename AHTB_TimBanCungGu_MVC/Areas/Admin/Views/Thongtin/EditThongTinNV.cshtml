@@ -1,9 +1,10 @@
 ﻿@model AHTB_TimBanCungGu_API.Models.ThongTinCaNhan
 
 @{
-    ViewData["Title"] = "Chỉnh sửa Thông tin";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "EditThongTinNV";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
 }
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <link rel="stylesheet" href="~/css/capnhatthongtin.css">
@@ -13,7 +14,7 @@
         <h1>Chỉnh sửa Thông tin Cá nhân</h1>
     </div>
     <style>
-       
+
 
         .custom-swal-popup {
             margin-top: 70px !important; /* Đảm bảo margin-top cho popup */
@@ -23,7 +24,7 @@
     <!-- Bố cục chính -->
     <div class="card shadow-lg custom-card">
         <div class="card-body">
-            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <form asp-action="EditThongTinNV" method="post" enctype="multipart/form-data">
                 <!-- Hidden field cho ID Profile -->
                 <input type="hidden" asp-for="IDProfile" />
 
@@ -68,11 +69,6 @@
                             <span asp-validation-for="DiaChi" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label font-weight-bold">Mô tả:</label>
-                            <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
-                            <span asp-validation-for="MoTa" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
                             <label class="form-label font-weight-bold">Thêm ảnh cá nhân:</label>
                             <input type="file" name="AnhCaNhanFile" id="AnhCaNhanFile" class="form-control" />
                         </div>
@@ -114,7 +110,7 @@
                 <!-- Nút lưu và quay lại -->
                 <div class="text-center mt-4">
                     <input type="submit" value="Lưu" class="btn btn-primary" />
-                    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                    <a asp-action="ThongTinNV" class="btn btn-secondary">Quay lại</a>
                 </div>
             </form>
         </div>
@@ -127,19 +123,19 @@
     @if (ViewBag.ErrorMessage != null)
     {
         <text>
-                Swal.fire({
-                    icon: 'error',
-                title: 'Lỗi',
-                text: 'Bạn chỉ được tối đa là 7 ảnh',
-                position: 'top-end',
-                toast: true,
-                showConfirmButton: false,
-                timer: 3000,
-                customClass: {
-                    container: 'custom-swal-container',
-                popup: 'custom-swal-popup'
-                    }
-                });
+                        Swal.fire({
+                            icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Bạn chỉ được tối đa là 7 ảnh',
+                        position: 'top-end',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: 3000,
+                        customClass: {
+                            container: 'custom-swal-container',
+                        popup: 'custom-swal-popup'
+                            }
+                        });
         </text>
     }
 
@@ -155,6 +151,7 @@
         });
 
     function deleteImage(id) {
+        console.log("Id:", id);
         Swal.fire({
             title: "Bạn có chắc chắn muốn xóa ảnh này?",
             icon: "warning",
@@ -163,7 +160,8 @@
             cancelButtonText: "Hủy"
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post(`/ThongTinCaNhans/DeleteImage/${id}`, function () {
+                
+                $.post(`/Admin/Thongtin/DeleteImage/${id}`, function () {
                     // Xóa phần tử ảnh khỏi giao diện
                     $(`#image-${id}`).remove();
 
@@ -178,7 +176,7 @@
 
     // Function to reload images dynamically
     function loadImages() {
-        $.get('@Url.Action("LoadImages", "ThongTinCaNhans", new { id = Model.IDProfile })', function (data) {
+        $.get('@Url.Action("LoadImages", "Thongtin", new { id = Model.IDProfile })', function (data) {
             $('.photo-grid').html(data);
         });
     }

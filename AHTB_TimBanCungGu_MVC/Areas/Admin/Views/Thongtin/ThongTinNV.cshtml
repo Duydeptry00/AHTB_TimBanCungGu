@@ -1,0 +1,81 @@
+﻿@model AHTB_TimBanCungGu_API.Models.ThongTinCaNhan
+@{
+    ViewData["Title"] = "ThongTinNV";
+    Layout = "~/Areas/Admin/Views/SharedAdmin/_LayoutAdmin.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<link rel="stylesheet" href="~/css/capnhatthongtin.css">
+
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h1>Chỉnh sửa Thông tin Cá nhân</h1>
+    </div>
+
+    <div class="card shadow-lg custom-card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                <div class="info-section">
+                    <div class="info-item">
+                        <label class="info-label">Email:</label>
+                        <span class="info-value">@Model.Email</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Họ tên:</label>
+                        <span class="info-value">@Model.HoTen</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Giới tính:</label>
+                        <span class="info-value">@Model.GioiTinh</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Ngày sinh:</label>
+                        <span class="info-value">@Model.NgaySinh?.ToString("dd/MM/yyyy")</span>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Số điện thoại:</label>
+                        <span class="info-value">@Model.SoDienThoai</span>
+                    </div>
+
+
+
+                    <div class="info-item">
+                        <label class="info-label">Địa chỉ:</label>
+                        <span class="info-value">@Model.DiaChi</span>
+                    </div>
+
+                </div>
+
+                <div class="photo-section">
+                    <h4 class="text-center mt-4">Ảnh Cá nhân</h4>
+                    @if (Model.AnhCaNhan != null && Model.AnhCaNhan.Any())
+                    {
+                        <div class="photo-grid">
+                            @foreach (var anh in Model.AnhCaNhan)
+                            {
+                                <div class="photo-item">
+                                    <div class="image-frame">
+                                        <img src="@Url.Content("~/uploads/" + anh.HinhAnh)" alt="Ảnh cá nhân" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-center">Chưa có ảnh cá nhân.</p>
+                    }
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="@Url.Action("EditThongTinNV", "Thongtin", new { id = ViewBag.CaNhan })" class="btn custom-btn">Chỉnh sửa thông tin</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

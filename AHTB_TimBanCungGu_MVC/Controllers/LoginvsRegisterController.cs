@@ -75,6 +75,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                             HttpContext.Session.SetString("UserType", tokenResponse.UserType);
                             HttpContext.Session.SetString("TempUserName", userName);
                             HttpContext.Session.SetString("User", tokenResponse.NameUser);
+                        
+                                HttpContext.Session.SetString("Avt", tokenResponse.Avt2);
+                            
+                            
                             var nguoiTimDoiTuong = await _context.Users.FirstOrDefaultAsync(x => x.UserName == userName);
                             if (nguoiTimDoiTuong == null)
                             {

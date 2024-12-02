@@ -16,5 +16,7 @@ namespace AHTB_TimBanCungGu_API.ViewModels
         public string UserType { get; set; }
         [JsonPropertyName("nameUser")]
         public string NameUser { get; set; }
+        [JsonPropertyName("avt")]
+        public string Avt2 { get; set; }
     }
 }

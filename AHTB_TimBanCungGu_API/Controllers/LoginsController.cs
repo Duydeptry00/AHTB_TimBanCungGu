@@ -114,16 +114,20 @@ namespace AHTB_TimBanCungGu_API.Controllers
         public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
         {
             request.UserType = "khach"; // Mặc định là khách nếu không có quyền
-
+            var Avt2 = _context.AnhCaNhan
+                .Where(N1 => N1.ThongTinCN.User.UserName == request.UserName)
+                .Select(N1 => N1.HinhAnh)
+                .FirstOrDefault();
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
                 return BadRequest("Username và password không để trống.");
 
             // Tìm người dùng theo tên người dùng hoặc email
             var user = await _context.Users
                 .Include(u => u.ThongTinCN)
+                .Include(a => a.ThongTinCN.AnhCaNhan)
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName ||
                                           u.ThongTinCN.Email == request.UserName);
-
+            
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 return Unauthorized("Thông tin đăng nhập không hợp lệ.");
 
@@ -160,7 +164,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return Ok(new { token = tokenString, expiration = expiration , userType = request.UserType, nameUser = user.ThongTinCN.HoTen});
+            return Ok(new { token = tokenString, expiration = expiration , userType = request.UserType, nameUser = user.ThongTinCN.HoTen, Avt = Avt2 ?? "AnhCN.jpg"});
         }
         [HttpGet("UserPermissions")]
         public async Task<ActionResult> GetPermissionsByUsername(string username)
