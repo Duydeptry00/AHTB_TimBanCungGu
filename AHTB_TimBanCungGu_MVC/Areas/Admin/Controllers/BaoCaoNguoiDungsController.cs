@@ -35,7 +35,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             }
 
             return NotFound();
-         
+
         }
         [HttpPost]
         public async Task<IActionResult> XacNhan(int id)

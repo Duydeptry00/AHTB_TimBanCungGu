@@ -59,7 +59,7 @@
                 <div class="form-group mb-3">
                     <label asp-for="SoLuongTap" class="control-label">Số Lượng Tập</label>
                     <div class="input-group">
-                        <input asp-for="SoLuongTap" class="form-control" readonly />
+                        <input asp-for="SoLuongTap" class="form-control" min="1" required />
                         <button type="button" id="btnAddEpisode" class="btn btn-success">+1 Tập</button>
                     </div>
                     <span asp-validation-for="SoLuongTap" class="text-danger"></span>

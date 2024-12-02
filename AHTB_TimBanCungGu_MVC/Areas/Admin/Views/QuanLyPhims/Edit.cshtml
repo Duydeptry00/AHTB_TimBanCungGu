@@ -71,9 +71,14 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="TrangThai" class="form-label">Trạng thái</label>
-                        <input asp-for="TrangThai" class="form-control" required maxlength="255" />
-                        <span asp-validation-for="TrangThai" class="text-danger"></span>
-                    <div class="col-md-6 d-flex align-items-center mb-3">
+                        <select asp-for="TrangThai" class="form-select" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="Chưa chiếu">Chưa chiếu</option>
+                            <option value="Đang chiếu">Đang chiếu</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">                    
+                        <div class="col-md-6 d-flex align-items-center mb-3">
                         <label asp-for="NoiDungPremium" class="form-check-label mb-0" for="premiumCheckbox">Premium</label>
                         <input asp-for="NoiDungPremium" class="form-check-input me-2" style="margin: 0 10px;" type="checkbox"  />
                     </div>

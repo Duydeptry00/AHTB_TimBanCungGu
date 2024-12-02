@@ -41,8 +41,11 @@
                     </div>
                     <div class="col-md-6">
                         <label asp-for="TrangThai" class="form-label">Trạng thái</label>
-                        <input asp-for="TrangThai" class="form-control" required maxlength="255" />
-                        <span asp-validation-for="TrangThai" class="text-danger"></span>
+                        <select asp-for="TrangThai" class="form-select" required >
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="Chưa chiếu">Chưa chiếu</option>
+                            <option value="Đang chiếu">Đang chiếu</option>
+                        </select>                      
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -87,13 +90,13 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="TrailerURL" class="form-label">TrailerURL</label>
-                        <input asp-for="TrailerURL" class="form-control" required />
+                        <input asp-for="TrailerURL" class="form-control" type="url" />
                         <span asp-validation-for="TrailerURL" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
                         <label asp-for="SourcePhim" class="form-label">Source Phim</label>
-                        <input asp-for="SourcePhim" class="form-control" />
-                        <span asp-validation-for="SourcePhim" class="text-danger" required></span>
+                        <input asp-for="SourcePhim" class="form-control" required />
+                        <span asp-validation-for="SourcePhim" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -115,19 +118,18 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label asp-for="DangPhim" class="form-label">Dạng phim</label>
-                        <select asp-for="DangPhim" class="form-select" id="DangPhimSelect" onchange="toggleFields()">
+                        <select asp-for="DangPhim" class="form-select" id="DangPhimSelect" required onchange="toggleFields()">
                             <option value="">-- Chọn Dạng Phim --</option>
                             <option value="Phim Bộ">Phim Bộ</option>
                             <option value="Phim Lẻ">Phim Lẻ</option>
                         </select>
                         <span asp-validation-for="DangPhim" class="text-danger"></span>
                     </div>
-                    <div class="col-md-6" id="SoLuongTapGroup">
+                    <div class="col-md-6" id="SoLuongTapGroup" style="display:none;">
                         <label for="SoLuongTap" class="form-label">Số Lượng Tập</label>
-                        <input type="number" name="soluongtap" class="form-control" id="SoLuongTapInput" min="0" />
+                        <input type="number" name="soluongtap" class="form-control" id="SoLuongTapInput" min="0" required />
                         <span class="text-danger" data-valmsg-for="soluongtap"></span>
                     </div>
-
                 </div>
                 <div class="form-group d-flex justify-content-between">
                     <button type="submit" class="btn btn-primary">
@@ -173,16 +175,21 @@
     function toggleFields() {
         var dangPhim = document.getElementById("DangPhimSelect").value;
         var soLuongTapGroup = document.getElementById("SoLuongTapGroup");
+        var soLuongTapInput = document.getElementById("SoLuongTapInput");
 
         if (dangPhim === "Phim Bộ") {
-            soLuongTapGroup.style.display = "block";
+            soLuongTapGroup.style.display = "block";  // Hiển thị trường Số Lượng Tập
+            soLuongTapInput.setAttribute("required", "true"); // Bắt buộc nhập
         } else {
-            soLuongTapGroup.style.display = "none";
-            document.getElementById("SoLuongTapInput").value = "";
+            soLuongTapGroup.style.display = "none";  // Ẩn trường Số Lượng Tập
+            soLuongTapInput.removeAttribute("required"); // Không bắt buộc nhập
         }
     }
 
+    // Gọi hàm toggleFields khi trang tải
     document.addEventListener("DOMContentLoaded", function () {
         toggleFields();
     });
+
+
 </script>
