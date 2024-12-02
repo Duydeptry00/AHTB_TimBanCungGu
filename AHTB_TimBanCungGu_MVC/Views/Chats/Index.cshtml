@@ -446,8 +446,31 @@
         font-weight: bold; /* Chữ đậm */
         font-size: 14px; /* Kích thước chữ */
     }
-</style>
+    /* CSS cho nút "Hủy chặn" */
+    .unblock-btn {
+        display: block;
+        margin: 10px auto;
+        padding: 8px 16px;
+        background-color: #0078D4; /* Màu nền nút */
+        color: #ffffff; /* Màu chữ */
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        text-align: center;
+        transition: background-color 0.3s;
+    }
 
+        .unblock-btn:hover {
+            background-color: #005bb5; /* Màu nền khi hover */
+        }
+
+        .unblock-btn:focus {
+            outline: none;
+        }
+</style>
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     let currentConversation = null;
     let sendUser = '@ViewBag.CurrentUser';  // Thêm tên người dùng vào ViewBag
@@ -502,7 +525,7 @@
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
-        // Optionally reload conversations and messages
+        checkBlockStatus(currentConversation);
         loadConversations();
         loadMessages(currentConversation);
     };
@@ -516,7 +539,6 @@
     socket.onerror = function (error) {
         console.log("WebSocket Error: " + error);
     };
-
     function openConversation(user2, hoten, anh) {
         currentConversation = user2;
 
@@ -541,8 +563,9 @@
 
         // Xóa nội dung tin nhắn cũ
         document.getElementById("chatBody").innerHTML = '';
-
-        // Kiểm tra trạng thái chặn trước khi tải tin nhắn
+        checkBlockStatus(user2); // Gọi hàm kiểm tra trạng thái chặn
+    }
+    function checkBlockStatus(user2) {
         fetch(`/Chats/CheckBlockStatus?ReceiverUserName=${user2}&SenderUsername=${sendUser}`)
             .then(response => response.json())
             .then(data => {
@@ -550,24 +573,43 @@
                 const chatFooter = document.querySelector('.chat-footer');
                 const blockuser = document.getElementById("blockuser");
 
-                if (data.success && data.daChan) {
+                if (data.success && data.daChan && data) {
                     toggleChatFooter(true);
 
                     // Làm trống nội dung
                     blockuser.innerHTML = '';
                     chat.innerHTML = '';
 
-                    // Tạo thông báo chặn
-                    const blockMessageElement = document.createElement("p");
-                    blockMessageElement.textContent = data.message;
-                    // Thêm lớp CSS
-                    blockMessageElement.classList.add("block-message");
+                    // Kiểm tra nếu người gửi bị chặn hoặc người nhận bị chặn
+                    if (data.blockDirection === sendUser) {
+                        // Nếu người gửi bị chặn
+                        const unblockButton = document.createElement("button");
+                        unblockButton.textContent = "Hủy chặn";
+                        unblockButton.classList.add("unblock-btn");
+                        unblockButton.onclick = () => {
+                            unblockUser(user2);
+                        };
+                        blockuser.appendChild(unblockButton);
+                        // Tạo thông báo chặn
+                        const blockMessageElement = document.createElement("p");
+                        blockMessageElement.textContent = data.message;
+                        blockMessageElement.classList.add("block-message");
 
-                    // Thêm phần tử vào giao diện
-                    document.getElementById("blockuser").appendChild(blockMessageElement);
-                    // Thêm thông báo vào blockuser
-                    blockuser.appendChild(blockMessageElement);
-                    chatFooter.style.backgroundColor = "#d3d3d3"; // Màu xám nhạt
+                        // Thêm phần tử vào giao diện
+                        blockuser.appendChild(blockMessageElement);
+
+                        chatFooter.style.backgroundColor = "#d3d3d3"; // Màu xám nhạt
+                    } else if (data.blockDirection === user2) {
+                        // Tạo thông báo chặn
+                        const blockMessageElement = document.createElement("p");
+                        blockMessageElement.textContent = data.message;
+                        blockMessageElement.classList.add("block-message");
+
+                        // Thêm phần tử vào giao diện
+                        blockuser.appendChild(blockMessageElement);
+                        // Nếu người nhận bị chặn
+                        chatFooter.style.backgroundColor = "#d3d3d3"; // Màu xám nhạt
+                    }
                 } else {
                     toggleChatFooter(true);
 
@@ -582,18 +624,18 @@
                             <i class="fas fa-paper-plane" style="font-size: 24px; color: #0078D4;"></i>
                         </button>
                     `;
-                    //Thay nền xám
+                    // Thay nền xám
                     chatFooter.style.backgroundColor = "#fff";
                 }
                 console.log(data);
 
                 // Tải tin nhắn bất kể trạng thái chặn
                 loadMessages(user2);
+            })
+            .catch(error => {
+                console.error("Error checking block status:", error);
             });
     }
-
-
-
     window.onload = function () {
         toggleChatFooter(false); // Hide chat footer by default
     };
@@ -740,7 +782,104 @@
         }
     }
 
+    // Hàm để gửi yêu cầu chặn người dùng tới API
+    function blockUser(receiverUsername) {
+        const senderUsername = sendUser; // Lấy tên người gửi từ biến toàn cục
 
+        fetch('/Chats/BlockUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ReceiverUserName: receiverUsername,
+                SenderUsername: senderUsername
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    // Hiển thị thông báo thành công
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: data.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Cập nhật giao diện hoặc làm mới danh sách cuộc trò chuyện nếu cần
+                        checkBlockStatus(receiverUsername);
+                    });
+                } else {
+                    // Hiển thị thông báo lỗi
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Đã chặn!',
+                        text: `${data.message}`,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                // Xử lý lỗi khi gửi yêu cầu hoặc lỗi mạng
+                console.error("Error blocking user:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Đã xảy ra lỗi khi gửi yêu cầu chặn người dùng. Vui lòng thử lại sau.',
+                    confirmButtonText: 'OK'
+                });
+            });
+    }
+
+    function unblockUser(receiverUsername) {
+        const senderUsername = sendUser;
+        console.log(receiverUsername);
+        fetch('/Chats/UnblockUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ReceiverUserName: receiverUsername,
+                SenderUsername: senderUsername
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'Đã hủy chặn người dùng.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        checkBlockStatus(receiverUsername);
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: data.message,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error unblocking user:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Đã xảy ra lỗi khi gửi yêu cầu hủy chặn người dùng. Vui lòng thử lại sau.',
+                    confirmButtonText: 'OK'
+                });
+            });
+    }
 
 
     // Hàm để tải danh sách cuộc trò chuyện từ API
@@ -754,7 +893,7 @@
 
                     // Thêm các mục trò chuyện vào danh sách
                     data.conversations.forEach(conversation => {
-                        const avatar = conversation.avatar || "default_image.jpg";
+                        const avatar = conversation.avatar || "AnhCN.jpg";
                         const otherUser = sendUser === conversation.user1 ? conversation.hotenuser2 : conversation.hotenuser1;
                         const otherUsername = sendUser === conversation.user1 ? conversation.user2 : conversation.user1;
 
@@ -798,15 +937,76 @@
                             menuOptions.classList.toggle('hidden');
                         };
 
-                        // Xử lý sự kiện cho nút Báo cáo
                         conversationItem.querySelector('.report-btn').onclick = () => {
-                            alert(`Báo cáo người dùng: ${otherUser}`);
+                            Swal.fire({
+                                title: 'Báo cáo người dùng',
+                                input: 'select',
+                                inputOptions: {
+                                    'Spam/Tin nhắn rác': 'Spam/Tin nhắn rác',
+                                    'Lạm dụng/Ngôn ngữ không phù hợp': 'Lạm dụng/Ngôn ngữ không phù hợp',
+                                    'Gian lận/Lừa đảo': 'Gian lận/Lừa đảo',
+                                    'other': 'Khác (nhập thêm lý do bên dưới)'
+                                },
+                                inputPlaceholder: 'Chọn một lý do báo cáo',
+                                showCancelButton: true,
+                                confirmButtonText: 'Tiếp tục',
+                                cancelButtonText: 'Hủy',
+                                inputValidator: (value) => {
+                                    if (!value) {
+                                        return 'Bạn cần chọn một lý do!';
+                                    }
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    const selectedReason = result.value;
+
+                                    // Nếu người dùng chọn 'Khác', hiển thị thêm hộp thoại để nhập lý do
+                                    if (selectedReason === 'other') {
+                                        Swal.fire({
+                                            title: 'Nhập lý do báo cáo',
+                                            input: 'textarea',
+                                            inputLabel: 'Lý do báo cáo',
+                                            inputPlaceholder: 'Hãy nhập lý do tại đây...',
+                                            showCancelButton: true,
+                                            confirmButtonText: 'Gửi',
+                                            cancelButtonText: 'Hủy',
+                                            inputValidator: (value) => {
+                                                if (!value) {
+                                                    return 'Bạn cần nhập lý do!';
+                                                }
+                                            }
+                                        }).then((textResult) => {
+                                            if (textResult.isConfirmed) {
+                                                const userReason = textResult.value.trim();
+                                                if (userReason) {
+                                                    reportUser(otherUsername, userReason); // Gửi báo cáo với lý do người dùng nhập
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        // Gửi báo cáo với lý do đã chọn
+                                        reportUser(otherUsername, selectedReason);
+                                    }
+                                }
+                            });
                         };
 
-                        // Xử lý sự kiện cho nút Chặn
+
                         conversationItem.querySelector('.block-btn').onclick = () => {
-                            alert(`Chặn người dùng: ${otherUser}`);
+                            Swal.fire({
+                                title: 'Bạn có chắc chắn chặn người dùng này không?',
+                                text: `Hành động này sẽ chặn ${otherUser} và bạn sẽ không thể liên lạc với họ nữa.`,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Chặn',
+                                cancelButtonText: 'Hủy'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    blockUser(otherUsername); // Gọi hàm chặn người dùng nếu người dùng xác nhận
+                                }
+                            });
                         };
+
 
                         // Thêm mục này vào danh sách
                         conversationList.appendChild(conversationItem);
@@ -821,6 +1021,46 @@
             });
     }
 
+    function reportUser(username, reason) {
+        const senderUsername = sendUser;
+
+        fetch('/Chats/ReportUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                NguoiBaoCao: senderUsername, // Thêm thông tin người báo cáo nếu cần
+                DoiTuongBaoCao: username,
+                LyDoBaoCao: reason
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: "Đã báo cáo!",
+                        text: 'Báo cáo của bạn đã được gửi thành công.'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Vui lòng đợi!',
+                        text: data.message
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error reporting user:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Có lỗi xảy ra khi gửi báo cáo.'
+                });
+            });
+    }
 
     // Gọi loadConversations khi trang tải
     window.onload = function () {

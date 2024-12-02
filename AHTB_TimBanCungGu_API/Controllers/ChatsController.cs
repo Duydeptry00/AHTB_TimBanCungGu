@@ -59,38 +59,137 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             return Ok(profile);
         }
+        [HttpPost("BaoCao")]
+        public async Task<ActionResult<BaoCao>> CreateBaoCao(BaoCao baoCaoNguoiDung)
+        {
+            if (baoCaoNguoiDung == null)
+            {
+                return Ok(new { Success = false, Message = "Dữ liệu báo cáo không hợp lệ." });
+            }
+            var NguoiBaoCao = _DBcontext.Users.FirstOrDefault(u => u.UserName == baoCaoNguoiDung.NguoiBaoCao);
+            var DoiTuongBaoCao = _DBcontext.Users.FirstOrDefault(u => u.UserName == baoCaoNguoiDung.DoiTuongBaoCao);
+            // Kiểm tra xem đã có báo cáo nào từ người báo cáo đến đối tượng báo cáo trong ngày hôm nay chưa
+            var existingReport = await _DBcontext.BaoCaoNguoiDung
+                .Where(b => b.NguoiBaoCao == NguoiBaoCao.UsID &&
+                            b.DoiTuongBaoCao == DoiTuongBaoCao.UsID &&
+                            b.NgayBaoCao.Date == DateTime.Today)
+                .FirstOrDefaultAsync();
+
+            if (existingReport != null)
+            {
+                return Ok(new { Success = false, Message = "Bạn đã báo cáo người dùng này trong ngày hôm nay. Vui lòng chờ xét duyệt." });
+            }
+
+
+
+            if (NguoiBaoCao == null || DoiTuongBaoCao == null)
+            {
+                return Ok(new { Success = false, Message = "Không tìm thấy người dùng để báo cáo." });
+            }
+
+            // Tạo mới đối tượng BaoCao từ BaoCaoNguoiDung
+            var baoCao = new BaoCaoNguoiDung
+            {
+                NguoiBaoCao = NguoiBaoCao.UsID,
+                DoiTuongBaoCao = DoiTuongBaoCao.UsID,
+                LyDoBaoCao = baoCaoNguoiDung.LyDoBaoCao,
+                NgayBaoCao = DateTime.Now, // Đặt ngày báo cáo là thời gian hiện tại
+                TrangThai = "Đang Chờ Duyệt" // Trạng thái mặc định
+            };
+
+            // Thêm báo cáo vào cơ sở dữ liệu SQL
+            _DBcontext.BaoCaoNguoiDung.Add(baoCao);
+            await _DBcontext.SaveChangesAsync();
+
+            // Trích xuất các tin nhắn liên quan từ MongoDB
+            var messages = await _context.Messages
+                .Find(m => m.SenderUsername == baoCaoNguoiDung.NguoiBaoCao && m.ReceiverUsername == baoCaoNguoiDung.DoiTuongBaoCao)
+                .ToListAsync();
+
+            // Tạo đối tượng `NoiDungBaoCao` và lưu vào MongoDB
+            var noiDungBaoCao = new NoiDungBaoCao
+            {
+                NguoiBaoCao = baoCaoNguoiDung.NguoiBaoCao,
+                DoiTuongBaoCao = baoCaoNguoiDung.DoiTuongBaoCao,
+                NgayBaoCao = DateTime.Now,
+                LyDoBaoCao = baoCaoNguoiDung.LyDoBaoCao,
+                TinNhanLienQuan = messages.Select(m => m.Content).ToList()
+            };
+
+            await _context.NoiDungBaoCao.InsertOneAsync(noiDungBaoCao);
+
+            return Ok(new { Success = true, Message = "Báo cáo đã được gửi thành công." });
+        }
+
+
 
         [HttpGet("CheckBlockStatus")]
         public async Task<IActionResult> CheckBlockStatus([FromQuery] string ReceiverUserName, [FromQuery] string SenderUsername)
         {
             try
             {
-                // Kiểm tra xem SenderUsername đã chặn ReceiverUserName chưa
-                var blockEntry = await _context.BlockUser
+                // Kiểm tra trạng thái chặn từ Sender -> Receiver
+                var senderBlockedReceiver = await _context.BlockUser
                     .Find(b => b.BlockerUsername == SenderUsername && b.BlockedUsername == ReceiverUserName)
                     .FirstOrDefaultAsync();
-                var user2 = _DBcontext.ThongTinCN.FirstOrDefault(t => t.User.UserName == ReceiverUserName);
-                if (blockEntry != null)
+
+                // Kiểm tra trạng thái chặn từ Receiver -> Sender
+                var receiverBlockedSender = await _context.BlockUser
+                    .Find(b => b.BlockerUsername == ReceiverUserName && b.BlockedUsername == SenderUsername)
+                    .FirstOrDefaultAsync();
+
+                // Lấy thông tin người dùng
+                var receiverInfo = _DBcontext.ThongTinCN.FirstOrDefault(t => t.User.UserName == ReceiverUserName);
+
+                if (senderBlockedReceiver != null)
                 {
-                    // Nếu đã chặn, trả về trạng thái chặn
-                    return Ok(new { Success = true, DaChan = true, Message = user2.HoTen + " đã chặn bạn." });
+                    return Ok(new
+                    {
+                        Success = true,
+                        DaChan = true,
+                        BlockDirection = SenderUsername, // Sender đã chặn Receiver
+                        Message = $"Bạn đã chặn {receiverInfo?.HoTen ?? "người dùng này"}."
+                    });
                 }
 
-                // Nếu chưa chặn, trả về thông báo
-                return Ok(new { Success = true, DaChan = false, Message = "Người dùng này chưa bị chặn." });
+                if (receiverBlockedSender != null)
+                {
+                    return Ok(new
+                    {
+                        Success = true,
+                        DaChan = true,
+                        BlockDirection = ReceiverUserName, // Receiver đã chặn Sender
+                        Message = $"{receiverInfo?.HoTen ?? "Người dùng này"} đã chặn bạn."
+                    });
+                }
+
+                // Nếu không có ai chặn ai
+                return Ok(new
+                {
+                    Success = true,
+                    DaChan = false,
+                    Message = "Không có trạng thái chặn giữa hai người dùng."
+                });
             }
             catch (Exception ex)
             {
                 // Xử lý lỗi
-                return StatusCode(500, new { Success = false, Message = "Đã xảy ra lỗi khi kiểm tra trạng thái chặn.", Loi = ex.Message });
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "Đã xảy ra lỗi khi kiểm tra trạng thái chặn.",
+                    Loi = ex.Message
+                });
             }
         }
 
         [HttpPost("UnblockUser")]
-        public async Task<IActionResult> UnblockUser([FromQuery] string ReceiverUserName, [FromQuery] string SenderUsername)
+        public async Task<IActionResult> UnblockUser(BlockUserRequest user)
         {
             try
             {
+                string SenderUsername = user.SenderUsername;
+                string ReceiverUserName = user.ReceiverUsername;
                 // Tìm bản ghi chặn trong MongoDB
                 var blockEntry = await _context.BlockUser
                     .Find(b => b.BlockerUsername == SenderUsername && b.BlockedUsername == ReceiverUserName)
@@ -124,15 +223,17 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
 
         [HttpPost("BlockUser")]
-        public async Task<IActionResult> BlockUser([FromQuery] string ReceiverUserName, [FromQuery] string SenderUsername)
+        public async Task<IActionResult> BlockUser(BlockUserRequest user)
         {
             try
             {
+                string SenderUsername = user.SenderUsername;
+                string ReceiverUserName = user.ReceiverUsername;
                 // Kiểm tra nếu người dùng tự chặn chính mình
                 if (SenderUsername == ReceiverUserName)
                 {
                     // Phản hồi lỗi nếu người dùng tự chặn chính mình
-                    return BadRequest(new { Success = false, Message = "Bạn không thể tự chặn chính mình." });
+                    return Ok(new { Success = false, Message = "Bạn không thể tự chặn chính mình." });
                 }
 
                 // Kiểm tra xem việc chặn này đã tồn tại chưa
@@ -143,7 +244,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 if (existingBlock != null)
                 {
                     // Phản hồi lỗi nếu người dùng đã bị chặn trước đó
-                    return BadRequest(new { Success = false, Message = "Người dùng này đã bị chặn trước đó." });
+                    return Ok(new { Success = false, Message = "Người dùng này đã bị chặn trước đó." });
                 }
 
                 // Tạo một bản ghi chặn mới
@@ -167,7 +268,11 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 return StatusCode(500, new { Success = false, Message = "Đã xảy ra lỗi khi thực hiện chặn người dùng.", Loi = ex.Message });
             }
         }
-
+        public class BlockUserRequest
+        {
+            public string ReceiverUsername { get; set; }
+            public string SenderUsername { get; set; }
+        }
         [HttpPost]
         public async Task<IActionResult> SendMessage(MessageVM messageVM)
         {

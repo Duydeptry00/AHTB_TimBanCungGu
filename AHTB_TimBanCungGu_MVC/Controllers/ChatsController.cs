@@ -32,6 +32,45 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             ViewBag.CurrentUser = username;
             return View();
         }
+        [HttpPost]
+        public async Task<IActionResult> ReportUser([FromBody] BaoCao reportRequest)
+        {
+
+            try
+            {
+                // Tạo nội dung body để gửi đến API
+                var requestBody = new
+                {
+                    NguoiBaoCao = reportRequest.NguoiBaoCao,
+                    DoiTuongBaoCao = reportRequest.DoiTuongBaoCao,
+                    LyDoBaoCao = reportRequest.LyDoBaoCao,
+                };
+
+                // Gửi yêu cầu POST đến API
+                var response = await _httpClient.PostAsJsonAsync("http://localhost:15172/api/chats/BaoCao", requestBody);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<BlockUserResponse>(responseContent);
+                    return Json(new
+                    {
+                        success = result?.Success,
+                        message = result?.Message
+                    });
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    return Json(new { success = false, message = $"Lỗi khi báo cáo: {errorMessage}" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Đã xảy ra lỗi: {ex.Message}" });
+            }
+        }
+
         public class CheckMatchResponse
         {
             public bool Success { get; set; }
@@ -278,10 +317,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> BlockUser(string receiverUsername)
+        public async Task<IActionResult> BlockUser([FromBody] BlockUserRequest user)
         {
             string senderUsername = HttpContext.Session.GetString("TempUserName");
-
+            string receiverUsername = user.ReceiverUsername;
             if (string.IsNullOrEmpty(senderUsername))
             {
                 return Json(new { success = false, message = "Người dùng hiện tại không xác định." });
@@ -301,12 +340,12 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                    var result = JsonConvert.DeserializeObject<BlockUserResponse>(responseContent);
 
                     return Json(new
                     {
-                        success = true,
-                        message = result?.Message ?? "Đã chặn người dùng thành công."
+                        success = result?.Success,
+                        message = result?.Message
                     });
                 }
                 else
@@ -328,10 +367,20 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 });
             }
         }
-
-        [HttpPost]
-        public async Task<IActionResult> UnblockUser(string receiverUsername)
+        public class BlockUserResponse
         {
+            public bool Success { get; set; }
+            public string Message { get; set; }
+        }
+        public class BlockUserRequest
+        {
+            public string ReceiverUsername { get; set; }
+            public string SenderUsername { get; set; }
+        }
+        [HttpPost]
+        public async Task<IActionResult> UnblockUser([FromBody] BlockUserRequest user)
+        {
+            string receiverUsername = user.ReceiverUsername;
             string senderUsername = HttpContext.Session.GetString("TempUserName");
 
             if (string.IsNullOrEmpty(senderUsername))
@@ -400,11 +449,13 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     var responseContent = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<CheckBlockStatusResponse>(responseContent);
 
+                    // Trả về thông tin chi tiết về chiều của hành động chặn
                     return Json(new
                     {
                         success = true,
-                        daChan = result?.DaChan,
-                        message = result?.Message
+                        daChan = result.DaChan,
+                        blockDirection = result.BlockDirection, // Trả về BlockDirection
+                        message = result.Message
                     });
                 }
                 else
@@ -433,5 +484,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         public bool Success { get; set; }
         public bool DaChan { get; set; }
         public string Message { get; set; }
+        public string BlockDirection { get; set; }
     }
 }
