@@ -60,8 +60,113 @@ namespace AHTB_TimBanCungGu_API.Controllers
             return Ok(profile);
         }
 
+        [HttpGet("CheckBlockStatus")]
+        public async Task<IActionResult> CheckBlockStatus([FromQuery] string ReceiverUserName, [FromQuery] string SenderUsername)
+        {
+            try
+            {
+                // Kiểm tra xem SenderUsername đã chặn ReceiverUserName chưa
+                var blockEntry = await _context.BlockUser
+                    .Find(b => b.BlockerUsername == SenderUsername && b.BlockedUsername == ReceiverUserName)
+                    .FirstOrDefaultAsync();
+                var user2 = _DBcontext.ThongTinCN.FirstOrDefault(t => t.User.UserName == ReceiverUserName);
+                if (blockEntry != null)
+                {
+                    // Nếu đã chặn, trả về trạng thái chặn
+                    return Ok(new { Success = true, DaChan = true, Message = user2.HoTen + " đã chặn bạn." });
+                }
+
+                // Nếu chưa chặn, trả về thông báo
+                return Ok(new { Success = true, DaChan = false, Message = "Người dùng này chưa bị chặn." });
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi
+                return StatusCode(500, new { Success = false, Message = "Đã xảy ra lỗi khi kiểm tra trạng thái chặn.", Loi = ex.Message });
+            }
+        }
+
+        [HttpPost("UnblockUser")]
+        public async Task<IActionResult> UnblockUser([FromQuery] string ReceiverUserName, [FromQuery] string SenderUsername)
+        {
+            try
+            {
+                // Tìm bản ghi chặn trong MongoDB
+                var blockEntry = await _context.BlockUser
+                    .Find(b => b.BlockerUsername == SenderUsername && b.BlockedUsername == ReceiverUserName)
+                    .FirstOrDefaultAsync();
+
+                if (blockEntry == null)
+                {
+                    // Nếu không tìm thấy bản ghi, trả về thông báo
+                    return BadRequest(new { Success = false, Message = "Người dùng này chưa bị chặn." });
+                }
+
+                // Xóa bản ghi chặn
+                var deleteResult = await _context.BlockUser
+                    .DeleteOneAsync(b => b.Id == blockEntry.Id);
+
+                if (deleteResult.DeletedCount > 0)
+                {
+                    // Nếu xóa thành công, trả về thông báo
+                    return Ok(new { Success = true, Message = "Đã bỏ chặn người dùng thành công." });
+                }
+
+                // Nếu không xóa được, trả về lỗi
+                return StatusCode(500, new { Success = false, Message = "Đã xảy ra lỗi khi bỏ chặn người dùng." });
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi
+                return StatusCode(500, new { Success = false, Message = "Đã xảy ra lỗi khi bỏ chặn người dùng.", Loi = ex.Message });
+            }
+        }
 
 
+        [HttpPost("BlockUser")]
+        public async Task<IActionResult> BlockUser([FromQuery] string ReceiverUserName, [FromQuery] string SenderUsername)
+        {
+            try
+            {
+                // Kiểm tra nếu người dùng tự chặn chính mình
+                if (SenderUsername == ReceiverUserName)
+                {
+                    // Phản hồi lỗi nếu người dùng tự chặn chính mình
+                    return BadRequest(new { Success = false, Message = "Bạn không thể tự chặn chính mình." });
+                }
+
+                // Kiểm tra xem việc chặn này đã tồn tại chưa
+                var existingBlock = await _context.BlockUser
+                    .Find(b => b.BlockerUsername == SenderUsername && b.BlockedUsername == ReceiverUserName)
+                    .FirstOrDefaultAsync();
+
+                if (existingBlock != null)
+                {
+                    // Phản hồi lỗi nếu người dùng đã bị chặn trước đó
+                    return BadRequest(new { Success = false, Message = "Người dùng này đã bị chặn trước đó." });
+                }
+
+                // Tạo một bản ghi chặn mới
+                var blockUser = new BlockUser
+                {
+                    Id = ObjectId.GenerateNewId(), // Tự động tạo ID mới
+                    BlockerUsername = SenderUsername, // Người thực hiện chặn
+                    BlockedUsername = ReceiverUserName, // Người bị chặn
+                    BlockDate = DateTime.UtcNow, // Thời gian thực hiện chặn
+                };
+
+                // Thêm bản ghi vào MongoDB
+                await _context.BlockUser.InsertOneAsync(blockUser);
+
+                // Phản hồi thành công
+                return Ok(new { Success = true, Message = "Đã chặn người dùng thành công." });
+            }
+            catch (Exception ex)
+            {
+                // Xử lý và phản hồi lỗi hệ thống
+                return StatusCode(500, new { Success = false, Message = "Đã xảy ra lỗi khi thực hiện chặn người dùng.", Loi = ex.Message });
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> SendMessage(MessageVM messageVM)
@@ -306,21 +411,25 @@ namespace AHTB_TimBanCungGu_API.Controllers
 
             foreach (var conversation in conversations)
             {
+
                 string name2 = null;
                 string avt2 = null;
-                var Name2 = _DBcontext.ThongTinCN.FirstOrDefault(N1 => N1.User.UserName == conversation.Participants[1]);
+                // Lấy tài khoản khác UserName của conversation.user1
+                var otherUserName = conversation.Participants
+                    .FirstOrDefault(participant => participant != username);
+                var Name2 = _DBcontext.ThongTinCN.FirstOrDefault(N1 => N1.User.UserName == otherUserName);
                 if(Name2 != null)
                 {
                     name2 = Name2.HoTen;
                 }
                 // Lấy ảnh đầu tiên từ danh sách ảnh của người dùng dưới dạng chuỗi
                 var Avt2 = _DBcontext.AnhCaNhan
-                    .Where(N1 => N1.ThongTinCN.User.UserName == conversation.Participants[1])
-                    .Select(N1 => N1.HinhAnh.FirstOrDefault().ToString()) // Chuyển ký tự đầu tiên thành chuỗi
+                    .Where(N1 => N1.ThongTinCN.User.UserName == otherUserName)
+                    .Select(N1 => N1.HinhAnh)
                     .FirstOrDefault();
                 if (Avt2 != null)
                 {
-                    avt2 = Avt2;
+                    avt2 = avt2;
                 }
                 // Lấy tin nhắn mới nhất cho cuộc trò chuyện này
                 var latestMessage = await _context.Messages

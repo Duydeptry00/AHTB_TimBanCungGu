@@ -277,5 +277,161 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 }
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> BlockUser(string receiverUsername)
+        {
+            string senderUsername = HttpContext.Session.GetString("TempUserName");
+
+            if (string.IsNullOrEmpty(senderUsername))
+            {
+                return Json(new { success = false, message = "Người dùng hiện tại không xác định." });
+            }
+
+            try
+            {
+                // Gửi yêu cầu tới API
+                var requestBody = new
+                {
+                    ReceiverUserName = receiverUsername,
+                    SenderUsername = senderUsername
+                };
+
+                var response = await _httpClient.PostAsJsonAsync("http://localhost:15172/api/Chats/BlockUser", requestBody);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+
+                    return Json(new
+                    {
+                        success = true,
+                        message = result?.Message ?? "Đã chặn người dùng thành công."
+                    });
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Lỗi khi chặn người dùng: {errorMessage}"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Đã xảy ra lỗi: {ex.Message}"
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UnblockUser(string receiverUsername)
+        {
+            string senderUsername = HttpContext.Session.GetString("TempUserName");
+
+            if (string.IsNullOrEmpty(senderUsername))
+            {
+                return Json(new { success = false, message = "Người dùng hiện tại không xác định." });
+            }
+
+            try
+            {
+                // Gửi yêu cầu tới API
+                var requestBody = new
+                {
+                    ReceiverUserName = receiverUsername,
+                    SenderUsername = senderUsername
+                };
+
+                var response = await _httpClient.PostAsJsonAsync("http://localhost:15172/api/Chats/UnblockUser", requestBody);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+
+                    return Json(new
+                    {
+                        success = true,
+                        message = result?.Message ?? "Đã bỏ chặn người dùng thành công."
+                    });
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Lỗi khi bỏ chặn người dùng: {errorMessage}"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Đã xảy ra lỗi: {ex.Message}"
+                });
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> CheckBlockStatus(string receiverUsername)
+        {
+            string senderUsername = HttpContext.Session.GetString("TempUserName");
+
+            if (string.IsNullOrEmpty(senderUsername))
+            {
+                return Json(new { success = false, message = "Người dùng hiện tại không xác định." });
+            }
+
+            try
+            {
+                // Gửi yêu cầu tới API
+                var response = await _httpClient.GetAsync($"http://localhost:15172/api/Chats/CheckBlockStatus?ReceiverUserName={receiverUsername}&SenderUsername={senderUsername}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<CheckBlockStatusResponse>(responseContent);
+
+                    return Json(new
+                    {
+                        success = true,
+                        daChan = result?.DaChan,
+                        message = result?.Message
+                    });
+                }
+                else
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Lỗi khi kiểm tra trạng thái chặn: {errorMessage}"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Đã xảy ra lỗi: {ex.Message}"
+                });
+            }
+        }
+
+    }
+    public class CheckBlockStatusResponse
+    {
+        public bool Success { get; set; }
+        public bool DaChan { get; set; }
+        public string Message { get; set; }
     }
 }
