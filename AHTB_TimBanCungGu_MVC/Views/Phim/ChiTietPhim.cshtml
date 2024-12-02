@@ -186,7 +186,7 @@
                     }
                 }
                 <strong>Diễn Viên:</strong> @Model.DienVien<br>
-                <strong>Ngày phát hành:</strong> @Model.NgayPhatHanh.Year<br>
+                <strong>Ngày phát hành:</strong> @Model.NgayPhatHanh.ToString("dd/MM/yyyy")<br>
                 <strong>Mô tả:</strong> @Model.MoTa<br />
                 <strong>Dạng Phim:</strong> <b>@Html.DisplayFor(model => model.TheLoai.TenTheLoai)</b><br />
                 <strong>Đánh giá:</strong> <b>@Model.DanhGia / 10</b>

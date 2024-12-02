@@ -52,7 +52,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 // Lấy danh sách 6 phim gần nhất từ cơ sở dữ liệu
                 var phimList = await _context.Phim
                     .Include(p => p.TheLoai)
-                    .Where(p => p.NgayPhatHanh <= DateTime.Now) // Chỉ lấy phim đã phát hành
+                    .Where(p => p.NgayPhatHanh <= DateTime.Now && p.TrangThai != "Ẩn") // Chỉ lấy phim đã phát hành
                     .OrderByDescending(p => p.NgayPhatHanh)    // Sắp xếp theo Ngày Phát Hành (mới nhất ở trên)
                     .Take(6)                                   // Giới hạn 6 phim
                     .ToListAsync();

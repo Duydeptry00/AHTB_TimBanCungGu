@@ -52,6 +52,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 var phimYeuThichList = await _context.PhimYeuThich
                     .Where(p => p.NguoiDungYT == user.UsID) // Lọc theo UsID của người dùng
                     .Include(p => p.Phim)
+                     .Where(p => p.Phim.TrangThai != "Ẩn")
                     .Select(p => new PhimYeuThichViewModel
                     {
                         IdPhim = p.Phim.IDPhim,
