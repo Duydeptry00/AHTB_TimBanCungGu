@@ -155,47 +155,6 @@
             }
         });
     </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const signUpForm = document.getElementById("signUpForm");
-
-            signUpForm.addEventListener("submit", function (event) {
-                event.preventDefault(); // Ngừng gửi form mặc định
-
-                const formData = new FormData(signUpForm);
-                const data = {};
-                formData.forEach((value, key) => {
-                    data[key] = value;
-                });
-
-                fetch('/YourController/Register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message); // Hiển thị thông báo thành công
-                            window.location.href = '/YourRedirectPage'; // Chuyển hướng nếu cần
-                        } else {
-                            // Hiển thị thông báo lỗi dưới link "Quên mật khẩu?"
-                            const errorMessageDiv = document.createElement("div");
-                            errorMessageDiv.classList.add("error-message");
-                            errorMessageDiv.textContent = data.message;
-
-                            const forgotPasswordLink = document.querySelector(".forgot-password-link");
-                            forgotPasswordLink.parentNode.insertBefore(errorMessageDiv, forgotPasswordLink.nextSibling);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-            });
-        });
-    </script>
 
     <script>
         // Xử lý chuyển đổi giữa đăng nhập và đăng ký

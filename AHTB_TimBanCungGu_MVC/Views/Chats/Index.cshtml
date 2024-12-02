@@ -27,10 +27,15 @@
             <!-- Tin nhắn sẽ được thêm vào đây -->
         </div>
         <div class="chat-footer">
-            <textarea id="messageContent" placeholder="Gõ tin nhắn..."></textarea>
-            <button onclick="sendMessage()" style="background: none; border: none; cursor: pointer;">
-                <i class="fas fa-paper-plane" style="font-size: 24px; color: #0078D4;"></i>
-            </button>
+            <div id="chat">
+                <textarea id="messageContent" placeholder="Gõ tin nhắn..."></textarea>
+                <button onclick="sendMessage()" style="background: none; border: none; cursor: pointer;">
+                    <i class="fas fa-paper-plane" style="font-size: 24px; color: #0078D4;"></i>
+                </button>
+            </div>
+            <div id="blockuser">
+                <p id="blockMessage"></p>
+            </div>
         </div>
     </div>
 </div>
@@ -330,22 +335,29 @@
     /* Phần footer của cửa sổ trò chuyện */
     .chat-footer {
         padding: 10px;
-        display: flex;
-        align-items: center;
+        display: flex; /* Sử dụng flexbox */
+        justify-content: center; /* Căn giữa theo chiều ngang */
+        align-items: center; /* Căn giữa theo chiều dọc */
+    }
+
+    /* Container chứa textarea và button */
+    #chat {
+        display: flex; /* Sử dụng flexbox để căn chỉnh các phần tử */
+        width: 100%; /* Đảm bảo container chiếm toàn bộ chiều ngang của chat-footer */
     }
 
         /* Ô nhập liệu */
-        .chat-footer textarea {
-            width: 100%;
+        #chat textarea {
+            flex: 1; /* Cho phép ô nhập liệu chiếm toàn bộ không gian còn lại */
             height: 50px;
             padding: 10px;
             border-radius: 5px;
             border: 1px solid #ddd;
-            margin-right: 10px;
+            resize: none; /* Ngăn người dùng thay đổi kích thước ô */
         }
 
         /* Nút gửi */
-        .chat-footer button {
+        #chat button {
             padding: 10px 20px;
             background-color: #0078D4;
             color: white;
@@ -355,9 +367,10 @@
             transition: background-color 0.3s ease;
         }
 
-            .chat-footer button:hover {
+            #chat button:hover {
                 background-color: #005a8e; /* Hiệu ứng khi hover */
             }
+
 
     .user-message, .receiver-message {
         padding: 5px;
@@ -417,9 +430,22 @@
         font-weight: bold;
     }
 
-
-
-
+    /*Chat*/
+    #chat {
+        width: 100%;
+    }
+    #blockuser {
+        width:100%;
+    }
+    .block-message {
+        color: #555; /* Màu chữ xám tối */
+        padding: 10px; /* Khoảng cách bên trong */
+        text-align: center; /* Chữ căn giữa */
+        border-radius: 5px; /* Góc bo tròn */
+        margin: 10px 0; /* Khoảng cách trên và dưới */
+        font-weight: bold; /* Chữ đậm */
+        font-size: 14px; /* Kích thước chữ */
+    }
 </style>
 
 <script>
@@ -494,38 +520,78 @@
     function openConversation(user2, hoten, anh) {
         currentConversation = user2;
 
-        // Lấy phần tử tiêu đề chat và avatar
+        // Lấy thông tin người dùng và avatar
         const chatTitleElement = document.getElementById("chatTitle");
         const chatHeader = document.getElementById("chatHeader");
 
-        // Tạo phần tử hình ảnh avatar và liên kết
+        // Tạo avatar và liên kết
         const avatarLink = document.createElement("a");
-        avatarLink.href = `/Chats/Profiles?username=${user2}`; // Đường dẫn tới trang Profiles của người dùng
-        avatarLink.target = "_blank"; // Mở liên kết trong tab mới nếu cần
+        avatarLink.href = `/Chats/Profiles?username=${user2}`;
+        avatarLink.target = "_blank";
 
         const avatarElement = document.createElement("img");
         avatarElement.classList.add("chat-avatar");
-        avatarElement.src = `/Uploads/${anh}`; // Thay đổi đường dẫn phù hợp
-
-        // Thêm avatar vào liên kết
+        avatarElement.src = `/Uploads/${anh}`;
         avatarLink.appendChild(avatarElement);
 
-        // Xóa nội dung hiện tại của phần tiêu đề để chèn avatar mới
         chatHeader.innerHTML = '';
         chatHeader.appendChild(avatarLink);
 
-        // Thêm tên vào tiêu đề chat
         chatTitleElement.innerText = hoten;
 
         // Xóa nội dung tin nhắn cũ
         document.getElementById("chatBody").innerHTML = '';
 
-        // Mở API lấy tin nhắn cho user2
-        loadMessages(user2);
+        // Kiểm tra trạng thái chặn trước khi tải tin nhắn
+        fetch(`/Chats/CheckBlockStatus?ReceiverUserName=${user2}&SenderUsername=${sendUser}`)
+            .then(response => response.json())
+            .then(data => {
+                const chat = document.getElementById("chat");
+                const chatFooter = document.querySelector('.chat-footer');
+                const blockuser = document.getElementById("blockuser");
 
-        // Hiện footer của cuộc trò chuyện
-        toggleChatFooter(true);
+                if (data.success && data.daChan) {
+                    toggleChatFooter(true);
+
+                    // Làm trống nội dung
+                    blockuser.innerHTML = '';
+                    chat.innerHTML = '';
+
+                    // Tạo thông báo chặn
+                    const blockMessageElement = document.createElement("p");
+                    blockMessageElement.textContent = data.message;
+                    // Thêm lớp CSS
+                    blockMessageElement.classList.add("block-message");
+
+                    // Thêm phần tử vào giao diện
+                    document.getElementById("blockuser").appendChild(blockMessageElement);
+                    // Thêm thông báo vào blockuser
+                    blockuser.appendChild(blockMessageElement);
+                    chatFooter.style.backgroundColor = "#d3d3d3"; // Màu xám nhạt
+                } else {
+                    toggleChatFooter(true);
+
+                    // Làm trống nội dung
+                    blockuser.innerHTML = '';
+                    chat.innerHTML = '';
+
+                    // Thêm lại phần nhập tin nhắn
+                    chat.innerHTML = `
+                        <textarea id="messageContent" placeholder="Gõ tin nhắn..."></textarea>
+                        <button onclick="sendMessage()" style="background: none; border: none; cursor: pointer;">
+                            <i class="fas fa-paper-plane" style="font-size: 24px; color: #0078D4;"></i>
+                        </button>
+                    `;
+                    //Thay nền xám
+                    chatFooter.style.backgroundColor = "#fff";
+                }
+                console.log(data);
+
+                // Tải tin nhắn bất kể trạng thái chặn
+                loadMessages(user2);
+            });
     }
+
 
 
     window.onload = function () {
@@ -547,7 +613,7 @@
     function toggleChatFooter(isVisible) {
         const chatFooter = document.querySelector('.chat-footer');
         if (isVisible) {
-            chatFooter.style.display = 'flex';
+            chatFooter.style.display = 'block';
         } else {
             chatFooter.style.display = 'none';
         }

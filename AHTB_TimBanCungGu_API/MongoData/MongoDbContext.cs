@@ -19,4 +19,6 @@ public class MongoDbContext
     public IMongoCollection<Conversation> Conversations => _database.GetCollection<Conversation>("DanhSachTroChuyen");
     // Collection lưu thông tin các lần swipe
     public IMongoCollection<MatchNguoiDung> MatchNguoiDung => _database.GetCollection<MatchNguoiDung>("MatchNguoiDung");
+    // Collection lưu danh sách chặn
+    public IMongoCollection<BlockUser> BlockUser => _database.GetCollection<BlockUser>("DanhSachChan");
 }
