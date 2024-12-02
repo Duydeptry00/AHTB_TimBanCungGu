@@ -21,4 +21,5 @@ public class MongoDbContext
     public IMongoCollection<MatchNguoiDung> MatchNguoiDung => _database.GetCollection<MatchNguoiDung>("MatchNguoiDung");
     // Collection lưu danh sách chặn
     public IMongoCollection<BlockUser> BlockUser => _database.GetCollection<BlockUser>("DanhSachChan");
+    public IMongoCollection<NoiDungBaoCao> NoiDungBaoCao => _database.GetCollection<NoiDungBaoCao>("Baocao");
 }
