@@ -219,6 +219,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
                     // Trả về lại cùng trang Edit sau khi lưu thay đổi
                     return RedirectToAction(nameof(Index));
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -341,7 +342,12 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     // Lưu thay đổi vào cơ sở dữ liệu
                     _context.Update(existingProfile);
                     await _context.SaveChangesAsync();
-
+                    var Avt2 = _context.AnhCaNhan
+                         .Where(N1 => N1.ThongTinCN.User.UserName == userName)
+                         .Select(N1 => N1.HinhAnh)
+                         .FirstOrDefault();
+                    HttpContext.Session.SetString("User", existingProfile.HoTen);
+                    HttpContext.Session.SetString("Avt", Avt2 ?? "AnhCN.jpg");
                     // Trả về lại cùng trang Edit sau khi lưu thay đổi
                     return RedirectToAction(nameof(Index));
                 }
@@ -381,12 +387,18 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             // Xóa ảnh khỏi cơ sở dữ liệu
             _context.AnhCaNhan.Remove(anh);
             await _context.SaveChangesAsync();
-
+            var user = HttpContext.Session.GetString("TempUserName");
+            var anhs = _context.AnhCaNhan.FirstOrDefault(a => a.ThongTinCN.User.UserName == user);
+            if (anhs == null)
+            {
+                HttpContext.Session.SetString("Avt", "AnhCN.jpg");
+            }
             return Ok();
         }
         public IActionResult LoadImages(int id)
         {
             var profile = _context.ThongTinCN.Include(p => p.AnhCaNhan).FirstOrDefault(p => p.IDProfile == id);
+
             return PartialView("_ImageSection", profile);  // Ensure _ImageSection is your partial view for images.
         }
 

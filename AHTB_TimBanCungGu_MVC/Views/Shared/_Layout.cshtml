@@ -2,7 +2,9 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     string UserName = HttpContextAccessor.HttpContext.Session.GetString("TempUserName") ?? null;
+    string Avt = HttpContextAccessor.HttpContext.Session.GetString("Avt") ?? null;
     string hoten = HttpContextAccessor.HttpContext.Session.GetString("User") ?? null;
+    var tempRole = HttpContextAccessor.HttpContext.Session.GetString("TempRole") ?? null;
 }
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!DOCTYPE html>
@@ -190,7 +192,7 @@
                     <!-- Ảnh đại diện và tên -->
                     <div class="dropdown">
                         <div id="dropdownAccount" role="button" class="d-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="/images/anhCN.jpg" alt="Ảnh đại diện" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                            <img src="/Uploads/@Avt" alt="Ảnh đại diện" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" onerror="this.onerror=null; this.src='/Uploads/AnhCN.jpg';" />
                             <span class="ms-2">@hoten</span>
                             <i class="bi bi-chevron-down ms-2"></i>
                         </div>

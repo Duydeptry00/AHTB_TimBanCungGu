@@ -347,12 +347,13 @@
                                 <a asp-action="Details" asp-route-id="@item.IDPhim" class="btn btn-info btn-sm me-1">
                         <i class="fas fa-info-circle"></i>
                         </a>
-                            <form asp-action="HideFromIndex" method="post" style="display:inline;">
+                            <form asp-action="HideFromIndex" method="post" id="hideForm-@item.IDPhim" style="display:inline;">
                                 <input type="hidden" name="id" value="@item.IDPhim" />
-                                <button type="submit" class="btn btn-warning btn-sm" title="Ẩn phim">
+                                <button type="button" class="btn btn-warning btn-sm hideButton" data-id="@item.IDPhim" title="Ẩn phim">
                                     <i class="bi bi-eye-slash"></i> <!-- Icon Ẩn -->
                                 </button>
                             </form>
+
                         </td>
                     </tr>
                 }
@@ -360,7 +361,38 @@
         </table>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Chọn tất cả các nút "Ẩn phim"
+        const hideButtons = document.querySelectorAll(".hideButton");
 
+        hideButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const phimId = button.getAttribute("data-id"); // Lấy IDPhim từ thuộc tính data-id
+                Swal.fire({
+                    title: "Bạn có chắc chắn muốn ẩn phim này không?",
+                    text: "Hành động này không thể hoàn tác!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Có, ẩn nó!",
+                    cancelButtonText: "Hủy"
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        // Tìm và gửi form tương ứng
+                        const form = document.getElementById(`hideForm-${phimId}`);
+                        if (form) {
+                            form.submit();
+                        }
+                    }
+                });
+            });
+        });
+    });
+
+    </script>
 <script>
     function toggleGenres() {
         const moreGenres = document.getElementById('moreGenres');

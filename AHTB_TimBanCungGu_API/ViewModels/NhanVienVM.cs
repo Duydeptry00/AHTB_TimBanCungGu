@@ -7,11 +7,11 @@ namespace AHTB_TimBanCungGu_API.ViewModels
     {
         public int STT {  get; set; }
         public string IdNhanVien { get; set; }
-        [Required]
+       
         public string UserName { get; set; }
-        [Required]
+        public string HovaTen { get; set; }
         public string Password { get; set; }
-        [Required]
+
         public string Email { get; set; }
         public string TrangThai { get; set; }
         public string Tenrole { get; set; }

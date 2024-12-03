@@ -17,9 +17,12 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+
     <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 
@@ -54,7 +57,6 @@
             top: 0;
             transition: transform 0.1s ease;
             z-index: 100;
-           
         }
 
             #sidebar.closed {
@@ -67,6 +69,7 @@
                 white-space: nowrap;
                 align-items: center;
             }
+
         .nav-link:hover {
             background-color: #007bff; /* Màu nền khi người dùng hover */
             color: #fff; /* Màu chữ khi người dùng hover */
@@ -77,13 +80,13 @@
         }
 
 
-            #sidebar h1 {
-                color: red;
-                font-size: 24px;
-                padding: 19px;
-                text-align: center;
-                margin-bottom: 0px;
-            }
+        #sidebar h1 {
+            color: red;
+            font-size: 24px;
+            padding: 19px;
+            text-align: center;
+            margin-bottom: 0px;
+        }
 
         #content-wrapper {
             color: #F31313;
@@ -198,7 +201,7 @@
                             </ul>
                         </li>
                         <!-- Quản Lý Người Dùng -->
-                        <li class="nav-item">
+                        <li class="nav-item">   
                             <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#userManagement" aria-expanded="true">
                                 <i class="fas fa-users"></i>
                                 <span>Quản Lý Người Dùng</span>
@@ -217,7 +220,7 @@
                                 </li>
                             </ul>
                         </li>
-
+                            
                         <!-- Quản Lý Báo Cáo và Hóa Đơn -->
                         <li class="nav-item">
                             <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#reportManagement" aria-expanded="true">
@@ -259,6 +262,8 @@
                                 </li>
                             </ul>
                         </li>
+
+                       
                         <li class="nav-item">
                             <a class="nav-link" asp-area="Admin" asp-controller="DoanhThus" asp-action="index">
                                 <i class="fas fa-chart-bar"></i>
@@ -267,7 +272,7 @@
                         </li>
                     </ul>
                 }
-                else if(@HttpContextAccessor.HttpContext.Session.GetString("UserType") != "Admin" && tempRole != null)
+                else if (@HttpContextAccessor.HttpContext.Session.GetString("UserType") != "Admin" && tempRole != null)
                 {
                     if (tempRole.Contains("Quản Lý Người Dùng"))
                     {
@@ -282,7 +287,7 @@
                             </a>
                         </li>
                     }
-                 
+                  
                     if (tempRole.Contains("Quản Lý Doanh Thu"))
                     {
                         <li class="nav-item">
@@ -292,7 +297,7 @@
                             </a>
                         </li>
                     }
-               
+                   
                     if (tempRole.Contains("Quản Lý Báo Cáo"))
                     {
                         <li>
@@ -355,28 +360,28 @@
                             <li><a class="dropdown-item" href="#">Thông báo 3</a></li>
                         </ul>
                     </div>
-                    <!-- Avatar Image -->
-                    <div class="dropdown">
-                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Xin Chào! @User
-                            <img src="@Url.Content($"~/Uploads/{Avt}")"
-                                 alt="Avatar"
-                                 class="rounded-circle"
-                                 style="width: 30px; height: 30px;"
-                                 onerror="this.onerror=null; this.src='@Url.Content("~/Uploads/AnhCN.jpg")';">
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" asp-area="Admin" asp-controller="Thongtin" asp-action="ThongTinNV" asp-route-id="@UserName">Tài khoản</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            
-                            @if(@HttpContextAccessor.HttpContext.Session.GetString("UserType") != "Admin")
-                            {
-                                <li><a class="dropdown-item" asp-area="" asp-controller="LoginvsRegister" asp-action="DoiMatKhaucuNV">Đổi mật khẩu</a></li>
-                            }
-                          
-                            <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Logout">Đăng xuất</a></li>
-                        </ul>
-                    </div>
+                    <!-- Avatar Image -->               
+                        <div class="dropdown">
+                            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                Xin Chào! @User
+                                <img src="@Url.Content($"~/Uploads/{Avt}")"
+                                     alt="Avatar"
+                                     class="rounded-circle"
+                                     style="width: 30px; height: 30px;"
+                                     onerror="this.onerror=null; this.src='@Url.Content("~/Uploads/AnhCN.jpg")';">
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" asp-area="Admin" asp-controller="Thongtin" asp-action="ThongTinNV" asp-route-id="@UserName">Tài khoản</a></li>
+                                <li><hr class="dropdown-divider"></li>
+
+                                @if (@HttpContextAccessor.HttpContext.Session.GetString("UserType") != "Admin")
+                                {
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="LoginvsRegister" asp-action="DoiMatKhaucuNV">Đổi mật khẩu</a></li>
+                                }
+
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Logout">Đăng xuất</a></li>
+                            </ul>
+                     </div>
                 </div>
             </div>
             <main>
@@ -391,35 +396,37 @@
             const sidebar = document.getElementById('sidebar');
             const contentWrapper = document.getElementById('content-wrapper');
 
-            // Toggle the sidebar
+            // Tự động đóng mở sidebar khi nhấn nút toggle
             toggleSidebarButton.addEventListener('click', function () {
-                // Check if sidebar has the 'closed' class
+                // Kiểm tra xem sidebar có class 'closed' hay không
                 if (sidebar.classList.contains('closed')) {
-                    // If sidebar is closed, open it
+                    // Nếu sidebar đang đóng (có class 'closed'), mở lại
                     sidebar.classList.remove('closed');
-                    contentWrapper.style.paddingLeft = '300px';  // Adjust content padding
+                    contentWrapper.style.paddingLeft = '300px';  // Mở sidebar, thêm padding cho nội dung
                 } else {
-                    // If sidebar is open, close it
+                    // Nếu sidebar đang mở, đóng lại
                     sidebar.classList.add('closed');
-                    contentWrapper.style.paddingLeft = '0';  // Remove padding
+                    contentWrapper.style.paddingLeft = '0';  // Đóng sidebar, bỏ padding cho nội dung
                 }
             });
 
-            // Handle toggle links for collapsing items inside the sidebar
+            // Xử lý khi nhấn vào các liên kết có data-bs-toggle="collapse"
             const toggleLinks = document.querySelectorAll('[data-bs-toggle="collapse"]');
             toggleLinks.forEach(link => {
-                const icon = link.querySelector('.toggle-icon'); // Icon for collapse
+                const icon = link.querySelector('.toggle-icon'); // Tìm biểu tượng thay đổi
 
                 link.addEventListener('click', (e) => {
                     const targetId = link.getAttribute('data-bs-target');
                     const target = document.querySelector(targetId);
 
-                    // Toggle the collapse state and icon
+                    // Kiểm tra nếu menu đang mở (class "show")
                     if (target.classList.contains('show')) {
+                        // Nếu đã mở, đóng menu và thay đổi biểu tượng
                         target.classList.remove('show');
                         icon.classList.remove('fa-minus');
                         icon.classList.add('fa-plus');
                     } else {
+                        // Nếu chưa mở, mở menu và thay đổi biểu tượng
                         target.classList.add('show');
                         icon.classList.remove('fa-plus');
                         icon.classList.add('fa-minus');
@@ -427,66 +434,62 @@
                 });
             });
 
-            // Handle active class for sidebar links
+            // Xử lý thay đổi lớp "active" cho các liên kết trong sidebar khi nhấn
             const links = document.querySelectorAll('.nav-link');
             links.forEach(link => {
                 link.addEventListener('click', function () {
                     links.forEach(item => {
                         item.classList.remove('active');
                     });
-                    link.classList.add
-                    // Add 'active' class to the clicked link
                     link.classList.add('active');
                 });
             });
 
-            // AJAX to load content without reloading the entire page
             $(document).ready(function () {
-                // When a link is clicked (except for logout link)
+                // Sử dụng AJAX để tải nội dung mà không làm reload toàn bộ trang
                 $(document).on('click', '.nav-link', function (e) {
-                    // Skip logout link
+                    // Kiểm tra nếu đây không phải là liên kết đăng xuất
                     if ($(this).attr('href') === '/Home/Logout') {
-                        return;  // Allow default behavior for logout link
+                        return;  // Không làm gì, để liên kết đăng xuất hoạt động bình thường
                     }
 
-                    e.preventDefault();  // Prevent the default page reload
-                    var url = $(this).attr('href');  // Get the URL from the clicked link
+                    e.preventDefault();  // Ngừng hành động mặc định (reload toàn bộ trang)
+                    var url = $(this).attr('href');  // Lấy URL của liên kết đã click
 
-                    // Use AJAX to fetch the new content
+                    // Sử dụng AJAX để lấy nội dung
                     $.ajax({
                         url: url,
                         type: 'GET',
                         success: function (response) {
-                            // Replace the content of the <main> element with the new content
+                            // Tải nội dung từ phản hồi vào phần <main>
                             $('main').html($(response).find('main').html());
-                            // Optionally update the browser history
+                            // Cập nhật lịch sử trình duyệt (tùy chọn)
                             history.pushState(null, '', url);
                         },
                         error: function () {
-                            alert('Error loading content.');
+                            alert('Lỗi khi tải nội dung.');
                         }
                     });
                 });
 
-                // Handle browser back/forward navigation
+                // Xử lý khi người dùng sử dụng nút quay lại hoặc tiếp theo của trình duyệt
                 window.onpopstate = function () {
-                    var url = location.href;  // Get the current URL
+                    var url = location.href;  // Lấy URL hiện tại
                     $.ajax({
                         url: url,
                         type: 'GET',
                         success: function (response) {
-                            // Update the content of the <main> element when the user navigates
+                            // Cập nhật nội dung của phần <main> khi người dùng quay lại
                             $('main').html($(response).find('main').html());
                         }
                     });
                 };
             });
-        });
+
     </script>
 
-
     <!-- Chỉ tải jQuery một lần -->
-   
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Bootstrap 5 JS, Popper.js, and FontAwesome -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

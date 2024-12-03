@@ -33,8 +33,10 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             if (!string.IsNullOrEmpty(token))
             {
+                // Lấy tên người dùng từ Session
                 var userName = HttpContext.Session.GetString("TempUserName");
 
+                // Lấy thông tin cá nhân của người dùng
                 var userInfo = await _context.ThongTinCN
                     .Include(t => t.User)
                     .FirstOrDefaultAsync(t => t.User.UserName == userName);
@@ -47,16 +49,18 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     ViewBag.IdThongTinCaNhan = userInfo.IDProfile;
                 }
 
-                // Lấy danh sách 6 phim mới nhất
+                // Lấy danh sách phim mới nhất (trừ phim ẩn)
                 var phimMoiNhat = await _context.Phim
                     .Include(p => p.TheLoai)
-                    .Where(p => p.NgayPhatHanh <= DateTime.Now)
+                    .AsNoTracking()
+                    .Where(p => p.NgayPhatHanh <= DateTime.Now && p.TrangThai != "Ẩn")
                     .OrderByDescending(p => p.NgayPhatHanh)
                     .Take(5)
                     .ToListAsync();
 
-                // Lấy danh sách phim thịnh hành (xem nhiều nhất)
+                // Lấy danh sách phim thịnh hành (trừ phim ẩn)
                 var phimThinhHanh = await _context.LichSuXem
+                    .Where(lsx => lsx.Phim.TrangThai != "Ẩn")
                     .GroupBy(lsx => lsx.PhimDaXem)
                     .Select(group => new
                     {
@@ -67,21 +71,25 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     .Take(5)
                     .Join(_context.Phim, g => g.PhimId, p => p.IDPhim, (g, p) => p)
                     .ToListAsync();
+
+                // Lấy danh sách phim Premium (trừ phim ẩn)
                 var phimPremium = await _context.Phim
-                  .Include(p => p.TheLoai)
-                  .Where(p => p.NoiDungPremium == true)
-                  .Take(5)
-                  .ToListAsync();
+                    .Include(p => p.TheLoai)
+                    .AsNoTracking()
+                    .Where(p => p.NoiDungPremium == true && p.TrangThai != "Ẩn")
+                    .Take(5)
+                    .ToListAsync();
+
                 // Truyền dữ liệu vào ViewBag
                 ViewBag.PhimMoiNhat = phimMoiNhat;
                 ViewBag.PhimThinhHanh = phimThinhHanh;
                 ViewBag.PhimPremium = phimPremium;
+
                 return View();
             }
 
             return RedirectToAction("Login", "LoginvsRegister");
         }
-
 
 
         public async Task<IActionResult> GioiThieuAsync()

@@ -118,10 +118,17 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             {
                 return Json(new { Success = false, Message = "Dữ liệu không hợp lệ." });
             }
-           
+            if (string.IsNullOrEmpty(nhanVien.UserName))
+            {
+                return Json(new { Success = false, Message = "UserName không được để trống!" });
+            }
+            if (string.IsNullOrEmpty(nhanVien.Password))
+            {
+                return Json(new { Success = false, Message = "Password không được để trống!" });
+            }
             if (string.IsNullOrEmpty(nhanVien.Email) || !IsValidEmail(nhanVien.Email))
             {
-                return Json(new { Success = false, Message = "Địa chỉ email không đúng định dạng." });
+                return Json(new { Success = false, Message = "Địa chỉ email không đúng định dạng!" });
             }
             try
             {

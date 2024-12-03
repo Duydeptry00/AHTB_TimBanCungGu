@@ -45,6 +45,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 STT = index + 1,  // Số thứ tự, bắt đầu từ 1
                 IdNhanVien = user.UsID,
                 UserName = user.UserName,
+                HovaTen = user.ThongTinCN?.HoTen,
                 Email = user.ThongTinCN?.Email, // Kiểm tra null cho an toàn
                 TrangThai = user.TrangThai,
                 // Lấy TenRole nếu có, nếu không có thì gán "Nhân Viên Hiện Chưa Được Cấp Quyền"

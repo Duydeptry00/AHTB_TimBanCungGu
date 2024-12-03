@@ -31,15 +31,17 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
             if (userType == "Admin" && token != null)
             {
                 var phimData = await _context.Phan
-                    .Include(p => p.Phim)  // Bao gồm thông tin về phim
-                    .OrderBy(p => p.PhimID).ThenBy(p => p.SoPhan)  // Sắp xếp theo IDPhim và SoPhan
-                    .ToListAsync(); // Lấy danh sách tất cả các phần phim
+                    .Include(p => p.Phim) // Bao gồm thông tin về phim
+                    .Where(p => p.Phim.DangPhim == "Phim bộ" && p.Phim.TrangThai != "Ẩn") // Chỉ lấy phim bộ không ẩn
+                    .OrderBy(p => p.PhimID).ThenBy(p => p.SoPhan) // Sắp xếp theo IDPhim và SoPhan
+                    .ToListAsync(); // Lấy danh sách các phần phim hợp lệ
 
                 return View(phimData); // Trả về View với dữ liệu Phan
             }
 
             return NotFound();
         }
+
 
 
         // GET: Admin/Phans/Details/5
@@ -79,13 +81,19 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
             if (userType == "Admin" && token != null)
             {
-                ViewData["PhimID"] = new SelectList(_context.Phim, "IDPhim", "TenPhim");
+                // Lọc các phim có chuỗi "phim bộ" trong thuộc tính DangPhim
+                var phimBo = _context.Phim
+                    .Where(p => p.DangPhim.Contains("Phim bộ")) // Tìm kiếm chuỗi "phim bộ"
+                    .ToList();
+
+                // Truyền danh sách phim bộ vào SelectList
+                ViewData["PhimID"] = new SelectList(phimBo, "IDPhim", "TenPhim");
                 return View();
             }
 
             return NotFound();
-           
         }
+
 
         // POST: Admin/Phans/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -236,20 +244,26 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
                     // Chỉ thêm tập mới nếu SoLuongTap tăng
                     int currentEpisodeCount = existingPhan.Tap.Count;
+                    // Kiểm tra nếu số lượng tập mới lớn hơn số lượng tập hiện tại
                     if (phan.SoLuongTap > currentEpisodeCount)
                     {
+                        // Lấy tất cả IDTap đã có trong bảng Tap
+                        var allTapIds = _context.Tap
+                            .Select(t => t.IDTap)
+                            .ToList();
+
                         // Thêm tập mới nếu số lượng tăng
                         for (int i = currentEpisodeCount + 1; i <= phan.SoLuongTap; i++)
                         {
                             string newIDTap;
                             int nextTapId = i;
 
-                            // Tạo IDTap duy nhất
+                            // Tạo IDTap duy nhất (kiểm tra trùng lặp trong tất cả các IDTap)
                             do
                             {
                                 newIDTap = "T" + nextTapId;
                                 nextTapId++;
-                            } while (existingTapIds.Contains(newIDTap));  // Kiểm tra trong danh sách IDTap đã tồn tại
+                            } while (allTapIds.Contains(newIDTap));  // Kiểm tra IDTap đã tồn tại trong cơ sở dữ liệu
 
                             // Thêm tập mới vào DbContext
                             var newTap = new Tap
@@ -260,7 +274,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                             };
 
                             _context.Tap.Add(newTap);
-                            existingTapIds.Add(newIDTap);  // Thêm vào danh sách IDTap đã tạo
+                            allTapIds.Add(newIDTap);  // Thêm vào danh sách tất cả IDTap đã tạo
                         }
                     }
                     else if (phan.SoLuongTap < currentEpisodeCount)
@@ -272,6 +286,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
                         _context.Tap.RemoveRange(tapsToDelete);  // Xóa các tập thừa
                     }
+
                     // Lưu thay đổi
                     _context.Update(existingPhan);
                     await _context.SaveChangesAsync();

@@ -136,13 +136,13 @@
             @if (phimLe != null)
             {
                 <div class="film-player">
-                    <iframe id="filmPlayer" src="https://vidsrc.in/embed/movie?imdb=@phimLe.SourcePhim" style="width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
+                        <iframe id="filmPlayer" src="https://vidsrc.cc/v2/embed/movie/@phimLe.SourcePhim?autoPlay=false" style="width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
                 </div>
             }
             else if (phimBo != null && phan != null)
             {
                 <div class="film-player">
-                    <iframe id="filmPlayer" src="https://vidsrc.me/embed/tv?imdb=@phimBo.SourcePhim&season=@phan.SoPhan&episode=1" style="width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
+                    <iframe id="filmPlayer" src="https://vidsrc.cc/v2/embed/tv/@phimBo.SourcePhim/@phan.SoPhan/1?autoPlay=false" style="width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
                 </div>
             }
 
@@ -192,10 +192,10 @@
             const sourcePhim = phimLe === "true" ? "@phimLe?.SourcePhim" : "@phimBo?.SourcePhim";
             const iframe = document.getElementById('filmPlayer');
             if (phimLe === "true") {
-                iframe.src = `https://vidsrc.dev/embed/movie/${sourcePhim}`;
+                iframe.src = `https://vidsrc.cc/v2/embed/movie/${sourcePhim}?autoPlay=false`;
             } else {
                 const soPhan = "@phan?.SoPhan";
-                iframe.src = `https://vidsrc.me/embed/tv?imdb=${sourcePhim}&season=${soPhan}&episode=${soTap}`;
+                iframe.src = `https://vidsrc.cc/v2/embed/tv/${sourcePhim}/${soPhan}/${soTap}?autoPlay=false`;
             }
         }
 
