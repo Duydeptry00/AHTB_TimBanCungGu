@@ -9,59 +9,80 @@
     <form asp-action="Edit" method="post" id="editRoleForm">
         <div class="mb-3">
             <label asp-for="TenRole" class="form-label">Vai Trò</label>
-            <input asp-for="TenRole" class="form-control" required />
+            <input asp-for="TenRole" class="form-control" placeholder="Nhập tên vai trò" required />
+        </div>
 
+        <div class="mb-3">
             <label class="form-label">Danh Sách Quyền</label>
             <div id="rolesContainer">
                 @for (int i = 0; i < Model.Module.Count; i++)
                 {
-                    <div class="role-entry mb-3 position-relative" data-index="@i">
-                        <!-- Dropdown Modules -->
-                        <select asp-for="Module[i]" class="form-control module-select" data-selected="@Model.Module[i]">
-                            <!-- Các option sẽ được đổ vào đây -->
-                        </select>
-                        <i class="fas fa-times remove-role position-absolute top-0 end-0 p-2 cursor-pointer"></i>
+                    <div class="role-entry mb-3 position-relative border p-3 rounded" data-index="@i">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <!-- Dropdown Modules -->
+                            <select asp-for="Module[i]" class="form-select module-select" data-selected="@Model.Module[i]">
+                                <!-- Đổ dữ liệu sau bằng JS -->
+                            </select>
+                            <i class="fas fa-times remove-role text-danger ms-3" title="Xóa quền"></i>
+                        </div>
+
                         <!-- Toggle Buttons for Permissions -->
-                        <div class="row mt-2">
+                        <div class="row mt-3">
                             <div class="col">
-                                <button type="button" class="permission-toggle btn @(Model.Add[i] == "true"  ? "btn-success" : "btn-danger")">
-                                    Thêm
+                                Tất Cả
+                                <button type="button" class="btn btn-true toggle-all" data-index="@i">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                            <div class="col">
+                                Thêm
+                                <button type="button" class="permission-toggle btn @(Model.Add[i] == "true" ? "btn-true" : "btn-false")">
+                                    <i class="fas @(Model.Add[i] == "true" ? "fa-check" : "fa-times")"></i>
                                 </button>
                                 <input type="hidden" asp-for="Add[i]" />
                             </div>
                             <div class="col">
-                                <button type="button" class="permission-toggle btn @(Model.Update[i] == "true" ? "btn-success" : "btn-danger")">
-                                    Cập Nhật
+                                Sửa
+                                <button type="button" class="permission-toggle btn @(Model.Update[i] == "true" ? "btn-true" : "btn-false")">
+                                    <i class="fas @(Model.Update[i] == "true" ? "fa-check" : "fa-times")"></i>
                                 </button>
                                 <input type="hidden" asp-for="Update[i]" />
                             </div>
                             <div class="col">
-                                <button type="button" class="permission-toggle btn @(Model.Delete[i] == "true" ? "btn-success" : "btn-danger")">
-                                    Xóa
+                                Xóa
+                                <button type="button" class="permission-toggle btn @(Model.Delete[i] == "true" ? "btn-true" : "btn-false")">
+                                    <i class="fas @(Model.Delete[i] == "true" ? "fa-check" : "fa-times")"></i>
                                 </button>
                                 <input type="hidden" asp-for="Delete[i]" />
                             </div>
                             <div class="col">
-                                <button type="button" class="permission-toggle btn @(Model.ReviewDetails[i] == "" ? "btn-success" : "btn-danger")">
-                                    Xem Chi Tiết
+                                Xem
+                                <button type="button" class="permission-toggle btn @(Model.ReviewDetails[i] == "true" ? "btn-true" : "btn-false")">
+                                    <i class="fas @(Model.ReviewDetails[i] == "true" ? "fa-check" : "fa-times")"></i>
                                 </button>
                                 <input type="hidden" asp-for="ReviewDetails[i]" />
                             </div>
                         </div>
+
+                       
                     </div>
                 }
-            </div<button type="button" class="btn btn-secondary mt-3" id="addRoleButton">Thêm Quyền</button>
+            </div>
+
+            <button type="button" class="btn btn-secondary mt-3" id="addRoleButton">
+                <i class="fas fa-plus"></i> Thêm Quyền
+            </button>
         </div>
+
         <div class="modal-footer">
-            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đóng</button>
-            <button type="submit" class="btn btn-primary">Lưu</button>
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal"> Đóng </button>
+            <button type="submit" class="btn btn-primary"> Lưu </button>
         </div>
     </form>
 </div>
 
 <script>
     $(document).ready(function () {
-        // Define availableModules here in JavaScript
         const availableModules = [
             "Quản Lý Ưu Đãi",
             "Quản Lý Người Dùng",
@@ -70,29 +91,27 @@
             "Quản Lý Phân Quyền"
         ];
 
-        // Cập nhật lại các tùy chọn module khi có sự thay đổi
         function updateModuleOptions() {
             const usedModules = Array.from(document.querySelectorAll('.module-select'))
                 .map(select => select.value)
-                .filter(value => value !== ''); // Bỏ qua các dropdown chưa chọn module
+                .filter(value => value !== '');
 
             document.querySelectorAll('.module-select').forEach(select => {
                 Array.from(select.options).forEach(option => {
                     if (usedModules.includes(option.value) && option.value !== select.value) {
-                        option.style.display = 'none'; // Ẩn option nếu đã được chọn
+                        option.style.display = 'none';
                     } else {
-                        option.style.display = ''; // Hiển thị nếu chưa được chọn
+                        option.style.display = '';
                     }
                 });
             });
         }
 
-        // Đổ dữ liệu module vào dropdown khi tải
         function populateModules(selectElement, selectedValue = '') {
             selectElement.innerHTML = '';
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = '--- Chọn quyền ---';
+            defaultOption.textContent = '--- Chọn Quyền ---';
             selectElement.appendChild(defaultOption);
 
             availableModules.forEach(module => {
@@ -106,88 +125,190 @@
             });
         }
 
-        // Đổ dữ liệu vào dropdown ban đầu
         document.querySelectorAll('.module-select').forEach(select => {
             const selectedValue = select.getAttribute('data-selected');
             populateModules(select, selectedValue);
         });
 
-        // Thêm quyền mới
         $('#addRoleButton').on('click', function () {
-
             const rolesContainer = $('#rolesContainer');
             const newIndex = rolesContainer.children().length;
 
             const newRoleEntry = `
-                        <div class="role-entry mb-3 position-relative" data-index="${newIndex}">/-strong/-heart:>:o:-((:-h <select name="Module[${newIndex}]" class="form-control module-select">
-                                <!-- Các option sẽ được đổ vào đây -->
+                    <div class="role-entry mb-3 position-relative border p-3 rounded" data-index="${newIndex}">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <select name="Module[${newIndex}]" class="form-select module-select">
+                                <!-- Options -->
                             </select>
-                            <i class="fas fa-times remove-role position-absolute top-0 end-0 p-2 cursor-pointer"></i>
-                            <div class="row mt-2">
-                                <div class="col">
-                                    <button type="button" class="permission-toggle btn btn-danger">Thêm</button>
-                                        <input type="hidden" name="Add[${newIndex}]" value="false" />
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="permission-toggle btn btn-danger">Cập Nhật</button>
-                                        <input type="hidden" name="Update[${newIndex}]" value="false" />
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="permission-toggle btn btn-danger">Xóa</button>
-                                        <input type="hidden" name="Delete[${newIndex}]" value="false" />
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="permission-toggle btn btn-danger">Xem Chi Tiết</button>
-                                        <input type="hidden" name="ReviewDetails[${newIndex}]" value="false" />
-                                </div>
+                            <i class="fas fa-times remove-role text-danger ms-3" title="Xóa quyền"></i>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                    Tất Cả
+                                    <button type="button" class="btn btn-true toggle-all" data-index="${newIndex}">
+                                            <i class="fas fa-times"></i>
+                                    </button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-false">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <input type="hidden" name="Add[${newIndex}]" value="false" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-false">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <input type="hidden" name="Update[${newIndex}]" value="false" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-false">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <input type="hidden" name="Delete[${newIndex}]" value="false" />
+                            </div>
+                            <div class="col">
+                                <button type="button" class="permission-toggle btn btn-false">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <input type="hidden" name="ReviewDetails[${newIndex}]" value="false" />
                             </div>
                         </div>
-                    `;
+                       
+                    </div>
+                `;
 
             rolesContainer.append(newRoleEntry);
             const newSelect = rolesContainer.find('.role-entry:last .module-select')[0];
-            populateModules(newSelect); // Đổ dữ liệu vào dropdown mới
+            populateModules(newSelect);
             updateModuleOptions();
         });
 
-        // Sự kiện ủy quyền cho nút toggle quyền
+        // Handle permission toggle button click
         $('#rolesContainer').on('click', '.permission-toggle', function () {
             const hiddenInput = $(this).next('input[type="hidden"]');
+            const icon = $(this).find('i');
             if (hiddenInput.val() === "false") {
                 hiddenInput.val("true");
-                $(this).removeClass('btn-danger').addClass('btn-success');
+                $(this).removeClass('btn-false').addClass('btn-true');
+                icon.removeClass('fa-times').addClass('fa-check');
             } else {
                 hiddenInput.val("false");
-                $(this).removeClass('btn-success').addClass('btn-danger');
+                $(this).removeClass('btn-true').addClass('btn-false');
+                icon.removeClass('fa-check').addClass('fa-times');
             }
         });
 
-        // Sự kiện thay đổi dropdown module
+        // Handle remove role click
+        $('#rolesContainer').on('click', '.remove-role', function () {
+            $(this).closest('.role-entry').remove();
+            updateModuleOptions();
+        });
+
+        // Handle module selection change
         $('#rolesContainer').on('change', '.module-select', function () {
             updateModuleOptions();
         });
 
-        // Khởi tạo ban đầu
-        updateModuleOptions();
+        $('#rolesContainer').on('click', '.toggle-all', function () {
+            const index = $(this).data('index');
+            const roleEntry = $(`#rolesContainer .role-entry[data-index="${index}"]`);
+            const permissionButtons = roleEntry.find('.permission-toggle');
+            const toggleAllButton = roleEntry.find('.toggle-all');
+
+            // Check if the "Tất Cả" button is currently active (btn-true) or not
+            const isAllTrue = toggleAllButton.hasClass('btn-true');
+
+            // Determine the new state for all permission buttons (all true or all false)
+            const newState = isAllTrue ? 'false' : 'true';
+
+            // Determine the new icon for the "Tất Cả" button
+            const newIconClass = newState === 'true' ? 'fa-check' : 'fa-times';
+
+            // Toggle all the permission buttons to the new state
+            permissionButtons.each(function () {
+                const hiddenInput = $(this).next('input[type="hidden"]');
+                const icon = $(this).find('i');
+
+                if (newState === 'true') {
+                    $(this).removeClass('btn-false').addClass('btn-true');
+                    icon.removeClass('fa-times').addClass('fa-check');
+                    hiddenInput.val('true');
+                } else {
+                    $(this).removeClass('btn-true').addClass('btn-false');
+                    icon.removeClass('fa-check').addClass('fa-times');
+                    hiddenInput.val('false');
+                }
+            });
+
+            // Update the "Tất Cả" button to reflect the new state and icon
+            toggleAllButton.removeClass('btn-true btn-false');
+            toggleAllButton.addClass(newState === 'true' ? 'btn-true' : 'btn-false');
+            toggleAllButton.find('i').removeClass('fa-check fa-times').addClass(newIconClass);
+        });
+
+
+
+
     });
 </script>
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
 <style>
-    .btn-danger {
-        background-color: red;
-        color: white;
+    /* Nút chưa chọn (btn-false) */
+    .btn-false {
+        width: 40px;
+        height: 40px;
+        color: #B71C1C; /* Màu đỏ đậm cho biểu tượng */
+        border: 2px solid #D50000; /* Viền đỏ đậm */
+        background-image: linear-gradient(45deg, #FFEBEE 50%, #FFCDD2 50%); /* Nền gradient đỏ nhạt */
+        background-size: 200%; /* Kích thước gradient */
+        background-position: 0 0; /* Vị trí mặc định */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px; /* Kích thước biểu tượng */
+        border-radius: 4px; /* Bo góc nhẹ */
+        box-sizing: border-box; /* Đảm bảo kích thước không thay đổi bởi viền */
+        transition: background-position 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Hiệu ứng mượt mà */
     }
 
-    .btn-success {
-        background-color: green;
-        color: white;
+        /* Hover nút chưa chọn */
+        .btn-false:hover {
+            background-position: 100% 100%; /* Hiệu ứng gradient di chuyển */
+            color: #880E4F; /* Màu chữ đỏ đậm hơn khi hover */
+            border-color: #C62828; /* Viền đỏ đậm hơn */
+        }
+
+    /* Nút đã chọn (btn-true) */
+    .btn-true {
+        width: 40px;
+        height: 40px;
+        color: #0078D4; /* Xanh đậm cho biểu tượng */
+        border: 2px solid #0078D4; /* Viền xanh đậm */
+        background-image: linear-gradient(45deg, #ffffff 50%, #B3E5FC 50%); /* Gradient giống btn-false */
+        background-size: 200%; /* Kích thước gradient lớn hơn */
+        background-position: 0 0; /* Vị trí nền ban đầu */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px; /* Kích thước biểu tượng */
+        border-radius: 4px; /* Bo góc nhẹ */
+        box-sizing: border-box; /* Đảm bảo kích thước chuẩn */
+        transition: background-position 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Hiệu ứng mượt */
     }
+
+        /* Hover nút đã chọn */
+        .btn-true:hover {
+            background-position: 100% 100%; /* Di chuyển gradient giống btn-false */
+            background-image: linear-gradient(45deg, #ffffff 50%, #81D4FA 50%); /* Gradient hover */
+            color: #0056A4; /* Xanh đậm hơn khi hover */
+            border-color: #0056A4; /* Viền xanh đậm hơn */
+        }
 
     .btn-warning {
         background-color: orange;
-        /-strong/-heart:>:o:-((:-h color: white;
+        color: white;
     }
 
     .position-relative {

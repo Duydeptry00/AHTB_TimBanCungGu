@@ -5,11 +5,15 @@
 }
 <!-- SweetAlert2 CDN -->
 <link href="~/css/indexQuyen.css" rel="stylesheet" />
-
+<div class="authorize-container">
+    <div id="authorizeView">
+       
+    </div>
+</div>
 <div class="table-container">
     <p class="text-end mb-3">
         <button class="btn btn-success" id="createRoleBtn">
-            <i class="fas fa-plus"></i> Thêm Mới
+            <i class="fas fa-plus"></i> Thêm Vai Trò
         </button>
     </p>
     <table class="table text-light">
@@ -62,7 +66,10 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.6/dist/sweetalert2.all.min.js"></script>
 
 <script>
-
+    $(document).ready(function () {
+        // Tự động tải Partial View khi trang được tải
+        $('#authorizeView').load('/Admin/Quyenss/Authorize');  // Đảm bảo URL chính xác
+    });
     $(document).ready(function () {
         // Tải form thêm mới vào modal
         $('#createRoleBtn').click(function () {
