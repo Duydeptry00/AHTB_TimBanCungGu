@@ -25,6 +25,9 @@ namespace AHTB_TimBanCungGu_API.Models
         public string DiaChi { get; set; }
         public DateTime NgayTao { get; set; }
         public string TrangThai { get; set; }
+        public string ThichNhat { get; set; }
+        public string Facebook { get; set; }
+        public string Instagram { get; set; }
 
         public ICollection<AnhCaNhan> AnhCaNhan { get; set; }
     }
