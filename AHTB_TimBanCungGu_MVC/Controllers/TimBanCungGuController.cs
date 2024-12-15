@@ -113,7 +113,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 // Map user profiles to view model
 
 
-                var thongTinCaNhanViewModels = await dBAHTBContext.Select(t => new InfoNguoiDung
+                // Biến guPhim mặc định
                 {
                     IDProfile = t.IDProfile,
                     UsID = t.UsID,
