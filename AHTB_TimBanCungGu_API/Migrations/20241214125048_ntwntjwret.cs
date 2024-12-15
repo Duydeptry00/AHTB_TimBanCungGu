@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AHTB_TimBanCungGu_API.Migrations
 {
-    public partial class ahtb : Migration
+    public partial class ntwntjwret : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

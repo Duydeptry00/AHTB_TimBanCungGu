@@ -85,6 +85,55 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     ViewBag.SwipeCount = 0; // Giá trị mặc định nếu không tìm thấy
                 }
                 // Retrieve swiped users
+              
+
+                // Lấy lịch sử xem phim của người dùng hiện tại
+                var iduser = _context.Users.FirstOrDefault(t => t.UserName == userName);
+                // Lấy thể loại từ lịch sử xem của người dùng hiện tại
+                var lichSuXem = await _context.LichSuXem
+                    .Where(lsx => lsx.NguoiDungXem == iduser.UsID)
+                    .Join(_context.Phim, lsx => lsx.PhimDaXem, p => p.IDPhim, (lsx, p) => p.TheLoai)
+                    .ToListAsync();
+
+                // Lấy thể loại từ các phim yêu thích của người dùng hiện tại
+                var phimYeuThich = await _context.PhimYeuThich
+                    .Where(pyt => pyt.NguoiDungYT == iduser.UsID)
+                    .Join(_context.Phim, pyt => pyt.PhimYT, p => p.IDPhim, (pyt, p) => p.TheLoai)
+                    .ToListAsync();
+
+                // Biến guPhim mặc định
+                string guPhim = null;
+                // Nếu không có phim yêu thích, chọn thể loại xuất hiện nhiều nhất trong lịch sử xem
+                if (phimYeuThich == null || !phimYeuThich.Any())
+                {
+                    var guPhimObj = lichSuXem
+                        .GroupBy(g => g)
+                        .OrderByDescending(g => g.Count())
+                        .Select(g => g.Key)
+                        .FirstOrDefault();
+
+                    guPhim = guPhimObj?.TenTheLoai;  // Gán tên thể loại vào guPhim nếu có
+                }
+                else
+                {
+                    // Nếu có phim yêu thích, chọn thể loại xuất hiện nhiều nhất trong phim yêu thích
+                    var guPhimObj = phimYeuThich
+                        .GroupBy(g => g)
+                        .OrderByDescending(g => g.Count())
+                        .Select(g => g.Key)
+                        .FirstOrDefault();
+
+                    guPhim = guPhimObj?.TenTheLoai;  // Gán tên thể loại vào guPhim nếu có
+                }
+                // Kiểm tra xem có thể loại phim nào được xác định là guPhim
+                if (!string.IsNullOrEmpty(guPhim))
+                {
+                    ViewBag.GuPhim = guPhim;
+                }
+                else
+                {
+                    ViewBag.GuPhim = "Không xác định được gu phim.";
+                }
                 // Lọc những người dùng đã swipe (bao gồm cả Like và Dislike)
                 var swipedUsers = await _MatchNguoiDung
                     .Find(x => x["User1"] == userName)
@@ -100,47 +149,147 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     .Where(x => x["SwipeAction"] == "Dislike")
                     .Select(x => x["User2"].ToString())
                     .ToList();
+                // Lấy thể loại, UsID và ID lịch sử xem từ lịch sử xem của tất cả người dùng hiện tại
+                var lichSuXemAll = await _context.LichSuXem
+                    .Where(lsx => lsx.NguoiDungXem != iduser.UsID)
+                    .Join(_context.Phim, lsx => lsx.PhimDaXem, p => p.IDPhim, (lsx, p) => new { lsx.NguoiDungXem, p.TheLoai, lsx.IDLSX })
+                    .ToListAsync();
 
-                var dBAHTBContext = _context.ThongTinCN
-                    .Include(t => t.User)
-                    .Include(t => t.AnhCaNhan)
-                    .Where(t =>
-                        (t.TrangThai == "Hoạt Động" || t.TrangThai == "Không Hoạt Động") // Lọc theo trạng thái
-                        && !likedOrDislikedUsernames.Contains(t.User.UserName) // Loại bỏ người đã swipe
-                        && !dislikedUsernames.Contains(t.User.UserName)) // Loại bỏ người đã "Dislike"
-                    .AsQueryable();
-
-                // Map user profiles to view model
-
-
-                // Biến guPhim mặc định
+                // Lấy thể loại, UsID và ID phim yêu thích từ các phim yêu thích của tất cả người dùng hiện tại
+                var phimYeuThichAll = await _context.PhimYeuThich
+                    .Where(pyt => pyt.NguoiDungYT != iduser.UsID)
+                    .Join(_context.Phim, pyt => pyt.PhimYT, p => p.IDPhim, (pyt, p) => new { pyt.NguoiDungYT, p.TheLoai, pyt.IdYeuThich })
+                    .ToListAsync();
+                // Nếu phimYeuThichAll == null hoặc không có dữ liệu, gán một danh sách mặc định từ lịch sử xem
+                if (phimYeuThichAll == null || !phimYeuThichAll.Any())
                 {
-                    IDProfile = t.IDProfile,
-                    UsID = t.UsID,
-                    HoTen = t.HoTen,
-                    Email = t.Email,
-                    GioiTinh = t.GioiTinh,
-                    NgaySinh = (DateTime)t.NgaySinh,
-                    SoDienThoai = t.SoDienThoai,
-                    IsPremium = t.IsPremium,
-                    MoTa = t.MoTa,
-                    NgayTao = t.NgayTao,
-                    TrangThai = t.TrangThai,
-                    HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>()
-                }).Where(x => x.UsID != nguoitimdoituong.UsID).ToListAsync();
+                    // Kết hợp dữ liệu từ lịch sử xem và nhóm theo UsID và thể loại
+                    var theLoaiThongKe = lichSuXemAll
+                        .GroupBy(tl => new { tl.NguoiDungXem, tl.TheLoai })  // Nhóm theo UsID và thể loại
+                        .Select(g => new
+                        {
+                            UsID = g.Key.NguoiDungXem,
+                            TheLoai = g.Key.TheLoai,
+                            SoLuong = g.Count(),
+                            MaxIdLichSuXem = g.OrderByDescending(tl => tl.IDLSX).FirstOrDefault().IDLSX // Lấy ID Lịch sử xem lớn nhất cho UsID đó
+                        })
+                        .OrderByDescending(x => x.SoLuong) // Sắp xếp theo số lượng giảm dần
+                        .ThenByDescending(x => x.MaxIdLichSuXem) // Nếu số lượng thể loại bằng nhau, lấy ID Lịch sử xem lớn nhất
+                        .GroupBy(x => x.UsID) // Nhóm theo UsID để chỉ lấy thể loại trùng nhiều nhất cho mỗi UsID
+                        .Select(g => new
+                        {
+                            UsID = g.Key,
+                            TheLoai = g.FirstOrDefault().TheLoai.TenTheLoai,
+                            MaxIdLichSuXem = g.FirstOrDefault().MaxIdLichSuXem
+                        })
+                        .ToList();
+                    var allThongTinCaNhan = new List<InfoNguoiDung>();
+                    foreach (var user in theLoaiThongKe)
+                    {
+                        // Lấy thông tin người dùng và các người dùng khác không phải là người dùng hiện tại
+                        var thongTinCaNhanViewModels = await _context.ThongTinCN
+                            .Include(t => t.User)
+                            .Include(t => t.AnhCaNhan)
+                            .Where(t => t.TrangThai == "Hoạt Động" && t.User.UsID == user.UsID)
+                            .Select(t => new InfoNguoiDung
+                            {
+                                IDProfile = t.IDProfile,
+                                UsID = t.UsID,
+                                HoTen = t.HoTen,
+                                Email = t.Email,
+                                GioiTinh = t.GioiTinh,
+                                NgaySinh = (DateTime)t.NgaySinh,
+                                SoDienThoai = t.SoDienThoai,
+                                IsPremium = t.IsPremium,
+                                MoTa = t.MoTa,
+                                NgayTao = t.NgayTao,
+                                TrangThai = t.TrangThai,
+                                HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>(),
+                                // Lấy thể loại yêu thích của người dùng
+                                guPhim = user.TheLoai
+                            }).Where(x => x.UsID != nguoitimdoituong.UsID)
+                            .ToListAsync();
+                        // Gộp thông tin người dùng vào danh sách tổng
+                        allThongTinCaNhan.AddRange(thongTinCaNhanViewModels);
+                    }
+                    // Lọc danh sách người dùng, loại bỏ những người dùng đã bị "Dislike"
+                    var filteredThongTinCaNhan = allThongTinCaNhan
+                        .Where(info => !dislikedUsernames.Contains(info.Username2)) // Loại bỏ những người đã bị Dislike
+                        .Where(info => !likedOrDislikedUsernames.Contains(info.Username2)) // Loại bỏ cả những người đã được Like/Dislike
+                        .ToList();
+                    // Sắp xếp toàn bộ danh sách theo thể loại giống gu phim
+                    var sortedAllThongTinCaNhan = filteredThongTinCaNhan
+                        .OrderByDescending(info => info.guPhim == guPhim)
+                        .ToList();
 
-                var usIds = thongTinCaNhanViewModels.Select(x => x.UsID).ToList();
+                    // Trả về toàn bộ danh sách đã sắp xếp
+                    return View(sortedAllThongTinCaNhan);
+                }
+                else
+                {
+                    // Nếu phimYeuThichAll có dữ liệu, chỉ xử lý phim yêu thích
+                    var theLoaiThongKe = phimYeuThichAll
+                        .GroupBy(tl => new { tl.NguoiDungYT, tl.TheLoai })  // Nhóm theo UsID và thể loại
+                        .Select(g => new
+                        {
+                            UsID = g.Key.NguoiDungYT,
+                            TheLoai = g.Key.TheLoai,
+                            SoLuong = g.Count(),
+                            MaxIdPhimYeuThich = g.OrderByDescending(tl => tl.IdYeuThich).FirstOrDefault().IdYeuThich // Lấy ID Phim yêu thích lớn nhất cho UsID đó
+                        })
+                        .OrderByDescending(x => x.SoLuong) // Sắp xếp theo số lượng giảm dần
+                        .ThenByDescending(x => x.MaxIdPhimYeuThich) // Nếu số lượng thể loại bằng nhau, lấy ID Phim yêu thích lớn nhất
+                        .GroupBy(x => x.UsID) // Nhóm theo UsID để chỉ lấy thể loại trùng nhiều nhất cho mỗi UsID
+                        .Select(g => new
+                        {
+                            UsID = g.Key,
+                            TheLoai = g.FirstOrDefault().TheLoai.TenTheLoai,
+                            MaxIdPhimYeuThich = g.FirstOrDefault().MaxIdPhimYeuThich
+                        })
+                        .ToList();
+                    var allThongTinCaNhan = new List<InfoNguoiDung>();
+                    foreach (var user in theLoaiThongKe)
+                    {
+                        // Lấy thông tin người dùng và các người dùng khác không phải là người dùng hiện tại
+                        var thongTinCaNhanViewModels = await _context.ThongTinCN
+                            .Include(t => t.User)
+                            .Include(t => t.AnhCaNhan)
+                            .Where(t => t.TrangThai == "Hoạt Động" && t.User.UsID == user.UsID)
+                            .Select(t => new InfoNguoiDung
+                            {
+                                IDProfile = t.IDProfile,
+                                Username2 = t.User.UserName,
+                                UsID = t.UsID,
+                                HoTen = t.HoTen,
+                                Email = t.Email,
+                                GioiTinh = t.GioiTinh,
+                                NgaySinh = (DateTime)t.NgaySinh,
+                                SoDienThoai = t.SoDienThoai,
+                                IsPremium = t.IsPremium,
+                                MoTa = t.MoTa,
+                                NgayTao = t.NgayTao,
+                                TrangThai = t.TrangThai,
+                                HinhAnh = t.AnhCaNhan.Select(a => a.HinhAnh).ToList() ?? new List<string>(),
+                                // Lấy thể loại yêu thích của người dùng
+                                guPhim = user.TheLoai
+                            }).Where(x => x.UsID != nguoitimdoituong.UsID)
+                            .ToListAsync();
+                        // Gộp thông tin người dùng vào danh sách tổng
+                        allThongTinCaNhan.AddRange(thongTinCaNhanViewModels);
+                    }
+                    // Lọc danh sách người dùng, loại bỏ những người dùng đã bị "Dislike"
+                    var filteredThongTinCaNhan = allThongTinCaNhan
+                        .Where(info => !dislikedUsernames.Contains(info.Username2)) // Loại bỏ những người đã bị Dislike
+                        .Where(info => !likedOrDislikedUsernames.Contains(info.Username2)) // Loại bỏ cả những người đã được Like/Dislike
+                        .ToList();
+                    // Sắp xếp toàn bộ danh sách theo thể loại giống gu phim
+                    var sortedAllThongTinCaNhan = filteredThongTinCaNhan
+                        .OrderByDescending(info => info.guPhim == guPhim)
+                        .ToList();
 
-                // Truy vấn các thể loại từ các phim yêu thích của người dùng
-                var guPhim = _context.PhimYeuThich
-                    .Where(pyt => usIds.Contains(pyt.NguoiDungYT)) // Lọc theo UsID của người dùng
-                    .Join(_context.Phim, pyt => pyt.PhimYT, p => p.IDPhim, (pyt, p) => p.TheLoai) // Kết nối với bảng Phim để lấy thể loại
-                    .Distinct() // Loại bỏ thể loại trùng
-                    .ToList(); // Lấy danh sách thể loại
-
-                // Truyền vào ViewBag để sử dụng trong View
-                ViewBag.GuPhim = guPhim;
-                return View(thongTinCaNhanViewModels);
+                    // Trả về toàn bộ danh sách đã sắp xếp
+                    return View(sortedAllThongTinCaNhan);
+                }
             }
             else
             {
@@ -148,6 +297,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
+
 
         public IActionResult GetGuPhimByUserId(string userId)
         {

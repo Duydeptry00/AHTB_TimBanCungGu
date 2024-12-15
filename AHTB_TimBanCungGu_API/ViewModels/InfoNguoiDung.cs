@@ -16,8 +16,9 @@ namespace AHTB_TimBanCungGu_API.ViewModels
         public string MoTa { get; set; }
         public DateTime NgayTao { get; set; }
         public string TrangThai { get; set; }
-
+        public string guPhim { get; set; }
         // Các thông tin về ảnh cá nhân
         public List<string> HinhAnh { get; set; }
+        public string Username2 { get; set; }
     }
 }
