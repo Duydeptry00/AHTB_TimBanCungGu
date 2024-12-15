@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Linq;
 using Amazon.Runtime.Internal;
+using AHTB_TimBanCungGu_API.ViewModels;
 
 namespace AHTB_TimBanCungGu_API.Controllers
 {
@@ -39,7 +40,10 @@ namespace AHTB_TimBanCungGu_API.Controllers
             var user = await _context.Users
                 .Include(u => u.ThongTinCN) // Bao gồm thông tin cá nhân
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName || u.ThongTinCN.Email == request.UserName);
-            if(user.TrangThai == "Chờ Xác Thực")
+            // Kiểm tra người dùng có tồn tại hay không
+            if (user == null)
+                return Ok(new { IsValid = false, Message = "Tài khoản hoặc mật khẩu không chính xác." });
+            if (user.TrangThai == "Chờ Xác Thực")
             {
                 return Ok(new { IsValid = false, Message = "Tài khoản hiện đang còn chờ xác thực" });
             }
@@ -47,9 +51,7 @@ namespace AHTB_TimBanCungGu_API.Controllers
             {
                 return Ok(new { IsValid = false, Message = "Tài khoản hiện không được truy cập" });
             }
-            // Kiểm tra người dùng có tồn tại hay không
-            if (user == null)
-                return Ok(new { IsValid = false, Message = "Tài khoản hoặc mật khẩu không chính xác." });
+           
 
             // Kiểm tra trạng thái tài khoản
             if (user.ThongTinCN.TrangThai == "Không Hoạt Động")
@@ -62,6 +64,38 @@ namespace AHTB_TimBanCungGu_API.Controllers
             // Trả về kết quả nếu tất cả điều kiện đều hợp lệ
             return Ok(new { IsValid = true, Message = "Thông tin đăng nhập hợp lệ." });
         }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<User>>> GetNguoiDungAll()
+        {
+            var nguoiDungs = await _context.Users
+                .Select(u => new
+                {
+                    u.UsID,
+                    u.UserName,
+                    u.TrangThai,
+                    u.NgayMoKhoa,
+                    ThongTinCN = new
+                    {
+                        u.ThongTinCN.HoTen,
+                        u.ThongTinCN.Email,
+                        u.ThongTinCN.GioiTinh,
+                        u.ThongTinCN.SoDienThoai,
+                        u.ThongTinCN.IsPremium,
+                        u.ThongTinCN.MoTa,
+                        u.ThongTinCN.DiaChi
+                    }
+                })
+                .ToListAsync();
+
+            if (nguoiDungs == null || !nguoiDungs.Any())
+            {
+                return NotFound(); // Trả về HTTP 404 nếu không tìm thấy người dùng nào
+            }
+
+            return Ok(nguoiDungs);
+        }
+
+
 
         // User Registration
         [HttpPost("register")]
