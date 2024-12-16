@@ -482,52 +482,49 @@
     socket.onopen = function () {
         console.log("WebSocket connected.");
     };
-    // When a message is received from the WebSocket
     socket.onmessage = function (event) {
         const message = JSON.parse(event.data);  // Parse JSON from server
         const chatBody = document.getElementById("chatBody");
 
-        // Check if the message belongs to the current conversation
-        if (message.receiverUsername === currentConversation || message.senderUsername === currentConversation) {
-            // Create a container for the message
-            let messageContainer = document.createElement("div");
-            messageContainer.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
+        if (message.type === "chat") {
+            // Xử lý tin nhắn thông thường
+            if (message.receiverUsername === currentConversation || message.senderUsername === currentConversation) {
+                let messageContainer = document.createElement("div");
+                messageContainer.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
 
-            // Create the sender's name element
-            let senderNameElement = document.createElement("div");
-            senderNameElement.classList.add("message-sender");
-            senderNameElement.innerText = message.senderName;
-            // Create the message content element
-            let messageContentElement = document.createElement("div");
-            messageContentElement.innerText = message.content;
+                let senderNameElement = document.createElement("div");
+                senderNameElement.classList.add("message-sender");
+                senderNameElement.innerText = message.senderName;
 
-            // Create the timestamp element
-            let messageTimestampElement = document.createElement("div");
-            messageTimestampElement.classList.add("message-timestamp");
+                let messageContentElement = document.createElement("div");
+                // Chuyển tin nhắn có link thành liên kết có thể nhấp
+                messageContentElement.innerHTML = parseLinks(message.content); // Thay vì innerText, sử dụng innerHTML
 
-            // Format the timestamp
-            const messageTime = new Date(message.timestamp); // Assuming `message.timestamp` is an ISO string
-            messageTimestampElement.innerText = messageTime.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+                let messageTimestampElement = document.createElement("div");
+                messageTimestampElement.classList.add("message-timestamp");
 
-            // Append the sender's name, message content, and timestamp to the container
-            messageContainer.appendChild(senderNameElement);
-            messageContainer.appendChild(messageContentElement);
-            messageContainer.appendChild(messageTimestampElement);
+                const messageTime = new Date(message.timestamp);
+                messageTimestampElement.innerText = messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            // Append the message container to the chat body
-            chatBody.appendChild(messageContainer);
+                messageContainer.appendChild(senderNameElement);
+                messageContainer.appendChild(messageContentElement);
+                messageContainer.appendChild(messageTimestampElement);
 
-            // Scroll to the bottom of the chat body when a new message is added
-            chatBody.scrollTop = chatBody.scrollHeight;
+                chatBody.appendChild(messageContainer);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        } else if (message.type === "blockNotification") {
+            // Các hàm gọi lại khác nếu cần
+            checkBlockStatus(currentConversation);
         }
-
-        checkBlockStatus(currentConversation);
+        else if (message.type === "unblockNotification") {
+            // Các hàm gọi lại khác nếu cần
+            checkBlockStatus(currentConversation);
+        }
         loadConversations();
         loadMessages(currentConversation);
     };
+
 
     // Khi WebSocket đóng
     socket.onclose = function () {
@@ -733,7 +730,16 @@
 
                                 // Create message content element
                                 const messageContentElement = document.createElement("div");
-                                messageContentElement.innerText = message.content;
+                                // Check if the content is a URL
+                                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                const content = message.content;
+
+                                // If it's a URL, convert it to a clickable link
+                                if (urlRegex.test(content)) {
+                                    messageContentElement.innerHTML = content.replace(urlRegex, '<a href="$&" target="_blank">$&</a>');
+                                } else {
+                                    messageContentElement.innerText = content;
+                                }
 
                                 // Create message timestamp element
                                 const messageTimestampElement = document.createElement("div");
@@ -781,105 +787,55 @@
         }
     }
 
-    // Hàm để gửi yêu cầu chặn người dùng tới API
+
     function blockUser(receiverUsername) {
         const senderUsername = sendUser; // Lấy tên người gửi từ biến toàn cục
 
-        fetch('/Chats/BlockUser', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ReceiverUserName: receiverUsername,
-                SenderUsername: senderUsername
-            })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(data);
-                if (data.success) {
-                    // Hiển thị thông báo thành công
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công!',
-                        text: data.message,
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Cập nhật giao diện hoặc làm mới danh sách cuộc trò chuyện nếu cần
-                        checkBlockStatus(receiverUsername);
-                    });
-                } else {
-                    // Hiển thị thông báo lỗi
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Đã chặn!',
-                        text: `${data.message}`,
-                        confirmButtonText: 'OK'
-                    });
-                }
-            })
-            .catch(error => {
-                // Xử lý lỗi khi gửi yêu cầu hoặc lỗi mạng
-                console.error("Error blocking user:", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: 'Đã xảy ra lỗi khi gửi yêu cầu chặn người dùng. Vui lòng thử lại sau.',
-                    confirmButtonText: 'OK'
-                });
-            });
+        // Tạo một thông điệp chặn người dùng
+        const blockMessage = {
+            type: 'block',  // Chỉ rõ loại thông điệp là chặn
+            senderUsername: senderUsername,
+            receiverUsername: receiverUsername
+        };
+
+        // Gửi thông điệp qua WebSocket
+        socket.send(JSON.stringify(blockMessage));
+
+        // Hiển thị thông báo chặn người dùng ngay lập tức (hoặc thông báo thành công)
+        Swal.fire({
+            icon: 'success',
+            title: 'Chặn người dùng thành công!',
+            text: `Bạn đã chặn ${receiverUsername}`,
+            confirmButtonText: 'OK'
+        }).then(() => {
+            checkBlockStatus(receiverUsername);
+        });
     }
+
 
     function unblockUser(receiverUsername) {
         const senderUsername = sendUser;
-        console.log(receiverUsername);
-        fetch('/Chats/UnblockUser', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ReceiverUserName: receiverUsername,
-                SenderUsername: senderUsername
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công!',
-                        text: 'Đã hủy chặn người dùng.',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        checkBlockStatus(receiverUsername);
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi!',
-                        text: data.message,
-                        confirmButtonText: 'OK'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error("Error unblocking user:", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: 'Đã xảy ra lỗi khi gửi yêu cầu hủy chặn người dùng. Vui lòng thử lại sau.',
-                    confirmButtonText: 'OK'
-                });
-            });
-    }
 
+        // Tạo thông điệp `unblock` để gửi qua WebSocket
+        const unblockMessage = {
+            type: 'unblock',
+            senderUsername: senderUsername,
+            receiverUsername: receiverUsername
+        };
+
+        // Gửi thông điệp qua WebSocket
+        socket.send(JSON.stringify(unblockMessage));
+
+        // Hiển thị thông báo cho người dùng
+        Swal.fire({
+            icon: 'success',
+            title: 'Hủy chặn người dùng thành công!',
+            text: `Bạn đã hủy chặn ${receiverUsername}`,
+            confirmButtonText: 'OK'
+        }).then(() => {
+            checkBlockStatus(receiverUsername);
+        });
+    }
 
     // Hàm để tải danh sách cuộc trò chuyện từ API
     function loadConversations() {
@@ -1073,6 +1029,7 @@
 
         // Gửi tin nhắn qua WebSocket
         const message = {
+            type: "chat",
             senderUsername: sendUser,  // Thay thế với thông tin người dùng thực tế
             receiverUsername: currentConversation,
             content: messageContent,
@@ -1086,9 +1043,15 @@
         let messageContainer = document.createElement("div");
         messageContainer.classList.add("user-message");
 
-        // Tạo phần tử hiển thị nội dung tin nhắn
+        // Tạo phần tử hiển thị nội dung tin nhắn (dùng innerHTML thay vì innerText)
         let messageContentElement = document.createElement("div");
-        messageContentElement.innerText = messageContent;
+
+        // Kiểm tra xem nội dung có phải là một URL hay không và thay thế URL thành liên kết
+        messageContent = messageContent.replace(/(?:https?|ftp):\/\/[^\s]+/g, function (url) {
+            return `<a href="${url}" target="_blank">${url}</a>`;  // Chuyển URL thành liên kết có thể nhấp
+        });
+
+        messageContentElement.innerHTML = messageContent;  // Sử dụng innerHTML để hiển thị liên kết
 
         // Tạo phần tử hiển thị thời gian tin nhắn
         let messageTimestampElement = document.createElement("div");
@@ -1115,4 +1078,5 @@
         // Tải lại danh sách cuộc trò chuyện
         loadConversations();
     }
+
 </script>

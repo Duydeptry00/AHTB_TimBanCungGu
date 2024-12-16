@@ -169,49 +169,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return View();
             }
         }
-        
-        [HttpPost]
-        public async Task<IActionResult> SendMessage([FromBody] MessageVM message)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View("Index");
-            }
-
-            try
-            {
-                message.Timestamp = DateTime.UtcNow;
-
-                // Gửi tin nhắn qua API (nếu cần thiết để lưu vào cơ sở dữ liệu)
-                var response = await _httpClient.PostAsJsonAsync("http://localhost:15172/api/Chats", message);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Gửi tin nhắn qua WebSocket đến người nhận
-                    await SendMessageToUser(message.ReceiverUsername, message.Content);
-
-                    return Json(new
-                    {
-                        success = true,
-                        message = "Tin nhắn đã được gửi.",
-                        ReceiverUsername = message.ReceiverUsername,
-                        SenderUsername = message.SenderUsername,
-                        content = message.Content
-                    });
-                }
-                else
-                {
-                    var errorResponse = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError("", $"Gửi tin nhắn thất bại: {errorResponse}");
-                }
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Lỗi xảy ra: {ex.Message}");
-            }
-
-            return View("Index");
-        }
 
         [HttpGet]
         public async Task<IActionResult> ConnectWebSocket()
@@ -255,20 +212,184 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                         Console.WriteLine($"Received message: {message}");
 
-                        // Chuyển đối tượng JSON thành MessageVM
-                        var jsonMessage = JsonConvert.DeserializeObject<MessageVM>(message);
+                        // Chuyển đối tượng JSON thành dynamic object hoặc class
+                        var parsedMessage = JsonConvert.DeserializeObject<dynamic>(message);
 
-                        // Lưu tin nhắn vào cơ sở dữ liệu thông qua API
-                        await SaveMessageToDatabase(jsonMessage);
+                        if (parsedMessage != null && parsedMessage.type == "chat")
+                        {
+                            // Xử lý tin nhắn
+                            var jsonMessage = JsonConvert.DeserializeObject<MessageVM>(message);
 
-                        // Sau khi lưu, gửi lại tin nhắn cho người nhận qua WebSocket
-                        await SendMessageToUser(jsonMessage.ReceiverUsername, jsonMessage.Content);
+                            // Lưu tin nhắn vào cơ sở dữ liệu thông qua API
+                            await SaveMessageToDatabase(jsonMessage);
+
+                            // Sau khi lưu, gửi lại tin nhắn cho người nhận qua WebSocket
+                            await SendMessageToUser(jsonMessage.ReceiverUsername, jsonMessage.Content);
+                        }
+                        else if (parsedMessage != null && parsedMessage.type == "block")
+                        {
+                            string senderUsername = parsedMessage.senderUsername;
+                            string receiverUsername = parsedMessage.receiverUsername;
+
+                            // Gọi hàm để thực hiện hành động chặn
+                            var isBlocked = await BlockUser(senderUsername, receiverUsername);
+
+                            // Gửi phản hồi tới người gửi (người thực hiện chặn)
+                            var responseToSender = new
+                            {
+                                type = "blockResponse",
+                                success = isBlocked,
+                                message = isBlocked ? "User has been blocked successfully." : "Failed to block the user."
+                            };
+
+                            await webSocket.SendAsync(
+                                new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseToSender))),
+                                WebSocketMessageType.Text,
+                                true,
+                                CancellationToken.None
+                            );
+
+                            // Nếu chặn thành công, gửi thông báo tới người bị chặn (receiver)
+                            if (isBlocked && _userWebSockets.TryGetValue(receiverUsername, out WebSocket receiverSocket))
+                            {
+                                var notificationToReceiver = new
+                                {
+                                    type = "blockNotification",
+                                    message = $"{senderUsername} has blocked you.",
+                                    senderUsername = senderUsername
+                                };
+
+                                await receiverSocket.SendAsync(
+                                    new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notificationToReceiver))),
+                                    WebSocketMessageType.Text,
+                                    true,
+                                    CancellationToken.None
+                                );
+                            }
+                        }
+                        else if (parsedMessage != null && parsedMessage.type == "unblock")
+                        {
+                            // Lấy thông tin người gửi và người nhận
+                            string senderUsername = parsedMessage.senderUsername;
+                            string receiverUsername = parsedMessage.receiverUsername;
+
+                            // Gọi hàm để thực hiện hành động hủy chặn
+                            var isUnblocked = await UnblockUser(senderUsername, receiverUsername);
+
+                            // Gửi phản hồi cho client về kết quả hủy chặn
+                            var response = new
+                            {
+                                type = "unblockResponse",
+                                success = isUnblocked,
+                                message = isUnblocked ? "User has been unblocked successfully." : "Failed to unblock the user."
+                            };
+
+                            await webSocket.SendAsync(
+                                new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response))),
+                                WebSocketMessageType.Text,
+                                true,
+                                CancellationToken.None
+                            );
+
+                            // Nếu hủy chặn thành công, gửi thông báo tới người bị hủy chặn (receiver)
+                            if (isUnblocked && _userWebSockets.TryGetValue(receiverUsername, out WebSocket receiverSocket))
+                            {
+                                var notificationToReceiver = new
+                                {
+                                    type = "unblockNotification",
+                                    message = $"{senderUsername} has unblocked you.",
+                                    senderUsername = senderUsername
+                                };
+
+                                await receiverSocket.SendAsync(
+                                    new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(notificationToReceiver))),
+                                    WebSocketMessageType.Text,
+                                    true,
+                                    CancellationToken.None
+                                );
+                            }
+                        }
+
                     }
                 }
+
             }
             return View();
         }
+        private async Task<bool> BlockUser(string senderUsername, string receiverUsername)
+        {
+            try
+            {
+                // Tạo đối tượng chứa thông tin chặn
+                var blockRequest = new
+                {
+                    SenderUsername = senderUsername,
+                    ReceiverUsername = receiverUsername
+                };
 
+                // Gửi yêu cầu tới API để lưu thông tin chặn
+                using (var httpClient = new HttpClient())
+                {
+                    var jsonContent = new StringContent(JsonConvert.SerializeObject(blockRequest), Encoding.UTF8, "application/json");
+                    var response = await httpClient.PostAsync("http://localhost:15172/api/Chats/BlockUser", jsonContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Nếu lưu thành công, trả về `true`
+                        return true;
+                    }
+                    else
+                    {
+                        // Nếu có lỗi từ API, ghi lại log và trả về `false`
+                        Console.WriteLine($"Failed to block user: {response.StatusCode}");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ngoại lệ và trả về `false`
+                Console.WriteLine($"Error blocking user: {ex.Message}");
+                return false;
+            }
+        }
+        private async Task<bool> UnblockUser(string senderUsername, string receiverUsername)
+        {
+            try
+            {
+                // Tạo đối tượng chứa thông tin hủy chặn
+                var blockRequest = new
+                {
+                    SenderUsername = senderUsername,
+                    ReceiverUsername = receiverUsername
+                };
+
+                // Gửi yêu cầu tới API để lưu thông tin hủy chặn
+                using (var httpClient = new HttpClient())
+                {
+                    var jsonContent = new StringContent(JsonConvert.SerializeObject(blockRequest), Encoding.UTF8, "application/json");
+                    var response = await httpClient.PostAsync("http://localhost:15172/api/Chats/UnblockUser", jsonContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Nếu lưu thành công, trả về `true`
+                        return true;
+                    }
+                    else
+                    {
+                        // Nếu có lỗi từ API, ghi lại log và trả về `false`
+                        Console.WriteLine($"Failed to block user: {response.StatusCode}");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ngoại lệ và trả về `false`
+                Console.WriteLine($"Error blocking user: {ex.Message}");
+                return false;
+            }
+        }
         public async Task SaveMessageToDatabase(MessageVM message)
         {
             try
@@ -316,57 +437,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 }
             }
         }
-        [HttpPost]
-        public async Task<IActionResult> BlockUser([FromBody] BlockUserRequest user)
-        {
-            string senderUsername = HttpContext.Session.GetString("TempUserName");
-            string receiverUsername = user.ReceiverUsername;
-            if (string.IsNullOrEmpty(senderUsername))
-            {
-                return Json(new { success = false, message = "Người dùng hiện tại không xác định." });
-            }
-
-            try
-            {
-                // Gửi yêu cầu tới API
-                var requestBody = new
-                {
-                    ReceiverUserName = receiverUsername,
-                    SenderUsername = senderUsername
-                };
-
-                var response = await _httpClient.PostAsJsonAsync("http://localhost:15172/api/Chats/BlockUser", requestBody);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<BlockUserResponse>(responseContent);
-
-                    return Json(new
-                    {
-                        success = result?.Success,
-                        message = result?.Message
-                    });
-                }
-                else
-                {
-                    var errorMessage = await response.Content.ReadAsStringAsync();
-                    return Json(new
-                    {
-                        success = false,
-                        message = $"Lỗi khi chặn người dùng: {errorMessage}"
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = $"Đã xảy ra lỗi: {ex.Message}"
-                });
-            }
-        }
+     
         public class BlockUserResponse
         {
             public bool Success { get; set; }
@@ -377,58 +448,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             public string ReceiverUsername { get; set; }
             public string SenderUsername { get; set; }
         }
-        [HttpPost]
-        public async Task<IActionResult> UnblockUser([FromBody] BlockUserRequest user)
-        {
-            string receiverUsername = user.ReceiverUsername;
-            string senderUsername = HttpContext.Session.GetString("TempUserName");
 
-            if (string.IsNullOrEmpty(senderUsername))
-            {
-                return Json(new { success = false, message = "Người dùng hiện tại không xác định." });
-            }
-
-            try
-            {
-                // Gửi yêu cầu tới API
-                var requestBody = new
-                {
-                    ReceiverUserName = receiverUsername,
-                    SenderUsername = senderUsername
-                };
-
-                var response = await _httpClient.PostAsJsonAsync("http://localhost:15172/api/Chats/UnblockUser", requestBody);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
-
-                    return Json(new
-                    {
-                        success = true,
-                        message = result?.Message ?? "Đã bỏ chặn người dùng thành công."
-                    });
-                }
-                else
-                {
-                    var errorMessage = await response.Content.ReadAsStringAsync();
-                    return Json(new
-                    {
-                        success = false,
-                        message = $"Lỗi khi bỏ chặn người dùng: {errorMessage}"
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = $"Đã xảy ra lỗi: {ex.Message}"
-                });
-            }
-        }
         [HttpGet]
         public async Task<IActionResult> CheckBlockStatus(string receiverUsername)
         {
