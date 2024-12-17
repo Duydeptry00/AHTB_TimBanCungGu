@@ -98,42 +98,58 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 // Lấy thể loại từ các phim yêu thích của người dùng hiện tại
                 var phimYeuThich = await _context.PhimYeuThich
                     .Where(pyt => pyt.NguoiDungYT == iduser.UsID)
-                    .Join(_context.Phim, pyt => pyt.PhimYT, p => p.IDPhim, (pyt, p) => p.TheLoai)
+                    .Join(_context.Phim, pyt => pyt.PhimYT, p => p.IDPhim, (pyt, p) => new { p.TheLoai, pyt.IdYeuThich })
                     .ToListAsync();
 
                 // Biến guPhim mặc định
                 string guPhim = null;
-                // Nếu không có phim yêu thích, chọn thể loại xuất hiện nhiều nhất trong lịch sử xem
-                if (phimYeuThich == null || !phimYeuThich.Any())
-                {
-                    var guPhimObj = lichSuXem
-                        .GroupBy(g => g)
-                        .OrderByDescending(g => g.Count())
-                        .Select(g => g.Key)
-                        .FirstOrDefault();
 
-                    guPhim = guPhimObj?.TenTheLoai;  // Gán tên thể loại vào guPhim nếu có
-                }
-                else
+                // Kiểm tra nếu có phim yêu thích
+                if (phimYeuThich.Any())
                 {
-                    // Nếu có phim yêu thích, chọn thể loại xuất hiện nhiều nhất trong phim yêu thích
                     var guPhimObj = phimYeuThich
-                        .GroupBy(g => g)
-                        .OrderByDescending(g => g.Count())
-                        .Select(g => g.Key)
+                        .GroupBy(p => p.TheLoai) // Nhóm theo thể loại
+                        .Select(g => new
+                        {
+                            TheLoai = g.Key,
+                            Count = g.Count(),
+                            MaxIdYeuThich = g.Max(x => x.IdYeuThich) // Lấy IdYeuThich lớn nhất cho thể loại đó
+                        })
+                        .OrderByDescending(x => x.Count) // Sắp xếp theo số lượng giảm dần
+                        .ThenByDescending(x => x.MaxIdYeuThich) // Nếu số lượng bằng nhau, ưu tiên Id mới nhất
                         .FirstOrDefault();
 
-                    guPhim = guPhimObj?.TenTheLoai;  // Gán tên thể loại vào guPhim nếu có
-                }
-                // Kiểm tra xem có thể loại phim nào được xác định là guPhim
-                if (!string.IsNullOrEmpty(guPhim))
-                {
-                    ViewBag.GuPhim = guPhim;
+                    guPhim = guPhimObj?.TheLoai.TenTheLoai; // Gán thể loại có số lượng cao nhất và mới nhất
                 }
                 else
                 {
-                    ViewBag.GuPhim = "Không xác định được gu phim.";
+                    // 2. Xử lý từ lịch sử xem nếu không có phim yêu thích
+                    var lichSuXemList = await _context.LichSuXem
+                     .Where(lsx => lsx.NguoiDungXem == iduser.UsID)
+                     .Join(_context.Phim, lsx => lsx.PhimDaXem, p => p.IDPhim, (lsx, p) => new { p.TheLoai, lsx.IDLSX })
+                     .ToListAsync();
+
+                    if (lichSuXemList.Any())
+                    {
+                        var guPhimObj = lichSuXemList
+                            .GroupBy(p => p.TheLoai)
+                            .Select(g => new
+                            {
+                                TheLoai = g.Key,
+                                Count = g.Count(),
+                                MaxIDLSX = g.Max(x => x.IDLSX)
+                            })
+                            .OrderByDescending(x => x.Count)
+                            .ThenByDescending(x => x.MaxIDLSX)
+                            .FirstOrDefault();
+
+                        guPhim = guPhimObj?.TheLoai.TenTheLoai; // Gán thể loại từ lịch sử xem
+                    }
                 }
+
+                // Kiểm tra xem có thể loại phim nào được xác định là guPhim
+                ViewBag.GuPhim = !string.IsNullOrEmpty(guPhim) ? guPhim : "Không xác định được gu phim.";
+
                 // Lọc những người dùng đã swipe (bao gồm cả Like và Dislike)
                 var swipedUsers = await _MatchNguoiDung
                     .Find(x => x["User1"] == userName)
