@@ -1,0 +1,219 @@
+﻿@model AHTB_TimBanCungGu_API.ViewModels.MovieSession
+@{
+    ViewData["Title"] = "Xem phim cùng";
+    Layout = null;
+}
+<h2 class="movie-title">Phim Hiện Tại: @Model.MovieTitle</h2>
+
+<div class="film-container">
+    <!-- Phần xem phim -->
+    <div class="film-player">
+        <iframe id="filmPlayer" src="@Model.MovieUrl" class="film-iframe" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <!-- Phần nhắn tin -->
+    <div class="chat-container">
+        <h3>Nhắn Tin</h3>
+        <div id="chatBox" class="chat-box">
+            <!-- Tin nhắn sẽ được hiển thị ở đây -->
+        </div>
+
+        <!-- Form gửi tin nhắn -->
+        <form id="chatForm" onsubmit="sendMessage(event)">
+            <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." class="chat-input" required />
+            <button type="submit" class="btn btn-send">Gửi</button>
+        </form>
+    </div>
+</div>
+
+<h3 class="select-movie-title">Chọn Phim Khác</h3>
+<div class="movie-container">
+    @if (ViewBag.DanhSachPhim != null)
+    {
+        @foreach (var phim in ViewBag.DanhSachPhim as List<AHTB_TimBanCungGu_API.Models.Phim>)
+        {
+            <div class="movie-card">
+                <img src="/Uploads/@phim.HinhAnh" alt="@phim.TenPhim" style="width:200px; height:300px;" />
+                <h3>@phim.TenPhim</h3>
+                <a href="@Url.Action("WatchTogether", new { receiverUsername = ViewBag.ReceiverUser, PhimSeXem = phim.TenPhim })" class="btn btn-primary">
+                    Xem Phim Này
+                </a>
+            </div>
+        }
+    }
+    else
+    {
+        <p>Không có phim để hiển thị.</p>
+    }
+</div>
+
+<script>
+    var socket;
+
+    // Kết nối với WebSocket
+    function connectToWebSocket(sessionId, currentUser) {
+        socket = new WebSocket("wss://localhost:5001/chat/" + sessionId);  // Cập nhật URL WebSocket nếu cần
+
+        socket.onopen = function () {
+            console.log("WebSocket connection established.");
+        };
+
+        socket.onmessage = function (event) {
+            var message = JSON.parse(event.data);
+            displayMessage(message);
+        };
+
+        socket.onerror = function (error) {
+            console.log("WebSocket error: ", error);
+        };
+    }
+
+    // Hiển thị tin nhắn vào chatBox
+    function displayMessage(message) {
+        var chatBox = document.getElementById("chatBox");
+        var messageElement = document.createElement("div");
+        messageElement.textContent = message.sender + ": " + message.text;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight; // Đảm bảo cuộn xuống dưới cùng khi có tin nhắn mới
+    }
+
+    // Gửi tin nhắn khi người dùng nhấn nút "Gửi"
+    function sendMessage(event) {
+        event.preventDefault();
+        var chatInput = document.getElementById("chatInput");
+        var messageText = chatInput.value;
+        var message = {
+            sender: "@ViewBag.CurrentUser",  // Lấy tên người gửi từ ViewBag
+            text: messageText
+        };
+
+        // Gửi tin nhắn qua WebSocket
+        socket.send(JSON.stringify(message));
+
+        // Xóa nội dung trong input sau khi gửi
+        chatInput.value = "";
+    }
+
+    // Khi trang được tải, thiết lập WebSocket
+    window.onload = function () {
+        var sessionId = "@ViewBag.SessionId";
+        var currentUser = "@ViewBag.CurrentUser";
+        connectToWebSocket(sessionId, currentUser);
+    };
+</script>
+
+<style>
+    /* Cải thiện giao diện với nền đen */
+    body {
+        background-color: #1f1f1f; /* Nền đen */
+        color: #fff; /* Văn bản màu trắng */
+        font-family: Arial, sans-serif;
+    }
+
+    /* Cải thiện giao diện cho phần phim */
+    .film-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 20px;
+        background-color: #1f1f1f; /* Nền đen */
+    }
+
+    .film-player {
+        width: 70%;
+    }
+
+    .film-iframe {
+        width: 100%;
+        height: 542px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Cải thiện giao diện chat */
+    .chat-container {
+        width: 28%;
+        height: 500px;
+        border-left: 1px solid #ccc;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        background-color: #2b2b2b; /* Màu nền tối cho chat */
+        border-radius: 8px;
+    }
+
+    .chat-box {
+        flex: 1;
+        overflow-y: scroll;
+        margin-bottom: 10px;
+        border: 1px solid #444;
+        padding: 10px;
+        height: 80%;
+        background-color: #333;
+        border-radius: 8px;
+    }
+
+    .chat-input {
+        width: calc(100% - 80px);
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: 1px solid #444;
+        background-color: #222;
+        color: #fff;
+    }
+
+    .btn-send {
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    /* Cải thiện giao diện chọn phim */
+    .movie-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .movie-card {
+        width: 200px;
+        text-align: center;
+        padding: 10px;
+        border: 1px solid #444;
+        border-radius: 8px;
+        background-color: #2b2b2b;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+        }
+
+    .movie-image {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .movie-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #fff;
+    }
+
+    .select-movie-title {
+        font-size: 20px;
+        margin-top: 40px;
+        text-align: center;
+        color: #ccc;
+    }
+</style>

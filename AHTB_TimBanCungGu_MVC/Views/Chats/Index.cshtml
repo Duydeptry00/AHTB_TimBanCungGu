@@ -58,7 +58,7 @@
 
     /* Danh sách cuộc trò chuyện */
     .conversations-list {
-        width: 300px;
+        width: 380px;
         padding: 10px;
         border-right: 1px solid #ddd;
         height: 100%; /* Chiếm toàn bộ chiều cao */
@@ -112,11 +112,12 @@
     /* Thông tin trò chuyện */
     .conversation-info {
         flex-grow: 1;
-        margin-left: 12px;
+        width:350px;
+        margin-left: 10px;
+        margin-right:10px;
         display: flex;
         flex-direction: column;
     }
-
         /* Tên người trò chuyện */
         .conversation-info strong {
             display: block;
@@ -190,56 +191,136 @@
             font-size: 14px;
             width: 100%;
         }
-
             .menu-options button:hover {
                 background-color: #f5f5f5;
             }
+    /* Nút Xem Phim Cùng */
+    .watch-movie-btn {
+        display: inline-block;
+        background-color: #0078D4; /* Màu nền xanh */
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none; /* Bỏ gạch chân */
+        border-radius: 5px; /* Bo góc */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+        transition: background-color 0.3s ease;
+    }
+
+        /* Hiệu ứng khi hover */
+        .watch-movie-btn:hover {
+            background-color: #005bb5; /* Màu nền khi hover */
+        }
+
+        /* Hiệu ứng khi nhấn */
+        .watch-movie-btn:active {
+            background-color: #004f8c; /* Màu nền khi nhấn */
+        }
+    /*Hiển thị phim trong modals phim*/
+    .movie-selection {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px; /* Tăng khoảng cách giữa các tùy chọn phim */
+        justify-content: center;
+        max-height: 400px; /* Đặt chiều cao tối đa cho container */
+    }
+
+    .movie-option {
+        text-align: center;
+        cursor: pointer;
+        border-radius:10px;
+        margin-bottom: 20px;
+        width: 150px; /* Tăng chiều rộng của từng tùy chọn */
+        background-color: RGBA(192, 192, 192, 0.4);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .movie-option img {
+            width: 100%;
+            height: auto;
+            margin:8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: box-shadow 0.3s ease;
+            max-height: 200px; /* Tăng chiều cao ảnh để hình ảnh lớn hơn */
+        }
+
+        .movie-option:hover {
+            transform: scale(1.1); /* Tăng hiệu ứng phóng to khi di chuột */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .movie-option span {
+            display: block;
+            margin-top: 10px;
+            font-size: 16px; /* Tăng kích thước font chữ */
+            font-weight: bold;
+            color: #333;
+        }
+
+        .movie-option.selected {
+            border: 2px solid #007bff;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+    /* Tùy chỉnh modal SweetAlert */
+    .swal2-popup {
+        width: 80% !important; /* Đặt chiều rộng modal là 80% màn hình (hoặc bạn có thể thay đổi giá trị này theo nhu cầu) */
+        max-width: 800px !important; /* Đặt chiều rộng tối đa cho modal */
+        padding: 20px !important; /* Tăng padding để nội dung không bị dính vào các cạnh */
+    }
+
+    /* Tùy chỉnh nội dung của modal */
+    .swal2-title {
+        font-size: 24px; /* Tăng kích thước tiêu đề */
+    }
+
+    .swal2-content {
+        font-size: 16px; /* Tăng kích thước nội dung */
+    }
+
+    /* Tùy chỉnh các nút */
+    .swal2-confirm, .swal2-cancel {
+        font-size: 16px; /* Tăng kích thước chữ cho các nút */
+        padding: 10px 20px; /* Tăng kích thước padding của nút */
+    }
+
+
 
     /* Thanh cuộn của danh sách cuộc trò chuyện */
     .conversation-list {
+        height: 100%;
         overflow-y: auto; /* Thêm thanh cuộn dọc nếu nội dung vượt quá chiều cao */
         max-height: calc(100vh - 130px); /* Chiều cao tối đa, có thể điều chỉnh theo nhu cầu */
     }
-
         /* Thanh cuộn khi chưa hoạt động */
         .conversation-list::-webkit-scrollbar {
             width: 8px; /* Chiều rộng thanh cuộn */
         }
-
         .conversation-list::-webkit-scrollbar-track {
             background: transparent; /* Nền trong suốt khi không hoạt động */
         }
-
         .conversation-list::-webkit-scrollbar-thumb {
             background: rgba(0, 120, 212, 0.3); /* Thanh cuộn mờ khi chưa cuộn */
             border-radius: 10px; /* Bo tròn các góc */
             transition: background-color 0.3s ease; /* Hiệu ứng mờ */
         }
-
         /* Thanh cuộn khi đang hoạt động */
         .conversation-list:hover::-webkit-scrollbar-thumb {
             background: rgba(0, 120, 212, 0.3);
         }
-
         .conversation-list::-webkit-scrollbar-corner {
             display: none; /* Ẩn phần giao nhau */
         }
-
         .conversation-list::-webkit-scrollbar-button {
             display: none; /* Ẩn các nút cuộn */
         }
-
     .conversation-list {
         scrollbar-width: thin; /* Thanh cuộn mỏng */
         scrollbar-color: rgba(0, 120, 212, 0.3) transparent; /* Màu thanh cuộn và nền khi chưa cuộn */
     }
-
         .conversation-list:hover {
             scrollbar-color: #0078D4 transparent; /* Màu thanh cuộn khi cuộn */
         }
-
-
-
     /* Định dạng liên kết để nó ở cuối dòng */
     .back-to-home {
         display: block;
@@ -255,14 +336,10 @@
         transition: background-color 0.3s ease, color 0.3s ease; /* Hiệu ứng chuyển màu */
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
     }
-
         .back-to-home:hover {
             background-color: #0085E3; /* Nền khi hover */
             color: #fff; /* Màu chữ khi hover */
         }
-
-
-
     /* Cửa sổ trò chuyện */
     .chat-window {
         width: -webkit-fill-available;
@@ -521,16 +598,54 @@
             // Các hàm gọi lại khác nếu cần
             checkBlockStatus(currentConversation);
         }
+        else if (message.type === "movieInvite") {
+            // Hiển thị lời mời xem phim cho người nhận
+            Swal.fire({
+                title: `${message.senderUsername} mời bạn xem phim '${message.movieName}' cùng!`,
+                text: 'Bạn có muốn chấp nhận lời mời này?',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Chấp nhận',
+                cancelButtonText: 'Từ chối',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Gửi phản hồi đồng ý mời
+                    const acceptInviteMessage = {
+                        type: "movieInviteResponse",
+                        receiverUsername: message.receiverUsername,
+                        senderUsername: message.senderUsername,
+                        response: "accepted",
+                        movieName: message.movieName
+                    };
+
+                    socket.send(JSON.stringify(acceptInviteMessage));
+                    Swal.fire('Lời mời đã được chấp nhận!', '', 'success')
+                        .then(() => {
+                            // Sau khi thông báo được đóng, chuyển hướng đến trang WatchTogether
+                            window.location.href = `/chats/WatchTogether?senderUsername=${message.senderUsername}&receiverUsername=${message.receiverUsername}&PhimSeXem=${message.movieName}&idPhim=${message.idPhim}`;
+                        });
+                } else {
+                    // Gửi phản hồi từ chối mời
+                    const declineInviteMessage = {
+                        type: "movieInviteResponse",
+                        receiverUsername: message.receiverUsername,
+                        senderUsername: message.senderUsername,
+                        response: "declined",
+                        movieName: message.movieName
+                    };
+
+                    socket.send(JSON.stringify(declineInviteMessage));
+                    Swal.fire('Lời mời đã bị từ chối!', '', 'info');
+                }
+            });
+        }
         loadConversations();
         loadMessages(currentConversation);
     };
-
-
     // Khi WebSocket đóng
     socket.onclose = function () {
         console.log("WebSocket closed.");
     };
-
     // Khi có lỗi với WebSocket
     socket.onerror = function (error) {
         console.log("WebSocket Error: " + error);
@@ -635,16 +750,18 @@
     window.onload = function () {
         toggleChatFooter(false); // Hide chat footer by default
     };
-    // Thêm sự kiện lắng nghe cho ô nhập liệu để xử lý Enter và Shift + Enter
-    document.getElementById("messageContent").addEventListener("keydown", function (event) {
+    const messageInput = document.getElementById("messageContent");
+    messageInput.addEventListener("keydown", function (event) {
+        // Kiểm tra nếu nhấn Shift + Enter
+        if (event.key === "Enter" && event.shiftKey) {
+            // Thêm dòng mới mà không gửi tin nhắn
+            return;
+        }
+
+        // Kiểm tra nếu chỉ nhấn Enter
         if (event.key === "Enter") {
-            if (event.shiftKey) {
-                // Nếu nhấn Shift + Enter, cho phép xuống dòng
-                return;
-            }
-            // Nếu nhấn Enter mà không giữ Shift, gọi hàm gửi tin nhắn
-            event.preventDefault(); // Ngăn chặn hành động mặc định của Enter (ví dụ: gửi form)
-            sendMessage();
+            event.preventDefault(); // Ngăn xuống dòng mặc định
+            sendMessage(); // Gọi hàm gửi tin nhắn
         }
     });
     // Function to toggle the visibility of the chat footer
@@ -700,8 +817,6 @@
 
                         // Check if there are messages to display
                         if (Array.isArray(data.messages) && data.messages.length > 0) {
-                            console.log(data.messages);
-
                             let lastMessageDate = null; // To keep track of the last message date
 
                             // Loop through each message and create corresponding elements
@@ -786,8 +901,6 @@
             console.error("Invalid user2.");
         }
     }
-
-
     function blockUser(receiverUsername) {
         const senderUsername = sendUser; // Lấy tên người gửi từ biến toàn cục
 
@@ -806,13 +919,12 @@
             icon: 'success',
             title: 'Chặn người dùng thành công!',
             text: `Bạn đã chặn ${receiverUsername}`,
-            confirmButtonText: 'OK'
+            showConfirmButton: false,
+            timer: 1000,
         }).then(() => {
             checkBlockStatus(receiverUsername);
         });
     }
-
-
     function unblockUser(receiverUsername) {
         const senderUsername = sendUser;
 
@@ -831,12 +943,12 @@
             icon: 'success',
             title: 'Hủy chặn người dùng thành công!',
             text: `Bạn đã hủy chặn ${receiverUsername}`,
-            confirmButtonText: 'OK'
+            showConfirmButton: false,
+            timer: 1000,
         }).then(() => {
             checkBlockStatus(receiverUsername);
         });
     }
-
     // Hàm để tải danh sách cuộc trò chuyện từ API
     function loadConversations() {
         fetch(`/Chats/GetConversation?username=${sendUser}`)
@@ -863,6 +975,10 @@
                                 : (conversation.contentnew || 'Không có nội dung')}</p>
                                 <small>${new Date(conversation.lastMessageTimestamp).toLocaleString()}</small>
                             </div>
+                                     <!-- Nút Xem Phim Cùng -->
+                                    <button class="watch-movie-btn" onclick="openMovieSelection('${otherUsername}', '${otherUser}')">
+                                    Xem Phim Cùng
+                                </button>
                                  <div class="menu-icon">
                                         <i class="fas fa-ellipsis-v"></i>
                                     <div class="menu-options hidden">
@@ -975,7 +1091,118 @@
                 console.error("Error loading conversations:", error);
             });
     }
+    function openMovieSelection(receiverUsername, receiverName) {
+        fetch('/chats/GetMovies')  // Gọi phương thức GetMovies trong controller
+            .then(response => response.json())
+            .then(data => {
+                // Tạo nội dung HTML với các phim và ảnh
+                let movieOptionsHtml = '';
+                data.forEach(phim => {
+                    movieOptionsHtml += `
+                        <div class="movie-option" data-id="${phim.idPhim}" data-name="${phim.tenPhim}" style="cursor: pointer; margin-bottom: 10px; text-align: center;">
+                        <img src="/Uploads/${phim.hinhAnh}" alt="${phim.tenPhim}" style="width: 100px; height: auto; margin-bottom: 5px;">
+                        <div>${phim.tenPhim}</div>
+                    </div>
+                `;
+                });
 
+                // Mở cửa sổ SweetAlert với các tùy chọn phim hiển thị ảnh và ô tìm kiếm
+                Swal.fire({
+                    title: `Chọn Phim để Xem Cùng ${receiverName}`,
+                    html: `
+                        <div class="movie-search-container">
+                            <input type="text" id="movie-search" placeholder="Tìm kiếm phim..." style="width: 100%; padding: 5px; margin-bottom: 15px;">
+                            <div class="movie-selection">
+                                ${movieOptionsHtml}
+                            </div>
+                        </div>
+                       `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Gửi Lời Mời',
+                    cancelButtonText: 'Hủy',
+                    preConfirm: () => {
+                        const selectedMovie = document.querySelector('.movie-option.selected');
+                        if (!selectedMovie) {
+                            Swal.showValidationMessage('Bạn cần chọn phim!');
+                            return false;
+                        }
+                        // Lấy cả id và tên phim từ thuộc tính dữ liệu
+                        const movieId = selectedMovie.getAttribute('data-id');
+                        const movieName = selectedMovie.getAttribute('data-name');
+                        return { idPhim: movieId, tenPhim: movieName };
+                    }
+                }).then((result) => {
+                    console.log(result);
+                    if (result.isConfirmed) {
+                        const selectedMovie = result.value;
+
+                        // Gửi lời mời xem phim qua WebSocket
+                        const message = {
+                            type: "movieInvite",
+                            senderUsername: sendUser,  // Tên người gửi
+                            receiverUsername: receiverUsername,  // Tên người nhận
+                            movieId: selectedMovie.idPhim,  // ID phim đã chọn
+                            movieName: selectedMovie.tenPhim  // Tên phim đã chọn
+                        };
+
+                        // Kiểm tra người nhận có kết nối WebSocket không
+                        fetch(`/chats/checkIfUserOnline?username=${receiverUsername}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.isOnline) {
+                                    socket.send(JSON.stringify(message));
+                                    Swal.fire({
+                                        title: 'Lời mời đã được gửi!',
+                                        text: `Lời mời xem phim '${selectedMovie.tenPhim}' đã được gửi đến ${receiverName}.`,
+                                        icon: 'success',
+                                        confirmButtonText: 'Đóng'
+                                    }).then(() => {
+                                        window.location.href = `/chats/WatchTogether?senderUsername=${sendUser}&receiverUsername=${receiverUsername}&PhimSeXem=${selectedMovie.tenPhim}&idPhim=${selectedMovie.idPhim}`;
+                                    });
+                                } else {
+                                    // Nếu người nhận không online, thông báo cho người gửi
+                                    Swal.fire({
+                                        title: 'Người nhận không online!',
+                                        text: `Hiện tại ${receiverName} không online. Lời mời sẽ được gửi khi họ trực tuyến.`,
+                                        icon: 'warning',
+                                        confirmButtonText: 'Đóng'
+                                    });
+                                }
+                            })
+                    }
+                });
+
+                // Thêm sự kiện để chọn phim
+                document.querySelectorAll('.movie-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        document.querySelectorAll('.movie-option').forEach(option => {
+                            option.classList.remove('selected'); // Xóa lớp chọn cũ
+                        });
+                        option.classList.add('selected'); // Thêm lớp chọn cho tùy chọn hiện tại
+                    });
+                });
+
+                // Thêm chức năng tìm kiếm phim
+                const searchInput = document.getElementById('movie-search');
+                searchInput.addEventListener('input', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    const movieOptions = document.querySelectorAll('.movie-option');
+                    movieOptions.forEach(option => {
+                        const movieTitle = option.querySelector('div').textContent.toLowerCase();
+                        if (movieTitle.includes(searchTerm)) {
+                            option.style.display = 'block';  // Hiển thị phim nếu tên chứa từ khóa
+                        } else {
+                            option.style.display = 'none';  // Ẩn phim nếu tên không chứa từ khóa
+                        }
+                    });
+                });
+
+            })
+            .catch(error => {
+                console.error("Error fetching movies:", error);
+                alert("Không thể lấy danh sách phim!");
+            });
+    }
     function reportUser(username, reason) {
         const senderUsername = sendUser;
 
@@ -992,7 +1219,6 @@
         })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
@@ -1016,7 +1242,6 @@
                 });
             });
     }
-
     // Gọi loadConversations khi trang tải
     window.onload = function () {
         loadConversations(); // Load danh sách cuộc trò chuyện
