@@ -159,7 +159,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
 
                 _context.Add(phim);
                 await _context.SaveChangesAsync();
-
+           
                 // Kiểm tra nếu phim là "Phim Bộ"
                 if (phim.DangPhim == "Phim Bộ" && soluongtap.HasValue && soluongtap.Value > 0)
                 {
@@ -177,6 +177,7 @@ namespace AHTB_TimBanCungGu_MVC.Areas.Admin.Controllers
                         IDPhan = newPhanId,
                         SoPhan = 1,
                         SoLuongTap = soluongtap.Value,
+                        NgayCongChieu = DateTime.Now,
                         PhimID = phim.IDPhim
                     };
 
