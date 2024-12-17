@@ -195,7 +195,20 @@
             <ul class="uul">
                 <li class="lii"><a href="/chats/index">Nhắn tin</a></li>
                 <li class="lii"><a href="/TimBancunggu/DanhSachNguoiThich">Danh sách người thích</a></li>
-                <li class="lii"><a href="#soluot" >Số lượt vuốt còn lại : <span id="swipeCount">@ViewBag.SwipeCount</span></a></li>
+                <li class="lii">
+                    <a href="#soluot">
+                        Số lượt vuốt còn lại : <span id="swipeCount">
+                            @if (ViewBag.SwipeCount == 999)
+                            {
+                                @:∞
+                            }
+                            else
+                            {
+                                @ViewBag.SwipeCount
+                            }
+                        </span>
+                    </a>
+                </li>
                 <li class="lii"><a>Gu phim: @ViewBag.GuPhim</a></li>
             </ul>
         </div>
