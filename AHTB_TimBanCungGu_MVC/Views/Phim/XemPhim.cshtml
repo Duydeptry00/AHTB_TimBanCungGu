@@ -185,8 +185,27 @@
             </div>
         </section>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        @if (TempData["ErrorMessage"] != null)
+        {
+                <script type="text/javascript" >
+                    document.addEventListener("DOMContentLoaded", function () {
+                        Swal.fire({
+                            title: 'Thông báo',
+                            text: '@Html.Raw(TempData["ErrorMessage"])',
+                            icon: 'warning',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        }).then((result) => {
+                            // Chuyển hướng sau khi thông báo kết thúc
+                            window.location.href = '/Home/Index';
+                        });
+                    });
+        </script>
+        }
     <script>
+        // Hàm đổi tập phim, có thể kiểm tra nếu có thay đổi trạng thái phim
         function doiTap(soTap) {
             const phimLe = "@(phimLe != null ? "true" : "false")";
             const sourcePhim = phimLe === "true" ? "@phimLe?.SourcePhim" : "@phimBo?.SourcePhim";
@@ -198,7 +217,6 @@
                 iframe.src = `https://vidsrc.cc/v2/embed/tv/${sourcePhim}/${soPhan}/${soTap}?autoPlay=false`;
             }
         }
-
     </script>
 </body>
 </html>
