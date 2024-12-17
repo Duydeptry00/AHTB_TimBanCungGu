@@ -112,131 +112,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             }
          
         }
-        [HttpGet("EditNV")]
-        public async Task<IActionResult> EditThongTinNV(string id)
-        {
-            // Lấy JWT token từ Session
-            var token = HttpContext.Session.GetString("JwtToken");
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                if (id == null)
-                {
-                    return NotFound();
-                }
-
-                var userName = HttpContext.Session.GetString("TempUserName");
-
-                // Tìm thông tin cá nhân của người dùng theo ID và UserName từ session,
-                // bao gồm cả ảnh cá nhân (AnhCaNhan)
-                var thongTinCaNhan = await _context.ThongTinCN
-                    .Include(t => t.User)
-                    .Include(t => t.AnhCaNhan) // Nạp dữ liệu từ bảng AnhCaNhan
-                    .FirstOrDefaultAsync(t => t.User.UserName == id);
-
-                if (thongTinCaNhan == null)
-                {
-                    return Unauthorized(); // Trả về Unauthorized nếu không tìm thấy thông tin của người dùng
-                }
-
-                return View(thongTinCaNhan); // Truyền thông tin đến view để hiển thị
-            }
-            else
-            {
-                // Nếu không có token, có thể chuyển đến trang đăng nhập
-                ViewBag.Message = "Bạn chưa đăng nhập.";
-                return RedirectToAction("Login", "LoginvsRegister");
-            }
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditThongTinNV(string id, IFormFile AnhCaNhanFile, [Bind("IDProfile,HoTen,GioiTinh,NgaySinh,SoDienThoai,DiaChi,MoTa")] ThongTinCaNhan thongTinCaNhan)
-        {
-            var user = HttpContext.Session.GetString("NameUser");
-
-            var userName = HttpContext.Session.GetString("TempUserName");
-            if (string.IsNullOrEmpty(userName))
-            {
-                return Unauthorized();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var existingProfile = await _context.ThongTinCN
-                        .Include(t => t.AnhCaNhan) // Nạp danh sách ảnh liên kết với ThongTinCaNhan
-                        .FirstOrDefaultAsync(t => t.User.UserName == userName);
-
-                    if (existingProfile == null)
-                    {
-                        return NotFound();
-                    }
-
-                    // Cập nhật thông tin cá nhân
-                    existingProfile.HoTen = thongTinCaNhan.HoTen;
-                    existingProfile.GioiTinh = thongTinCaNhan.GioiTinh;
-                    existingProfile.NgaySinh = thongTinCaNhan.NgaySinh;
-                    existingProfile.SoDienThoai = thongTinCaNhan.SoDienThoai;
-                    existingProfile.MoTa = thongTinCaNhan.MoTa;
-                    existingProfile.DiaChi = thongTinCaNhan.DiaChi;
-
-                    if (existingProfile.AnhCaNhan.Count >= 7)
-                    {
-                        ViewBag.ErrorMessage = "Bạn chỉ có thể tải tối đa 7 ảnh cá nhân.";
-                        return View(existingProfile); // Trả về lại trang Edit với thông báo lỗi
-                    }
-
-                    // Lưu ảnh nếu có file được chọn và nếu chưa đạt số lượng ảnh tối đa
-                    if (AnhCaNhanFile != null && AnhCaNhanFile.Length > 0 && existingProfile.AnhCaNhan.Count < 7)
-                    {
-                        // Tính toán tên file mới theo thứ tự
-                        var newFileName = (existingProfile.AnhCaNhan.Count + 1) + Path.GetExtension(AnhCaNhanFile.FileName);
-
-                        // Đường dẫn lưu trữ ảnh
-                        var filePath = Path.Combine("wwwroot/uploads", newFileName);
-
-                        // Lưu ảnh vào thư mục
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await AnhCaNhanFile.CopyToAsync(stream);
-                        }
-
-                        // Thêm ảnh vào danh sách AnhCaNhan của profile
-                        var newAnhCaNhan = new AnhCaNhan
-                        {
-                            HinhAnh = newFileName,
-                            IDProfile = existingProfile.IDProfile
-                        };
-
-                        existingProfile.AnhCaNhan.Add(newAnhCaNhan);
-                        await _context.SaveChangesAsync();
-                    }
-                    HttpContext.Session.SetString("User", existingProfile.HoTen);
-                    // Lưu thay đổi vào cơ sở dữ liệu
-                    _context.Update(existingProfile);
-                    await _context.SaveChangesAsync();
-
-                    // Trả về lại cùng trang Edit sau khi lưu thay đổi
-                    return RedirectToAction(nameof(Index));
-
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ThongTinCaNhanExists(thongTinCaNhan.IDProfile))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-            }
-
-            return View(thongTinCaNhan);
-        }
-        // GET: ThongTinCaNhans/Edit/5
+     
+      
         public async Task<IActionResult> Edit(string id)
         {
             // Lấy JWT token từ Session
@@ -275,10 +152,8 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, IFormFile AnhCaNhanFile, [Bind("IDProfile,HoTen,GioiTinh,NgaySinh,SoDienThoai,DiaChi,MoTa")] ThongTinCaNhan thongTinCaNhan)
+        public async Task<IActionResult> Edit(string id, IFormFile AnhCaNhanFile, [Bind("IDProfile,HoTen,GioiTinh,NgaySinh,SoDienThoai,DiaChi,MoTa,Facebook,Instagram")] ThongTinCaNhan thongTinCaNhan)
         {
-            var user = HttpContext.Session.GetString("NameUser");
-
             var userName = HttpContext.Session.GetString("TempUserName");
             if (string.IsNullOrEmpty(userName))
             {
@@ -290,7 +165,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 try
                 {
                     var existingProfile = await _context.ThongTinCN
-                        .Include(t => t.AnhCaNhan) // Nạp danh sách ảnh liên kết với ThongTinCaNhan
+                        .Include(t => t.AnhCaNhan) // Nạp danh sách ảnh liên kết
                         .FirstOrDefaultAsync(t => t.User.UserName == userName);
 
                     if (existingProfile == null)
@@ -305,50 +180,65 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     existingProfile.SoDienThoai = thongTinCaNhan.SoDienThoai;
                     existingProfile.MoTa = thongTinCaNhan.MoTa;
                     existingProfile.DiaChi = thongTinCaNhan.DiaChi;
+                    existingProfile.Facebook = thongTinCaNhan.Facebook;
+                    existingProfile.Instagram = thongTinCaNhan.Instagram;
 
-                    if (existingProfile.AnhCaNhan.Count >= 7)
+                    // Xử lý file tải lên
+                    if (AnhCaNhanFile != null && AnhCaNhanFile.Length > 0)
                     {
-                        ViewBag.ErrorMessage = "Bạn chỉ có thể tải tối đa 7 ảnh cá nhân.";
-                        return View(existingProfile); // Trả về lại trang Edit với thông báo lỗi
-                    }
-                   
-                    // Lưu ảnh nếu có file được chọn và nếu chưa đạt số lượng ảnh tối đa
-                    if (AnhCaNhanFile != null && AnhCaNhanFile.Length > 0 && existingProfile.AnhCaNhan.Count < 7)
-                    {
-                        // Tính toán tên file mới theo thứ tự
-                        var newFileName = userName + "_" + (existingProfile.AnhCaNhan.Count + 1) + Path.GetExtension(AnhCaNhanFile.FileName);
-
-
-                        // Đường dẫn lưu trữ ảnh
-                        var filePath = Path.Combine("wwwroot/uploads", newFileName);
-
-                        // Lưu ảnh vào thư mục
-                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        // Nếu đã có 7 ảnh, không thêm ảnh mới
+                        if (existingProfile.AnhCaNhan.Count >= 7)
                         {
-                            await AnhCaNhanFile.CopyToAsync(stream);
+                            // Không báo lỗi, chỉ bỏ qua việc thêm ảnh
+                            ViewBag.ErrorMessage = "Bạn đã đạt giới hạn tối đa 7 ảnh cá nhân.";
+                            return View(existingProfile);
                         }
-
-                        // Thêm ảnh vào danh sách AnhCaNhan của profile
-                        var newAnhCaNhan = new AnhCaNhan
+                        else
                         {
-                            HinhAnh = newFileName,
-                            IDProfile = existingProfile.IDProfile
-                        };
+                            // Kiểm tra định dạng file
+                            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                            var fileExtension = Path.GetExtension(AnhCaNhanFile.FileName).ToLower();
 
-                        existingProfile.AnhCaNhan.Add(newAnhCaNhan);
-                        await _context.SaveChangesAsync();
+                            if (!allowedExtensions.Contains(fileExtension))
+                            {
+                                ViewBag.ErrorMessage = "Chỉ chấp nhận các định dạng ảnh: .jpg, .jpeg, .png, .gif.";
+                                return View(existingProfile);
+                            }
+
+                            // Tạo thư mục nếu chưa tồn tại
+                            var uploadFolder = Path.Combine("wwwroot/uploads");
+                            if (!Directory.Exists(uploadFolder))
+                            {
+                                Directory.CreateDirectory(uploadFolder);
+                            }
+
+                            // Lưu file với tên duy nhất
+                            var newFileName = $"{Guid.NewGuid()}{fileExtension}";
+                            var filePath = Path.Combine(uploadFolder, newFileName);
+
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await AnhCaNhanFile.CopyToAsync(stream);
+                            }
+
+                            // Thêm ảnh vào danh sách
+                            existingProfile.AnhCaNhan.Add(new AnhCaNhan
+                            {
+                                HinhAnh = newFileName,
+                                IDProfile = existingProfile.IDProfile
+                            });
+                        }
                     }
+
+                    // Lưu thông tin vào session
                     HttpContext.Session.SetString("User", existingProfile.HoTen);
+                    var avatar = existingProfile.AnhCaNhan.FirstOrDefault()?.HinhAnh ?? "AnhCN.jpg";
+                    HttpContext.Session.SetString("Avt", avatar);
+
                     // Lưu thay đổi vào cơ sở dữ liệu
                     _context.Update(existingProfile);
                     await _context.SaveChangesAsync();
-                    var Avt2 = _context.AnhCaNhan
-                         .Where(N1 => N1.ThongTinCN.User.UserName == userName)
-                         .Select(N1 => N1.HinhAnh)
-                         .FirstOrDefault();
-                    HttpContext.Session.SetString("User", existingProfile.HoTen);
-                    HttpContext.Session.SetString("Avt", Avt2 ?? "AnhCN.jpg");
-                    // Trả về lại cùng trang Edit sau khi lưu thay đổi
+
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)

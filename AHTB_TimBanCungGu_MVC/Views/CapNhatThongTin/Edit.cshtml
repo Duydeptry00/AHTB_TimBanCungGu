@@ -58,6 +58,12 @@
                             <input asp-for="SoDienThoai" class="form-control" />
                             <span asp-validation-for="SoDienThoai" class="text-danger"></span>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Facebook:</label>
+                            <input asp-for="Facebook" class="form-control" required />
+                            <span asp-validation-for="Facebook" class="text-danger"></span>
+                        </div>
+                        
                     </div>
 
                     <!-- Hàng 2: Địa chỉ, mô tả và ảnh -->
@@ -75,6 +81,11 @@
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Thêm ảnh cá nhân:</label>
                             <input type="file" name="AnhCaNhanFile" id="AnhCaNhanFile" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Instagram:</label>
+                            <input asp-for="Instagram" class="form-control" required />
+                            <span asp-validation-for="Instagram" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
@@ -124,13 +135,13 @@
 ></script>
 <script>
     // Kiểm tra và hiển thị thông báo nếu có lỗi
-    @if (ViewBag.ErrorMessage != null)
+    @if (ViewBag.ErrorMessage != null )
     {
         <text>
                 Swal.fire({
                     icon: 'error',
                 title: 'Lỗi',
-                text: 'Bạn chỉ được tối đa là 7 ảnh',
+                text: '@Html.Raw(ViewBag.ErrorMessage)',
                 position: 'top-end',
                 toast: true,
                 showConfirmButton: false,
