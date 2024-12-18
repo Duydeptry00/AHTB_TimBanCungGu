@@ -149,7 +149,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return RedirectToAction("Login", "LoginvsRegister");
             }
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, IFormFile AnhCaNhanFile, [Bind("IDProfile,HoTen,GioiTinh,NgaySinh,SoDienThoai,DiaChi,MoTa,Facebook,Instagram")] ThongTinCaNhan thongTinCaNhan)
@@ -173,7 +172,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         return NotFound();
                     }
 
-                    // Cập nhật thông tin cá nhân
+                    // Kiểm tra và cập nhật thông tin
                     existingProfile.HoTen = thongTinCaNhan.HoTen;
                     existingProfile.GioiTinh = thongTinCaNhan.GioiTinh;
                     existingProfile.NgaySinh = thongTinCaNhan.NgaySinh;
@@ -183,57 +182,63 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                     existingProfile.Facebook = thongTinCaNhan.Facebook;
                     existingProfile.Instagram = thongTinCaNhan.Instagram;
 
-                    // Xử lý file tải lên
+                    //Kiểm tra số điện thoại
+                    if (!string.IsNullOrEmpty(existingProfile.SoDienThoai))
+                    {
+                        if (existingProfile.SoDienThoai.Length < 10 || existingProfile.SoDienThoai.Length > 11)
+                        {
+                            ViewBag.ErrorMessage = "Số điện thoại phải có độ dài từ 10 đến 11 chữ số.";
+                        }
+                    }
+
+                    // Kiểm tra link Facebook
+                    if (!string.IsNullOrEmpty(existingProfile.Facebook) &&
+                        !existingProfile.Facebook.ToLower().Contains("facebook.com"))
+                    {
+                        ViewBag.ErrorMessage = "Vui lòng nhập đúng link Facebook.";
+                        return View(existingProfile);
+                    }
+
+                    // Kiểm tra link Instagram
+                    if (!string.IsNullOrEmpty(existingProfile.Instagram) &&
+                        !existingProfile.Instagram.ToLower().Contains("instagram.com"))
+                    {
+                        ViewBag.ErrorMessage = "Vui lòng nhập đúng link Instagram.";
+                        return View(existingProfile);
+                    }
+
+                    // Lưu ảnh nếu có file được chọn
                     if (AnhCaNhanFile != null && AnhCaNhanFile.Length > 0)
                     {
-                        // Nếu đã có 7 ảnh, không thêm ảnh mới
+                        // Kiểm tra số lượng ảnh tối đa
                         if (existingProfile.AnhCaNhan.Count >= 7)
                         {
-                            // Không báo lỗi, chỉ bỏ qua việc thêm ảnh
-                            ViewBag.ErrorMessage = "Bạn đã đạt giới hạn tối đa 7 ảnh cá nhân.";
+                            ViewBag.ErrorMessage = "Bạn chỉ có thể tải tối đa 7 ảnh cá nhân.";
                             return View(existingProfile);
                         }
                         else
                         {
-                            // Kiểm tra định dạng file
-                            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                            var fileExtension = Path.GetExtension(AnhCaNhanFile.FileName).ToLower();
-
-                            if (!allowedExtensions.Contains(fileExtension))
-                            {
-                                ViewBag.ErrorMessage = "Chỉ chấp nhận các định dạng ảnh: .jpg, .jpeg, .png, .gif.";
-                                return View(existingProfile);
-                            }
-
-                            // Tạo thư mục nếu chưa tồn tại
-                            var uploadFolder = Path.Combine("wwwroot/uploads");
-                            if (!Directory.Exists(uploadFolder))
-                            {
-                                Directory.CreateDirectory(uploadFolder);
-                            }
-
-                            // Lưu file với tên duy nhất
-                            var newFileName = $"{Guid.NewGuid()}{fileExtension}";
-                            var filePath = Path.Combine(uploadFolder, newFileName);
+                            var newFileName = $"{userName}_{existingProfile.AnhCaNhan.Count + 1}{Path.GetExtension(AnhCaNhanFile.FileName)}";
+                            var filePath = Path.Combine("wwwroot/uploads", newFileName);
 
                             using (var stream = new FileStream(filePath, FileMode.Create))
                             {
                                 await AnhCaNhanFile.CopyToAsync(stream);
                             }
 
-                            // Thêm ảnh vào danh sách
                             existingProfile.AnhCaNhan.Add(new AnhCaNhan
                             {
                                 HinhAnh = newFileName,
                                 IDProfile = existingProfile.IDProfile
                             });
+                            // Lưu thông tin vào session
+                            HttpContext.Session.SetString("User", existingProfile.HoTen);
+                            var avatar = existingProfile.AnhCaNhan.FirstOrDefault()?.HinhAnh ?? "AnhCN.jpg";
+                            HttpContext.Session.SetString("Avt", avatar);
+
                         }
                     }
 
-                    // Lưu thông tin vào session
-                    HttpContext.Session.SetString("User", existingProfile.HoTen);
-                    var avatar = existingProfile.AnhCaNhan.FirstOrDefault()?.HinhAnh ?? "AnhCN.jpg";
-                    HttpContext.Session.SetString("Avt", avatar);
 
                     // Lưu thay đổi vào cơ sở dữ liệu
                     _context.Update(existingProfile);
@@ -256,7 +261,6 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
 
             return View(thongTinCaNhan);
         }
-
         // POST: ThongTinCaNhans/DeleteImage/5
         [HttpPost]
         public async Task<IActionResult> DeleteImage(int id)

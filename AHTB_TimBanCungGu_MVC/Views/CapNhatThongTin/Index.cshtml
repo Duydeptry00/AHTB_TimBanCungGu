@@ -18,8 +18,8 @@
             <form method="post" enctype="multipart/form-data">
                 <h4 class="text-center">Thông tin Cá nhân</h4>
                 <!-- Section: Thông tin cá nhân -->
-                <div class="info-section mb-4"> 
-                  
+                <div class="info-section mb-4">
+
                     <div class="info-item">
                         <label class="info-label">Email:</label>
                         <span class="info-value">@Model.Email</span>
@@ -42,7 +42,7 @@
                     </div>
                     <div class="info-item">
                         <label class="info-label">Premium:</label>
-                        <span class="info-value">
+                        <span class="info">
                             @if (ViewBag.Message != null)
                             {
                                 <div class="alert alert-warning">
@@ -64,7 +64,7 @@
                     </div>
                     <div class="info-item">
                         <label class="info-label">Facebook:</label>
-                        <span class="info-value">@Model.Facebook</span>                   
+                        <span class="info-value">@Model.Facebook</span>
                     </div>
                     <div class="info-item">
                         <label class="info-label">Instagram:</label>

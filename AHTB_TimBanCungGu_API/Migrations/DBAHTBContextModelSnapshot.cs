@@ -368,10 +368,16 @@ namespace AHTB_TimBanCungGu_API.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Facebook")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("GioiTinh")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("HoTen")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Instagram")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsPremium")

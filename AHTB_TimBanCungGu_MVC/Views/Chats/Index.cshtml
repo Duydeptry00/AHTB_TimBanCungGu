@@ -13,7 +13,7 @@
         <div id="conversationList" class="conversation-list">
             <!-- Danh sách trò chuyện sẽ được thêm vào đây -->
         </div>
-        <a href="/TimBanCungGu/TrangChu" class="back-to-home">Quay lại trang chủ</a>    
+        <a href="/TimBanCungGu/TrangChu" class="back-to-home">Quay lại trang chủ</a>
     </div>
 
     <!-- Cửa sổ trò chuyện -->
@@ -112,9 +112,9 @@
     /* Thông tin trò chuyện */
     .conversation-info {
         flex-grow: 1;
-        width:350px;
+        width: 350px;
         margin-left: 10px;
-        margin-right:10px;
+        margin-right: 10px;
         display: flex;
         flex-direction: column;
     }
@@ -146,37 +146,37 @@
             color: #888;
             margin-top: 5px;
         }
-        /*Menu-icon*/
-        .menu-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            cursor: pointer;
-        }
+    /*Menu-icon*/
+    .menu-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: pointer;
+    }
 
-        .fa-ellipsis-v {
-            font-size: 20px; /* Kích thước biểu tượng */
-            line-height: 1; /* Đảm bảo biểu tượng không bị nghiêng */
-            padding: 5px;
-            text-align: center;
-            transform: none; /* Đảm bảo không bị nghiêng */
-            user-select: none; /* Vô hiệu hóa chọn biểu tượng */
-        }
+    .fa-ellipsis-v {
+        font-size: 20px; /* Kích thước biểu tượng */
+        line-height: 1; /* Đảm bảo biểu tượng không bị nghiêng */
+        padding: 5px;
+        text-align: center;
+        transform: none; /* Đảm bảo không bị nghiêng */
+        user-select: none; /* Vô hiệu hóa chọn biểu tượng */
+    }
 
-        .menu-options {
-            position: absolute;
-            top: 100%; /* Vị trí menu ngay bên dưới icon */
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column; /* Sắp xếp các nút theo chiều dọc */
-            z-index: 10;
-            min-width: 100px; /* Đảm bảo kích thước menu đồng nhất */
-        }
+    .menu-options {
+        position: absolute;
+        top: 100%; /* Vị trí menu ngay bên dưới icon */
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column; /* Sắp xếp các nút theo chiều dọc */
+        z-index: 10;
+        min-width: 100px; /* Đảm bảo kích thước menu đồng nhất */
+    }
 
         .menu-options.hidden {
             display: none; /* Ẩn menu khi chưa click */
@@ -191,6 +191,7 @@
             font-size: 14px;
             width: 100%;
         }
+
             .menu-options button:hover {
                 background-color: #f5f5f5;
             }
@@ -229,7 +230,7 @@
     .movie-option {
         text-align: center;
         cursor: pointer;
-        border-radius:10px;
+        border-radius: 10px;
         margin-bottom: 20px;
         width: 150px; /* Tăng chiều rộng của từng tùy chọn */
         background-color: RGBA(192, 192, 192, 0.4);
@@ -239,7 +240,7 @@
         .movie-option img {
             width: 100%;
             height: auto;
-            margin:8px;
+            margin: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: box-shadow 0.3s ease;
             max-height: 200px; /* Tăng chiều cao ảnh để hình ảnh lớn hơn */
@@ -296,9 +297,11 @@
         .conversation-list::-webkit-scrollbar {
             width: 8px; /* Chiều rộng thanh cuộn */
         }
+
         .conversation-list::-webkit-scrollbar-track {
             background: transparent; /* Nền trong suốt khi không hoạt động */
         }
+
         .conversation-list::-webkit-scrollbar-thumb {
             background: rgba(0, 120, 212, 0.3); /* Thanh cuộn mờ khi chưa cuộn */
             border-radius: 10px; /* Bo tròn các góc */
@@ -308,16 +311,20 @@
         .conversation-list:hover::-webkit-scrollbar-thumb {
             background: rgba(0, 120, 212, 0.3);
         }
+
         .conversation-list::-webkit-scrollbar-corner {
             display: none; /* Ẩn phần giao nhau */
         }
+
         .conversation-list::-webkit-scrollbar-button {
             display: none; /* Ẩn các nút cuộn */
         }
+
     .conversation-list {
         scrollbar-width: thin; /* Thanh cuộn mỏng */
         scrollbar-color: rgba(0, 120, 212, 0.3) transparent; /* Màu thanh cuộn và nền khi chưa cuộn */
     }
+
         .conversation-list:hover {
             scrollbar-color: #0078D4 transparent; /* Màu thanh cuộn khi cuộn */
         }
@@ -336,6 +343,7 @@
         transition: background-color 0.3s ease, color 0.3s ease; /* Hiệu ứng chuyển màu */
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
     }
+
         .back-to-home:hover {
             background-color: #0085E3; /* Nền khi hover */
             color: #fff; /* Màu chữ khi hover */
@@ -376,34 +384,35 @@
         border-radius: 50%; /* Để avatar thành hình tròn */
         margin-right: 10px; /* Khoảng cách giữa avatar và tên */
     }
-        /* Thanh cuộn của chat-body */
-        .chat-body::-webkit-scrollbar {
-            width: 8px; /* Chiều rộng của thanh cuộn dọc */
-            height: 8px; /* Chiều cao của thanh cuộn ngang */
-        }
+    /* Thanh cuộn của chat-body */
+    .chat-body::-webkit-scrollbar {
+        width: 8px; /* Chiều rộng của thanh cuộn dọc */
+        height: 8px; /* Chiều cao của thanh cuộn ngang */
+    }
 
-        .chat-body::-webkit-scrollbar-track {
-            background: transparent; /* Nền trong suốt */
-        }
+    .chat-body::-webkit-scrollbar-track {
+        background: transparent; /* Nền trong suốt */
+    }
 
-        .chat-body::-webkit-scrollbar-thumb {
-            background: #0078D4; /* Màu của thanh cuộn */
-            border-radius: 10px; /* Bo tròn các góc */
-            border: 2px solid transparent; /* Đường viền trong suốt */
-        }
+    .chat-body::-webkit-scrollbar-thumb {
+        background: #0078D4; /* Màu của thanh cuộn */
+        border-radius: 10px; /* Bo tròn các góc */
+        border: 2px solid transparent; /* Đường viền trong suốt */
+    }
 
-        .chat-body::-webkit-scrollbar-corner {
-            display: none; /* Ẩn phần giao nhau */
-        }
+    .chat-body::-webkit-scrollbar-corner {
+        display: none; /* Ẩn phần giao nhau */
+    }
 
-        .chat-body::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        /* Ẩn các mũi tên cuộn (trong trường hợp có) */
-        .chat-body::-webkit-scrollbar-button {
-            display: none; /* Ẩn các nút cuộn */
-        }
+    .chat-body::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    /* Ẩn các mũi tên cuộn (trong trường hợp có) */
+    .chat-body::-webkit-scrollbar-button {
+        display: none; /* Ẩn các nút cuộn */
+    }
+
     .chat-body {
         scrollbar-width: thin; /* Thanh cuộn mỏng */
         scrollbar-color: #0078D4 transparent; /* Màu thanh cuộn và nền */
@@ -511,9 +520,11 @@
     #chat {
         width: 100%;
     }
+
     #blockuser {
-        width:100%;
+        width: 100%;
     }
+
     .block-message {
         color: #555; /* Màu chữ xám tối */
         padding: 10px; /* Khoảng cách bên trong */
@@ -559,40 +570,33 @@
     socket.onopen = function () {
         console.log("WebSocket connected.");
     };
-    // When a message is received from the WebSocket
     socket.onmessage = function (event) {
         const message = JSON.parse(event.data);  // Parse JSON from server
         const chatBody = document.getElementById("chatBody");
 
-        // Check if the message belongs to the current conversation
-        if (message.receiverUsername === currentConversation || message.senderUsername === currentConversation) {
-            // Create a container for the message
-            let messageContainer = document.createElement("div");
-            messageContainer.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
+        if (message.type === "chat") {
+            // Xử lý tin nhắn thông thường
+            if (message.receiverUsername === currentConversation || message.senderUsername === currentConversation) {
+                let messageContainer = document.createElement("div");
+                messageContainer.classList.add(message.senderUsername === sendUser ? "user-message" : "receiver-message");
 
-            // Create the sender's name element
-            let senderNameElement = document.createElement("div");
-            senderNameElement.classList.add("message-sender");
-            senderNameElement.innerText = message.senderName;
-            // Create the message content element
-            let messageContentElement = document.createElement("div");
-            messageContentElement.innerText = message.content;
+                let senderNameElement = document.createElement("div");
+                senderNameElement.classList.add("message-sender");
+                senderNameElement.innerText = message.senderName;
 
-            // Create the timestamp element
-            let messageTimestampElement = document.createElement("div");
-            messageTimestampElement.classList.add("message-timestamp");
+                let messageContentElement = document.createElement("div");
+                // Chuyển tin nhắn có link thành liên kết có thể nhấp
+                messageContentElement.innerHTML = parseLinks(message.content); // Thay vì innerText, sử dụng innerHTML
 
-            // Format the timestamp
-            const messageTime = new Date(message.timestamp); // Assuming `message.timestamp` is an ISO string
-            messageTimestampElement.innerText = messageTime.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+                let messageTimestampElement = document.createElement("div");
+                messageTimestampElement.classList.add("message-timestamp");
 
-            // Append the sender's name, message content, and timestamp to the container
-            messageContainer.appendChild(senderNameElement);
-            messageContainer.appendChild(messageContentElement);
-            messageContainer.appendChild(messageTimestampElement);
+                const messageTime = new Date(message.timestamp);
+                messageTimestampElement.innerText = messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                messageContainer.appendChild(senderNameElement);
+                messageContainer.appendChild(messageContentElement);
+                messageContainer.appendChild(messageTimestampElement);
 
                 chatBody.appendChild(messageContainer);
                 chatBody.scrollTop = chatBody.scrollHeight;
@@ -737,11 +741,11 @@
 
                     // Thêm lại phần nhập tin nhắn
                     chat.innerHTML = `
-                        <textarea id="messageContent" placeholder="Gõ tin nhắn..."></textarea>
-                        <button onclick="sendMessage()" style="background: none; border: none; cursor: pointer;">
-                            <i class="fas fa-paper-plane" style="font-size: 24px; color: #0078D4;"></i>
-                        </button>
-                    `;
+                            <textarea id="messageContent" placeholder="Gõ tin nhắn..."></textarea>
+                            <button onclick="sendMessage()" style="background: none; border: none; cursor: pointer;">
+                                <i class="fas fa-paper-plane" style="font-size: 24px; color: #0078D4;"></i>
+                            </button>
+                        `;
                     // Thay nền xám
                     chatFooter.style.backgroundColor = "#fff";
                 }
@@ -852,7 +856,16 @@
 
                                 // Create message content element
                                 const messageContentElement = document.createElement("div");
-                                messageContentElement.innerText = message.content;
+                                // Check if the content is a URL
+                                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                const content = message.content;
+
+                                // If it's a URL, convert it to a clickable link
+                                if (urlRegex.test(content)) {
+                                    messageContentElement.innerHTML = content.replace(urlRegex, '<a href="$&" target="_blank">$&</a>');
+                                } else {
+                                    messageContentElement.innerText = content;
+                                }
 
                                 // Create message timestamp element
                                 const messageTimestampElement = document.createElement("div");
@@ -965,26 +978,26 @@
                         const conversationItem = document.createElement('div');
                         conversationItem.classList.add('conversation-item');
                         conversationItem.innerHTML = `
-                            <img src="/Uploads/${avatar}" alt="${otherUser}'s avatar" class="avatar-image">
-                            <div class="conversation-info">
-                                <strong>${otherUser}</strong>
-                                <p>${conversation.contentnew && conversation.contentnew.length > 15
+                                <img src="/Uploads/${avatar}" alt="${otherUser}'s avatar" class="avatar-image">
+                                <div class="conversation-info">
+                                    <strong>${otherUser}</strong>
+                                    <p>${conversation.contentnew && conversation.contentnew.length > 15
                                 ? conversation.contentnew.substring(0, 15) + '...'
                                 : (conversation.contentnew || 'Không có nội dung')}</p>
-                                <small>${new Date(conversation.lastMessageTimestamp).toLocaleString()}</small>
-                            </div>
-                                     <!-- Nút Xem Phim Cùng -->
-                                    <button class="watch-movie-btn" onclick="openMovieSelection('${otherUsername}', '${otherUser}')">
-                                    Xem Phim Cùng
-                                </button>
-                                 <div class="menu-icon">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    <div class="menu-options hidden">
-                                        <button class="report-btn">Báo cáo</button>
-                                        <button class="block-btn">Chặn</button>
-                                    </div>
+                                    <small>${new Date(conversation.lastMessageTimestamp).toLocaleString()}</small>
                                 </div>
-                        `;
+                                         <!-- Nút Xem Phim Cùng -->
+                                        <button class="watch-movie-btn" onclick="openMovieSelection('${otherUsername}', '${otherUser}')">
+                                        Xem Phim Cùng
+                                    </button>
+                                     <div class="menu-icon">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        <div class="menu-options hidden">
+                                            <button class="report-btn">Báo cáo</button>
+                                            <button class="block-btn">Chặn</button>
+                                        </div>
+                                    </div>
+                            `;
 
                         // Gắn sự kiện onclick để mở cuộc trò chuyện khi được nhấn
                         conversationItem.onclick = () => openConversation(otherUsername, otherUser, avatar);
@@ -1097,24 +1110,24 @@
                 let movieOptionsHtml = '';
                 data.forEach(phim => {
                     movieOptionsHtml += `
-                        <div class="movie-option" data-id="${phim.idPhim}" data-name="${phim.tenPhim}" style="cursor: pointer; margin-bottom: 10px; text-align: center;">
-                        <img src="/Uploads/${phim.hinhAnh}" alt="${phim.tenPhim}" style="width: 100px; height: auto; margin-bottom: 5px;">
-                        <div>${phim.tenPhim}</div>
-                    </div>
-                `;
+                            <div class="movie-option" data-id="${phim.idPhim}" data-name="${phim.tenPhim}" style="cursor: pointer; margin-bottom: 10px; text-align: center;">
+                            <img src="/Uploads/${phim.hinhAnh}" alt="${phim.tenPhim}" style="width: 100px; height: auto; margin-bottom: 5px;">
+                            <div>${phim.tenPhim}</div>
+                        </div>
+                    `;
                 });
 
                 // Mở cửa sổ SweetAlert với các tùy chọn phim hiển thị ảnh và ô tìm kiếm
                 Swal.fire({
                     title: `Chọn Phim để Xem Cùng ${receiverName}`,
                     html: `
-                        <div class="movie-search-container">
-                            <input type="text" id="movie-search" placeholder="Tìm kiếm phim..." style="width: 100%; padding: 5px; margin-bottom: 15px;">
-                            <div class="movie-selection">
-                                ${movieOptionsHtml}
+                            <div class="movie-search-container">
+                                <input type="text" id="movie-search" placeholder="Tìm kiếm phim..." style="width: 100%; padding: 5px; margin-bottom: 15px;">
+                                <div class="movie-selection">
+                                    ${movieOptionsHtml}
+                                </div>
                             </div>
-                        </div>
-                       `,
+                           `,
                     showCancelButton: true,
                     confirmButtonText: 'Gửi Lời Mời',
                     cancelButtonText: 'Hủy',
@@ -1252,6 +1265,7 @@
 
         // Gửi tin nhắn qua WebSocket
         const message = {
+            type: "chat",
             senderUsername: sendUser,  // Thay thế với thông tin người dùng thực tế
             receiverUsername: currentConversation,
             content: messageContent,
@@ -1265,9 +1279,15 @@
         let messageContainer = document.createElement("div");
         messageContainer.classList.add("user-message");
 
-        // Tạo phần tử hiển thị nội dung tin nhắn
+        // Tạo phần tử hiển thị nội dung tin nhắn (dùng innerHTML thay vì innerText)
         let messageContentElement = document.createElement("div");
-        messageContentElement.innerText = messageContent;
+
+        // Kiểm tra xem nội dung có phải là một URL hay không và thay thế URL thành liên kết
+        messageContent = messageContent.replace(/(?:https?|ftp):\/\/[^\s]+/g, function (url) {
+            return `<a href="${url}" target="_blank">${url}</a>`;  // Chuyển URL thành liên kết có thể nhấp
+        });
+
+        messageContentElement.innerHTML = messageContent;  // Sử dụng innerHTML để hiển thị liên kết
 
         // Tạo phần tử hiển thị thời gian tin nhắn
         let messageTimestampElement = document.createElement("div");
@@ -1294,4 +1314,5 @@
         // Tải lại danh sách cuộc trò chuyện
         loadConversations();
     }
+
 </script>

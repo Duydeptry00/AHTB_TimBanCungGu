@@ -13,7 +13,7 @@
         <h1>Chỉnh sửa Thông tin Cá nhân</h1>
     </div>
     <style>
-       
+
 
         .custom-swal-popup {
             margin-top: 70px !important; /* Đảm bảo margin-top cho popup */
@@ -33,7 +33,7 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Họ tên:</label>
-                            <input asp-for="HoTen" class="form-control" required />
+                            <input asp-for="HoTen" title="Nhập họ tên" class="form-control" required />
                             <span asp-validation-for="HoTen" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
@@ -55,15 +55,21 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Số điện thoại:</label>
-                            <input asp-for="SoDienThoai" class="form-control" />
+                            <input asp-for="SoDienThoai"
+                                   class="form-control"
+                                   pattern="^\d{10,11}$"
+                                   minlength="10"
+                                   maxlength="11"
+                                   placeholder="Nhập số điện thoại (tùy chọn)"
+                                   title="Số điện thoại phải từ 10 đến 11 chữ số (hoặc để trống)." />
                             <span asp-validation-for="SoDienThoai" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Facebook:</label>
-                            <input asp-for="Facebook" class="form-control" required />
-                            <span asp-validation-for="Facebook" class="text-danger"></span>
+                            <input asp-for="Facebook" class="form-control" />
+
                         </div>
-                        
+
                     </div>
 
                     <!-- Hàng 2: Địa chỉ, mô tả và ảnh -->
@@ -78,14 +84,15 @@
                             <textarea asp-for="MoTa" class="form-control" rows="3" maxlength="50"></textarea>
                             <span asp-validation-for="MoTa" class="text-danger"></span>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Instagram:</label>
+                            <input asp-for="Instagram" class="form-control" />
+
+                        </div>
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Thêm ảnh cá nhân:</label>
                             <input type="file" name="AnhCaNhanFile" id="AnhCaNhanFile" class="form-control" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label font-weight-bold">Instagram:</label>
-                            <input asp-for="Instagram" class="form-control" required />
-                            <span asp-validation-for="Instagram" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
@@ -132,10 +139,9 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-></script>
 <script>
     // Kiểm tra và hiển thị thông báo nếu có lỗi
-    @if (ViewBag.ErrorMessage != null )
+    @if (ViewBag.ErrorMessage != null)
     {
         <text>
                 Swal.fire({
@@ -149,8 +155,8 @@
                 customClass: {
                     container: 'custom-swal-container',
                 popup: 'custom-swal-popup'
-                    }
-                });
+                            }
+                        });
         </text>
     }
 
@@ -177,7 +183,6 @@
                 $.post(`/CapNhatThongTin/DeleteImage/${id}`, function () {
                     // Xóa phần tử ảnh khỏi giao diện
                     $(`#image-${id}`).remove();
-
                     Swal.fire("Đã xóa", "Ảnh đã được xóa thành công", "success");
                 }).fail(function () {
                     Swal.fire("Lỗi", "Không thể xóa ảnh", "error");

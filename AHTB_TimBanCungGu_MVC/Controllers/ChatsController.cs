@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+
 using AHTB_TimBanCungGu_API.Chats;  // Import model ConversationVM
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         private readonly HttpClient _httpClient;
         // Lưu trữ WebSocket kết nối cho các phiên chức năng trong nhắn tin
         private static Dictionary<string, WebSocket> _userWebSockets = new Dictionary<string, WebSocket>();
+
         private static Dictionary<string, Dictionary<string, (WebSocket, string)>> _movieSessionWebSockets = new Dictionary<string, Dictionary<string, (WebSocket, string)>>();
         // Khai báo danh sách các phiên xem phim cùng
         private static List<MovieSession> _sessions = new List<MovieSession>();
@@ -28,6 +30,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
         {
             _httpClient = httpClient;
         }
+
         // GET: Lấy danh sách các cuộc trò chuyện
         public async Task<IActionResult> Index()
         {
@@ -181,6 +184,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return Json(new { success = false, message = $"Đã xảy ra lỗi: {ex.Message}" });
             }
         }
+
         public class CheckMatchResponse
         {
             public bool Success { get; set; }
@@ -226,6 +230,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return Json(errorResponse);
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> GetConversation(string username)
         {
@@ -278,6 +283,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 return View();
             }
         }
+
         [HttpGet]
         public async Task<IActionResult> ConnectWebSocket()
         {
@@ -320,11 +326,16 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                         var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                         Console.WriteLine($"Received message: {message}");
 
-                        // Chuyển đối tượng JSON thành MessageVM
-                        var jsonMessage = JsonConvert.DeserializeObject<MessageVM>(message);
+                        // Chuyển đối tượng JSON thành dynamic object hoặc class
+                        var parsedMessage = JsonConvert.DeserializeObject<dynamic>(message);
 
-                        // Lưu tin nhắn vào cơ sở dữ liệu thông qua API
-                        await SaveMessageToDatabase(jsonMessage);
+                        if (parsedMessage != null && parsedMessage.type == "chat")
+                        {
+                            // Xử lý tin nhắn
+                            var jsonMessage = JsonConvert.DeserializeObject<MessageVM>(message);
+
+                            // Lưu tin nhắn vào cơ sở dữ liệu thông qua API
+                            await SaveMessageToDatabase(jsonMessage);
 
                             // Sau khi lưu, gửi lại tin nhắn cho người nhận qua WebSocket
                             await SendMessageToUser(jsonMessage.ReceiverUsername, jsonMessage.Content);
@@ -449,7 +460,80 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             }
             return View();
         }
+        private async Task<bool> BlockUser(string senderUsername, string receiverUsername)
+        {
+            try
+            {
+                // Tạo đối tượng chứa thông tin chặn
+                var blockRequest = new
+                {
+                    SenderUsername = senderUsername,
+                    ReceiverUsername = receiverUsername
+                };
 
+                // Gửi yêu cầu tới API để lưu thông tin chặn
+                using (var httpClient = new HttpClient())
+                {
+                    var jsonContent = new StringContent(JsonConvert.SerializeObject(blockRequest), Encoding.UTF8, "application/json");
+                    var response = await httpClient.PostAsync("http://localhost:15172/api/Chats/BlockUser", jsonContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Nếu lưu thành công, trả về `true`
+                        return true;
+                    }
+                    else
+                    {
+                        // Nếu có lỗi từ API, ghi lại log và trả về `false`
+                        Console.WriteLine($"Failed to block user: {response.StatusCode}");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ngoại lệ và trả về `false`
+                Console.WriteLine($"Error blocking user: {ex.Message}");
+                return false;
+            }
+        }
+        private async Task<bool> UnblockUser(string senderUsername, string receiverUsername)
+        {
+            try
+            {
+                // Tạo đối tượng chứa thông tin hủy chặn
+                var blockRequest = new
+                {
+                    SenderUsername = senderUsername,
+                    ReceiverUsername = receiverUsername
+                };
+
+                // Gửi yêu cầu tới API để lưu thông tin hủy chặn
+                using (var httpClient = new HttpClient())
+                {
+                    var jsonContent = new StringContent(JsonConvert.SerializeObject(blockRequest), Encoding.UTF8, "application/json");
+                    var response = await httpClient.PostAsync("http://localhost:15172/api/Chats/UnblockUser", jsonContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Nếu lưu thành công, trả về `true`
+                        return true;
+                    }
+                    else
+                    {
+                        // Nếu có lỗi từ API, ghi lại log và trả về `false`
+                        Console.WriteLine($"Failed to block user: {response.StatusCode}");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ngoại lệ và trả về `false`
+                Console.WriteLine($"Error blocking user: {ex.Message}");
+                return false;
+            }
+        }
         public async Task SaveMessageToDatabase(MessageVM message)
         {
             try
@@ -471,6 +555,9 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                 Console.WriteLine($"Error saving message: {ex.Message}");
             }
         }
+
+
+
         public async Task SendMessageToUser(string receiverUsername, string messageContent)
         {
             if (_userWebSockets.ContainsKey(receiverUsername))
@@ -619,6 +706,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             public string ReceiverUsername { get; set; }
             public string SenderUsername { get; set; }
         }
+
         [HttpGet]
         public async Task<IActionResult> CheckBlockStatus(string receiverUsername)
         {
@@ -673,6 +761,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
             bool isOnline = _userWebSockets.ContainsKey(username); // Kiểm tra người dùng có kết nối WebSocket không
             return Json(new { isOnline });
         }
+
     }
     public class CheckBlockStatusResponse
     {
