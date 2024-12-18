@@ -211,6 +211,7 @@ namespace AHTB_TimBanCungGu_MVC.Controllers
                             {
                                 IDProfile = t.IDProfile,
                                 UsID = t.UsID,
+                                Username2 = t.User.UserName,
                                 HoTen = t.HoTen,
                                 Email = t.Email,
                                 GioiTinh = t.GioiTinh,
