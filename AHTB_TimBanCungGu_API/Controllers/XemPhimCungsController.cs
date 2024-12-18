@@ -16,12 +16,14 @@ namespace AHTB_TimBanCungGu_API.Controllers
         {
             _context = context;
         }
+
         // GET: api/XemPhimCungs/GetAllPhim
         [HttpGet("GetAllPhim")]
         public async Task<IActionResult> GetAllPhim()
         {
             // Lấy tất cả phim từ cơ sở dữ liệu
             var danhSachPhim = await _context.Phim
+                .Where(p => p.DangPhim == "Phim Lẻ")
                 .Select(p => new
                 {
                     p.IDPhim,
@@ -42,13 +44,31 @@ namespace AHTB_TimBanCungGu_API.Controllers
             // Trả về danh sách phim
             return Ok(danhSachPhim);
         }
+
         // GET: api/XemPhimCungs/GetPhim?idPhim=12345
         [HttpGet("GetPhim")]
-        public async Task<IActionResult> GetPhim([FromQuery] string idPhim)
+        public async Task<IActionResult> GetPhim([FromQuery] string idPhim, [FromQuery] string senderUsername, [FromQuery] string receiverUserName)
         {
             if (string.IsNullOrEmpty(idPhim))
             {
                 return BadRequest("ID phim không được để trống.");
+            }
+
+            // Lấy thông tin của Sender và Receiver
+            var Name1 = await _context.ThongTinCN
+                .Where(N1 => N1.User.UserName == senderUsername)
+                .Select(N1 => N1.HoTen)  // Only get 'HoTen' (Full name)
+                .FirstOrDefaultAsync();
+
+            var Name2 = await _context.ThongTinCN
+                .Where(N1 => N1.User.UserName == receiverUserName)
+                .Select(N1 => N1.HoTen)  // Only get 'HoTen' (Full name)
+                .FirstOrDefaultAsync();
+
+            // Kiểm tra nếu không tìm thấy thông tin người dùng
+            if (Name1 == null || Name2 == null)
+            {
+                return NotFound("Không tìm thấy thông tin người dùng.");
             }
 
             // Tìm phim trong cơ sở dữ liệu dựa trên ID
@@ -62,18 +82,55 @@ namespace AHTB_TimBanCungGu_API.Controllers
                 })
                 .FirstOrDefaultAsync();
 
+            // Kiểm tra nếu không tìm thấy phim
             if (phim == null)
             {
                 return NotFound("Không tìm thấy phim phù hợp.");
             }
 
-            // Trả về dữ liệu phim
+            // Trả về dữ liệu phim và thông tin người dùng
             return Ok(new
             {
-                TenPhim = phim.TenPhim,
-                SourcePhim = phim.SourcePhim,
-                Premium = phim.NoiDungPremium
+                Movie = new
+                {
+                    TenPhim = phim.TenPhim,
+                    SourcePhim = phim.SourcePhim,
+                    Premium = phim.NoiDungPremium
+                },
+                SenderFullName = Name1,
+                ReceiverFullName = Name2
             });
         }
+        // GET: api/XemPhimCungs/GetSourcePhim?idPhim=12345
+        [HttpGet("GetSourcePhim")]
+        public async Task<IActionResult> GetSourcePhim([FromQuery] string idPhim)
+        {
+            if (string.IsNullOrEmpty(idPhim))
+            {
+                return BadRequest("ID phim không được để trống.");
+            }
+
+            // Tìm phim dựa trên ID
+            var phim = await _context.Phim
+                .Where(p => p.IDPhim == idPhim)
+                .Select(p => new
+                {
+                    p.SourcePhim
+                })
+                .FirstOrDefaultAsync();
+
+            // Kiểm tra nếu không tìm thấy phim
+            if (phim == null)
+            {
+                return NotFound("Không tìm thấy phim phù hợp.");
+            }
+
+            // Trả về chỉ SourcePhim
+            return Ok(new
+            {
+                SourcePhim = phim.SourcePhim
+            });
+        }
+
     }
 }
